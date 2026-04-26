@@ -15,8 +15,8 @@ tolerate unknown keys on `payload` for forward compatibility.
 |-----------------|-----------------|----------|------------------------------------------------------------------------|
 | `timestamp_ms`  | float (ms)      | yes      | Stamped by Telemetry. Unix epoch milliseconds.                         |
 | `session_uuid`  | string          | yes      | Stamped by Telemetry. Format `YYYYMMDD_HHMMSS_xxxx` (see ADR-0002).    |
-| `phase`         | string enum     | yes      | One of: `session_start`, `state_change`, `scenario_start`, `action`, `scenario_complete`. |
-| `scenario_id`   | string          | yes      | Empty string for `session_start` and pre-scenario `state_change`.      |
+| `phase`         | string enum     | yes      | One of: `state_change`, `scenario_start`, `action`, `scenario_complete`. |
+| `scenario_id`   | string          | yes      | Empty string for pre-scenario `state_change`.                          |
 | `action`        | string \| null  | yes      | Action id for `action` phase, `null` for others.                       |
 | `is_correct`    | bool \| null    | yes      | Decision correctness for `action` phase, `null` for others.            |
 | `latency_ms`    | int \| null     | yes      | Time-to-decision for `action`; total elapsed for `scenario_complete`.  |
@@ -24,9 +24,6 @@ tolerate unknown keys on `payload` for forward compatibility.
 
 ## Phases
 
-- **`session_start`** — emitted once by `GameState._ready` after
-  `session_uuid` is generated. `payload = {session_uuid}`. Always the
-  first line in the JSONL.
 - **`state_change`** — emitted by `GameState.transition_to`.
   `payload = {from: <state-name>, to: <state-name>}`.
 - **`scenario_start`** — emitted by `ScenarioBase.start_scenario`.
@@ -40,7 +37,6 @@ tolerate unknown keys on `payload` for forward compatibility.
 ## Example (one JSONL file)
 
 ```json
-{"phase":"session_start","scenario_id":"","action":null,"is_correct":null,"latency_ms":null,"payload":{"session_uuid":"20260426_141833_a3f1"},"timestamp_ms":1745672313000.0,"session_uuid":"20260426_141833_a3f1"}
 {"phase":"state_change","scenario_id":"_helloworld","action":null,"is_correct":null,"latency_ms":null,"payload":{"from":"MENU","to":"IN_SCENARIO"},"timestamp_ms":1745672313050.0,"session_uuid":"20260426_141833_a3f1"}
 {"phase":"scenario_start","scenario_id":"_helloworld","action":null,"is_correct":null,"latency_ms":0,"payload":{},"timestamp_ms":1745672313060.0,"session_uuid":"20260426_141833_a3f1"}
 {"phase":"action","scenario_id":"_helloworld","action":"demo_correct","is_correct":true,"latency_ms":0,"payload":{},"timestamp_ms":1745672313070.0,"session_uuid":"20260426_141833_a3f1"}

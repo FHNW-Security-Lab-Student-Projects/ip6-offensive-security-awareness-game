@@ -13,16 +13,6 @@ var state: State = State.MENU
 
 func _ready() -> void:
 	session_uuid = _generate_session_uuid()
-	# Emit a session_start event so the very first line of every JSONL
-	# log identifies the session.
-	EventBus.generic_event.emit({
-		"phase": "session_start",
-		"scenario_id": "",
-		"action": null,
-		"is_correct": null,
-		"latency_ms": null,
-		"payload": {"session_uuid": session_uuid},
-	})
 
 func transition_to(new_state: State) -> void:
 	if new_state == state:
