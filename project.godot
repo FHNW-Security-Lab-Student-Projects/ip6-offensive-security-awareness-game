@@ -12,7 +12,16 @@ config_version=5
 
 config/name="Offensive Security Awareness Game"
 config/description="A 2D serious game for cybersecurity awareness training."
+run/main_scene="res://scenes/main.tscn"
 config/features=PackedStringArray("4.6")
+
+[autoload]
+
+EventBus="*res://autoloads/event_bus.gd"
+GameState="*res://autoloads/game_state.gd"
+Telemetry="*res://autoloads/telemetry.gd"
+Config="*res://autoloads/config.gd"
+FeedbackEngine="*res://autoloads/feedback_engine.gd"
 
 [display]
 
