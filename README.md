@@ -29,7 +29,6 @@ scenes/                 top-level scenes (main.tscn entry point)
   shared/  Person B     shared UI elements
 assets/                 audio, fonts, sprites
 tests/                  test framework TBD (Phase 2)
-docs/                   ADRs and event schema contract
 ```
 
 ## Ownership
@@ -38,16 +37,10 @@ docs/                   ADRs and event schema contract
 |---|---|
 | `autoloads/`, `scenarios/`, `resources/`, `tests/` | Person A (engine + scenarios) |
 | `scenes/ui/`, `scenes/shared/` | Person B (title screen + scenario select) |
-| `assets/`, `docs/`, `project.godot` (autoloads section) | Shared — coordinate before edits |
+| `assets/`, `project.godot` (autoloads section) | Shared — coordinate before edits |
 
 `project.godot`'s `[autoload]` section is shared territory: ping before
 adding/removing/reordering an autoload.
-
-## Key documents
-
-- [`docs/decisions.md`](docs/decisions.md) — architecture decisions (ADRs).
-- [`docs/event_schema.md`](docs/event_schema.md) — telemetry contract; all
-  scenarios MUST conform.
 
 ## Branching
 
