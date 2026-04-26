@@ -1,4 +1,4 @@
-# Phase 1 entry point. Loads the HelloWorld smoke-test scenario directly,
+# Engine entry point. Loads the HelloWorld smoke-test scenario directly,
 # bypassing the menu (Person B replaces this with the title-screen +
 # scenario-select flow once that branch lands).
 extends Node

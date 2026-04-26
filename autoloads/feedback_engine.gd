@@ -1,7 +1,6 @@
-# Stub. Phase 3 will turn the buffered session events into a feedback
-# payload (per-decision correctness, latency, hints to surface). For
-# now it just collects events between scenario start/complete so the
-# downstream UI has a buffer to read from.
+# Stub. Buffers all events between scenario_start and scenario_complete
+# so the downstream UI has something to read from. Real evaluation
+# (per-decision correctness, latency, hints) is not implemented yet.
 extends Node
 
 var _current_buffer: Array = []
@@ -18,11 +17,11 @@ func _on_event(payload: Dictionary) -> void:
 	elif _current_buffer.size() > 0:
 		_current_buffer.append(payload)
 
-# TODO Phase 3: real feedback computation.
+# TODO: real feedback computation.
 func evaluate(events: Array = []) -> Dictionary:
 	if events.is_empty():
 		events = _current_buffer
 	return {
-		"summary": "Feedback engine stub — implement in Phase 3.",
+		"summary": "Feedback engine stub.",
 		"event_count": events.size(),
 	}
