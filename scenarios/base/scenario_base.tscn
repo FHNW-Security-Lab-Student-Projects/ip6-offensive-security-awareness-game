@@ -1,4 +1,4 @@
-[gd_scene load_steps=2 format=3 uid="uid://b3sceniobasenull"]
+[gd_scene format=3 uid="uid://frgukyfhogqb"]
 
 [ext_resource type="Script" path="res://scenarios/base/scenario_base.gd" id="1_base"]
 
