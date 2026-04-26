@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="ScenarioConfig" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://resources/scenarios/scenario_config.gd" id="1_cfg"]
+
+[resource]
+script = ExtResource("1_cfg")
+id = &"_helloworld"
+display_name = "Hello World (Smoke Test)"
+scene_path = "res://scenarios/_helloworld/hello_world.tscn"
+description = "Engine smoke test. Auto-completes after 5 seconds and writes events to telemetry."
+tags = PackedStringArray("smoke", "internal")
