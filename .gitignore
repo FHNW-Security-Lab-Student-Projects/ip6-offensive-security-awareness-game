@@ -23,5 +23,3 @@ Thumbs.db
 .vscode/
 .idea/
 
-# Local-only docs (not shared via git)
-docs/
