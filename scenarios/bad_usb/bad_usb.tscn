@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://byiexvos6paj"]
+
+[ext_resource type="Script" uid="uid://6c7s4d1bw22i" path="res://scenarios/bad_usb/bad_usb.gd" id="1_scene2"]
+
+[node name="bad_usb" type="Node2D" unique_id=291644833]
+script = ExtResource("1_scene2")

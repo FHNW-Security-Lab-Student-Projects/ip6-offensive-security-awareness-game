@@ -1,13 +1,6 @@
 extends Control
 
 
-func _on_texture_button_pressed() -> void:
-	_launch_scenario(&"scene1")
-
-
-func _on_texture_button_2_pressed() -> void:
-	_launch_scenario(&"scene2")
-
 
 func _on_zurueck_button_pressed() -> void:
 	get_tree().change_scene_to_file("res://scenes/StartScreen.tscn")
@@ -21,3 +14,12 @@ func _launch_scenario(id: StringName) -> void:
 		push_error("LevelAuswahl: scenario '%s' missing from Config registry" % id)
 		return
 	get_tree().change_scene_to_file(cfg.scene_path)
+
+
+
+func _on_scene_1_button_pressed() -> void:
+	get_tree().change_scene_to_file("res://scenarios/bad_usb/bad_usb.tscn")
+
+
+func _on_scene_2_button_pressed() -> void:
+	get_tree().change_scene_to_file("res://scenarios/spear_phishing/spear_phishing.tscn")

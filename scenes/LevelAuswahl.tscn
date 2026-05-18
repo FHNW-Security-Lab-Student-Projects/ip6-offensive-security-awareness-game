@@ -35,6 +35,8 @@ offset_bottom = 553.0
 
 [node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer" unique_id=1951174713]
 layout_mode = 2
+size_flags_vertical = 0
+alignment = 1
 
 [node name="Scene1Button" type="TextureButton" parent="MarginContainer/HBoxContainer" unique_id=666800474]
 layout_mode = 2
@@ -48,9 +50,9 @@ texture_hover = ExtResource("5_bmsm0")
 
 [node name="MarginContainer2" type="MarginContainer" parent="." unique_id=1402826902]
 layout_mode = 0
-offset_left = 821.0
+offset_left = 835.0
 offset_top = 552.0
-offset_right = 1095.0
+offset_right = 1114.0
 offset_bottom = 630.0
 
 [node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer2" unique_id=1597310178]
@@ -61,6 +63,6 @@ layout_mode = 2
 texture_normal = ExtResource("7_bmsm0")
 texture_hover = ExtResource("8_ugx8o")
 
-[connection signal="pressed" from="MarginContainer/HBoxContainer/Scene1Button" to="." method="_on_texture_button_pressed"]
-[connection signal="pressed" from="MarginContainer/HBoxContainer/Scene2Button" to="." method="_on_texture_button_2_pressed"]
+[connection signal="pressed" from="MarginContainer/HBoxContainer/Scene1Button" to="." method="_on_scene_1_button_pressed"]
+[connection signal="pressed" from="MarginContainer/HBoxContainer/Scene2Button" to="." method="_on_scene_2_button_pressed"]
 [connection signal="pressed" from="MarginContainer2/VBoxContainer/ZurueckButton" to="." method="_on_zurueck_button_pressed"]

@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://e3all35qm8tj"]
+
+[ext_resource type="Script" uid="uid://c0hla1i5267md" path="res://scenarios/spear_phishing/spear_phishing.gd" id="1_scene1"]
+
+[node name="spear_phishing" type="Node2D" unique_id=2041782413]
+script = ExtResource("1_scene1")

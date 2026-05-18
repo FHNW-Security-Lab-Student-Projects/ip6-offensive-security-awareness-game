@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="ScenarioConfig" format=3 uid="uid://cya08wcxvmm5k"]
+
+[ext_resource type="Script" uid="uid://cc7nr2ywmkeaj" path="res://resources/scenarios/scenario_config.gd" id="1_cfg"]
+
+[resource]
+script = ExtResource("1_cfg")
+id = &"bad_usb"
+display_name = "Szenario: Bad USB"
+scene_path = "res://scenarios/bad_usb/bad_usb.tscn"
+description = "Entscheide, was mit dem gefundenen USB-Stick passieren soll."
+tags = PackedStringArray()
+metadata/_custom_type_script = "uid://cc7nr2ywmkeaj"

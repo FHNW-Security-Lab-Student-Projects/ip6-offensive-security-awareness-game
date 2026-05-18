@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="ScenarioConfig" format=3 uid="uid://h7s728l8w1di"]
+
+[ext_resource type="Script" uid="uid://cc7nr2ywmkeaj" path="res://resources/scenarios/scenario_config.gd" id="1_cfg"]
+
+[resource]
+script = ExtResource("1_cfg")
+id = &"spear_phishing"
+display_name = "Szenario: Spear-Phishing"
+scene_path = "res://scenarios/spear_phishing/spear_phishing.tscn"
+description = "Identifiziere eine gezielte Phishing-E-Mail und reagiere richtig."
+tags = PackedStringArray()
+metadata/_custom_type_script = "uid://cc7nr2ywmkeaj"
