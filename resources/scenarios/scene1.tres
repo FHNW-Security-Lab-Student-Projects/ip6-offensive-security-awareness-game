@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="ScenarioConfig" load_steps=2 format=3]
+
+[ext_resource type="Script" uid="uid://cc7nr2ywmkeaj" path="res://resources/scenarios/scenario_config.gd" id="1_cfg"]
+
+[resource]
+script = ExtResource("1_cfg")
+id = &"scene1"
+display_name = "Scene 1"
+scene_path = "res://scenarios/scene1/scene1.tscn"
+description = "TODO: describe what the player should do in this scenario."
+tags = PackedStringArray()
