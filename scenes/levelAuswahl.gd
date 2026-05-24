@@ -18,8 +18,8 @@ func _launch_scenario(id: StringName) -> void:
 
 
 func _on_scene_1_button_pressed() -> void:
-	get_tree().change_scene_to_file("res://scenarios/bad_usb/bad_usb.tscn")
+	_launch_scenario(&"spear_phishing")
 
 
 func _on_scene_2_button_pressed() -> void:
-	get_tree().change_scene_to_file("res://scenarios/spear_phishing/spear_phishing.tscn")
+	_launch_scenario(&"bad_usb")
