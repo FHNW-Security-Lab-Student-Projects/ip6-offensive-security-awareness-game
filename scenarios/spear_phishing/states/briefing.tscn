@@ -1,6 +1,8 @@
-[gd_scene format=3]
+[gd_scene load_steps=4 format=3]
 
 [ext_resource type="Script" path="res://scenarios/spear_phishing/states/briefing.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://scenarios/spear_phishing/components/dialog_box.tscn" id="2_dialog"]
+[ext_resource type="Theme" path="res://resources/theme/secret_ops_theme.tres" id="3_theme"]
 
 [node name="Briefing" type="Control"]
 layout_mode = 3
@@ -9,6 +11,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+theme = ExtResource("3_theme")
 script = ExtResource("1_script")
 
 [node name="Background" type="ColorRect" parent="."]
@@ -18,47 +21,199 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0.12, 0.13, 0.18, 1)
+color = Color(0.012, 0.027, 0.020, 1)
 
-[node name="Title" type="Label" parent="."]
+[node name="OsBar" type="ColorRect" parent="."]
 layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -400.0
-offset_top = -120.0
-offset_right = 400.0
-offset_bottom = -40.0
-text = "BRIEFING — placeholder"
-horizontal_alignment = 1
+anchor_right = 1.0
+offset_bottom = 36.0
+color = Color(0.027, 0.055, 0.039, 1)
 
-[node name="Subtitle" type="Label" parent="."]
+[node name="OsLabel" type="Label" parent="OsBar"]
 layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -400.0
-offset_top = -30.0
-offset_right = 400.0
-offset_bottom = 20.0
-text = "Phase 1 plumbing — real dialog box + mission banner come in Phase 2."
-horizontal_alignment = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 16.0
+offset_right = -16.0
+text = "BRIEFING_OS_STATUS"
+vertical_alignment = 1
+theme_override_font_sizes/font_size = 14
+modulate = Color(0.27, 1.0, 0.45, 0.9)
 
-[node name="AdvanceButton" type="Button" parent="."]
+[node name="OsBarUnderline" type="ColorRect" parent="."]
 layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -140.0
+anchor_right = 1.0
+offset_top = 36.0
+offset_bottom = 38.0
+color = Color(0.27, 1.0, 0.45, 0.55)
+
+[node name="ChannelWindow" type="Panel" parent="."]
+layout_mode = 1
+offset_left = 160.0
+offset_top = 80.0
+offset_right = 1760.0
+offset_bottom = 660.0
+
+[node name="ChannelTitleStrip" type="ColorRect" parent="ChannelWindow"]
+layout_mode = 1
+anchor_right = 1.0
+offset_left = 2.0
+offset_top = 2.0
+offset_right = -2.0
+offset_bottom = 44.0
+color = Color(0.055, 0.094, 0.067, 1)
+
+[node name="RecDot" type="ColorRect" parent="ChannelWindow/ChannelTitleStrip"]
+layout_mode = 1
+offset_left = 16.0
+offset_top = 14.0
+offset_right = 30.0
+offset_bottom = 28.0
+color = Color(0.95, 0.18, 0.22, 1)
+
+[node name="ChannelTitleLabel" type="Label" parent="ChannelWindow/ChannelTitleStrip"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 40.0
+offset_right = -16.0
+text = "BRIEFING_CHANNEL_TITLE"
+vertical_alignment = 1
+theme_override_font_sizes/font_size = 16
+modulate = Color(0.27, 1.0, 0.45, 1)
+
+[node name="VideoBg" type="ColorRect" parent="ChannelWindow"]
+layout_mode = 1
+offset_left = 16.0
 offset_top = 60.0
-offset_right = 140.0
-offset_bottom = 110.0
-text = "Weiter →"
+offset_right = 516.0
+offset_bottom = 564.0
+color = Color(0.020, 0.043, 0.031, 1)
 
-[connection signal="pressed" from="AdvanceButton" to="." method="_on_advance_button_pressed"]
+[node name="VideoPlaceholder" type="Label" parent="ChannelWindow/VideoBg"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = 30.0
+offset_bottom = -60.0
+text = "▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
+▓▓▓▓██████████▓▓▓▓▓▓
+▓▓▓▓██████████▓▓▓▓▓▓
+▓▓▓▓██████████▓▓▓▓▓▓
+▓▓▓▓██████████▓▓▓▓▓▓
+▓▓▓▓▓▓██████▓▓▓▓▓▓▓▓
+▓▓▓████████████▓▓▓▓▓
+▓▓██████████████▓▓▓▓
+▓▓██████████████▓▓▓▓
+▓▓██████████████▓▓▓▓
+▓▓██████████████▓▓▓▓
+▓▓██████████████▓▓▓▓"
+horizontal_alignment = 1
+vertical_alignment = 0
+modulate = Color(0.27, 0.78, 0.40, 0.75)
+theme_override_font_sizes/font_size = 18
+
+[node name="VideoSubtitle" type="Label" parent="ChannelWindow/VideoBg"]
+layout_mode = 1
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -120.0
+offset_top = -52.0
+offset_right = 120.0
+offset_bottom = -32.0
+text = "BRIEFING_VIDEO_SUBTITLE"
+horizontal_alignment = 1
+modulate = Color(0.85, 0.87, 0.82, 0.45)
+theme_override_font_sizes/font_size = 12
+
+[node name="VideoLiveLabel" type="Label" parent="ChannelWindow/VideoBg"]
+layout_mode = 1
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -50.0
+offset_top = -28.0
+offset_right = 50.0
+offset_bottom = -8.0
+text = "BRIEFING_VIDEO_LIVE"
+horizontal_alignment = 1
+modulate = Color(0.95, 0.22, 0.25, 1)
+theme_override_font_sizes/font_size = 14
+
+[node name="DialogBox" parent="ChannelWindow" instance=ExtResource("2_dialog")]
+layout_mode = 1
+anchors_preset = -1
+anchor_right = 0.0
+anchor_bottom = 0.0
+offset_left = 532.0
+offset_top = 60.0
+offset_right = 1584.0
+offset_bottom = 564.0
+grow_horizontal = 1
+grow_vertical = 1
+
+[node name="TaskPanel" type="Panel" parent="."]
+layout_mode = 1
+offset_left = 160.0
+offset_top = 700.0
+offset_right = 1760.0
+offset_bottom = 980.0
+
+[node name="AmberStripe" type="ColorRect" parent="TaskPanel"]
+layout_mode = 1
+anchor_bottom = 1.0
+offset_left = 2.0
+offset_top = 2.0
+offset_right = 10.0
+offset_bottom = -2.0
+color = Color(0.27, 1.0, 0.45, 1)
+
+[node name="TaskTitle" type="Label" parent="TaskPanel"]
+layout_mode = 1
+offset_left = 32.0
+offset_top = 18.0
+offset_right = 1568.0
+offset_bottom = 50.0
+text = "BRIEFING_TASK_TITLE"
+theme_override_font_sizes/font_size = 20
+modulate = Color(0.27, 1.0, 0.45, 1)
+
+[node name="MissionLabel" type="Label" parent="TaskPanel"]
+layout_mode = 1
+offset_left = 32.0
+offset_top = 78.0
+offset_right = 1568.0
+offset_bottom = 130.0
+text = "MISSION · ..."
+theme_override_font_sizes/font_size = 30
+
+[node name="RewardLabel" type="Label" parent="TaskPanel"]
+layout_mode = 1
+offset_left = 32.0
+offset_top = 142.0
+offset_right = 1568.0
+offset_bottom = 184.0
+text = "Belohnung: ... · Zeitlimit: ..."
+theme_override_font_sizes/font_size = 24
+modulate = Color(0.88, 0.96, 0.88, 1)
+
+[node name="AdvanceButton" type="Button" parent="TaskPanel"]
+layout_mode = 1
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -320.0
+offset_top = -72.0
+offset_right = -24.0
+offset_bottom = -22.0
+text = "BRIEFING_ADVANCE_BUTTON"
+visible = false
+
+[connection signal="pressed" from="TaskPanel/AdvanceButton" to="." method="_on_advance_button_pressed"]
