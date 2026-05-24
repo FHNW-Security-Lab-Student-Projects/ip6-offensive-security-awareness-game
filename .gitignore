@@ -23,3 +23,6 @@ Thumbs.db
 .vscode/
 .idea/
 
+# Local planning notes (not for the repo)
+.plans/
+
