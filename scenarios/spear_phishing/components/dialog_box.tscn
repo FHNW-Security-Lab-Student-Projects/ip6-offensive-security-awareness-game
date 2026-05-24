@@ -1,0 +1,57 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scenarios/spear_phishing/components/dialog_box.gd" id="1_script"]
+
+[node name="DialogBox" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("1_script")
+
+[node name="Panel" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Margin" type="MarginContainer" parent="Panel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 32
+theme_override_constants/margin_top = 24
+theme_override_constants/margin_right = 32
+theme_override_constants/margin_bottom = 24
+
+[node name="VBox" type="VBoxContainer" parent="Panel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="SpeakerLabel" type="Label" parent="Panel/Margin/VBox"]
+layout_mode = 2
+text = "Speaker"
+theme_override_font_sizes/font_size = 24
+modulate = Color(0.27, 1.0, 0.45, 1)
+
+[node name="BodyLabel" type="Label" parent="Panel/Margin/VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+text = ""
+autowrap_mode = 2
+theme_override_font_sizes/font_size = 30
+
+[node name="HintLabel" type="Label" parent="Panel/Margin/VBox"]
+layout_mode = 2
+size_flags_horizontal = 8
+text = "DIALOG_HINT_CLICK"
+theme_override_font_sizes/font_size = 22
+modulate = Color(0.27, 1.0, 0.45, 1)

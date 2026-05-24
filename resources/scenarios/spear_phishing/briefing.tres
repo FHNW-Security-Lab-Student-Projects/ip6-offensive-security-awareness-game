@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="BriefingResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://resources/scenarios/spear_phishing/briefing_resource.gd" id="1_brf"]
+
+[resource]
+script = ExtResource("1_brf")
+speaker_name = "Direktor"
+intro_lines = PackedStringArray("Setz dich, Agent. Die FinTech AG hat ein Netzwerk, an das wir ran müssen. Der einfachste Weg rein ist ein Mensch, der auf das Falsche klickt.", "Dein Ziel: Markus Weber, CEO. Schreibt am Wochenende seine eigenen Mails. Wenn jemand klickt, dann er.", "Bevor du ihm schreibst, willst du wissen, wer er ist. LinkedIn, Stellenanzeigen. Die Firma postet mehr, als ihr lieb wäre. Sammle alles, was du findest. Jedes Detail wird zu Munition.", "Dann baust du die Mail zusammen. Zu viel Druck und er meldet dich. Zu wenig und er löscht dich. Acht Versuche, bevor sich seine IT wundert. Mach den Job.")
+mission_text = "Phishe Markus Weber, CEO der FinTech AG"
+reward_text = "Zugang zum internen Netzwerk"
+turn_budget = 8

@@ -9,7 +9,9 @@ export.cfg
 export_credentials.cfg
 *.tmp
 
-# Imported translations (automatically generated from CSV files)
+# Imported translations (automatically generated from CSV files; we
+# parse the CSV at runtime via the I18n autoload, so the compiled
+# .translation files are unused)
 *.translation
 
 # Mono-specific ignores
@@ -22,4 +24,7 @@ mono_crash.*.json
 Thumbs.db
 .vscode/
 .idea/
+
+# Local planning notes (not for the repo)
+.plans/
 

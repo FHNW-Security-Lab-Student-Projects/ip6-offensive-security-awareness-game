@@ -1,6 +1,23 @@
-[gd_scene format=3 uid="uid://e3all35qm8tj"]
+[gd_scene load_steps=6 format=3 uid="uid://e3all35qm8tj"]
 
-[ext_resource type="Script" uid="uid://c0hla1i5267md" path="res://scenarios/spear_phishing/spear_phishing.gd" id="1_scene1"]
+[ext_resource type="Script" path="res://scenarios/spear_phishing/spear_phishing.gd" id="1_scene1"]
+[ext_resource type="PackedScene" path="res://scenarios/spear_phishing/states/briefing.tscn" id="2_brf"]
+[ext_resource type="PackedScene" path="res://scenarios/spear_phishing/states/recon.tscn" id="3_rec"]
+[ext_resource type="PackedScene" path="res://scenarios/spear_phishing/states/mail_builder.tscn" id="4_mai"]
+[ext_resource type="PackedScene" path="res://scenarios/spear_phishing/states/resolve.tscn" id="5_res"]
 
-[node name="spear_phishing" type="Node2D" unique_id=2041782413]
+[node name="spear_phishing" type="Node2D"]
 script = ExtResource("1_scene1")
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="Briefing" parent="CanvasLayer" instance=ExtResource("2_brf")]
+
+[node name="Recon" parent="CanvasLayer" instance=ExtResource("3_rec")]
+visible = false
+
+[node name="MailBuilder" parent="CanvasLayer" instance=ExtResource("4_mai")]
+visible = false
+
+[node name="Resolve" parent="CanvasLayer" instance=ExtResource("5_res")]
+visible = false
