@@ -1,6 +1,96 @@
 [gd_scene format=3 uid="uid://byiexvos6paj"]
 
 [ext_resource type="Script" uid="uid://6c7s4d1bw22i" path="res://scenarios/bad_usb/bad_usb.gd" id="1_scene2"]
+[ext_resource type="Script" uid="uid://ba7pie5wfblvt" path="res://scenarios/bad_usb/briefing.gd" id="2_cdqlc"]
+[ext_resource type="Texture2D" uid="uid://b2f73u3borvbw" path="res://assets/sprites/placeholder/background.webp" id="2_usfo3"]
+[ext_resource type="Script" uid="uid://dpibu0k7wghi0" path="res://scenarios/bad_usb/character_body_2d.gd" id="3_0c6e4"]
+[ext_resource type="Texture2D" uid="uid://cu7d1gilm0mj2" path="res://assets/Aseprite/Environment/Tree_SpriteSheet_Outlined-export.png" id="3_anqnk"]
+[ext_resource type="Script" uid="uid://dvhdvboyrsv1x" path="res://scenarios/bad_usb/resolve.gd" id="3_usfo3"]
+[ext_resource type="Texture2D" uid="uid://ce6q5c54y5g8c" path="res://assets/Aseprite/Characters/Main Character/east.png" id="5_kp1x0"]
+[ext_resource type="Texture2D" uid="uid://bm5ceg8c0aohf" path="res://assets/Aseprite/Environment/Tree_SpriteSheet_Outlined-export_front.png" id="6_kp1x0"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_0c6e4"]
+size = Vector2(2708, 20)
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_5yldq"]
 
 [node name="bad_usb" type="Node2D" unique_id=291644833]
 script = ExtResource("1_scene2")
+
+[node name="BadUSBScenario" type="Node2D" parent="." unique_id=679616594]
+
+[node name="GameWorld" type="Node2D" parent="BadUSBScenario" unique_id=405808642]
+position = Vector2(6, 0)
+
+[node name="Background" type="ParallaxBackground" parent="BadUSBScenario/GameWorld" unique_id=1432724865]
+layer = -1
+
+[node name="Background" type="ParallaxLayer" parent="BadUSBScenario/GameWorld/Background" unique_id=1863415658]
+position = Vector2(83, -263)
+motion_scale = Vector2(0.4, 0.4)
+
+[node name="Sprite2D" type="Sprite2D" parent="BadUSBScenario/GameWorld/Background/Background" unique_id=710718502]
+position = Vector2(-80, 252.99997)
+scale = Vector2(5, 5)
+texture = ExtResource("2_usfo3")
+centered = false
+
+[node name="CloserBackground" type="ParallaxLayer" parent="BadUSBScenario/GameWorld/Background" unique_id=1458236915]
+motion_scale = Vector2(0.7, 0.7)
+
+[node name="Sprite2D" type="Sprite2D" parent="BadUSBScenario/GameWorld/Background/CloserBackground" unique_id=207850800]
+position = Vector2(1661, 897)
+scale = Vector2(4.9, 4.9)
+texture = ExtResource("3_anqnk")
+
+[node name="Environment" type="Node2D" parent="BadUSBScenario/GameWorld" unique_id=1489106454]
+
+[node name="TileMapLayer" type="TileMapLayer" parent="BadUSBScenario/GameWorld/Environment" unique_id=977995304]
+
+[node name="StaticBody2D" type="StaticBody2D" parent="BadUSBScenario/GameWorld/Environment" unique_id=871274249]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="BadUSBScenario/GameWorld/Environment/StaticBody2D" unique_id=2072395353]
+position = Vector2(1332, 542)
+shape = SubResource("RectangleShape2D_0c6e4")
+
+[node name="Player" type="CharacterBody2D" parent="BadUSBScenario/GameWorld" unique_id=1267560090]
+z_index = 10
+position = Vector2(953, 538)
+script = ExtResource("3_0c6e4")
+
+[node name="Camera2D" type="Camera2D" parent="BadUSBScenario/GameWorld/Player" unique_id=2098844783]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="BadUSBScenario/GameWorld/Player" unique_id=1386567361]
+shape = SubResource("CapsuleShape2D_5yldq")
+
+[node name="Sprite2D" type="Sprite2D" parent="BadUSBScenario/GameWorld/Player" unique_id=699634802]
+position = Vector2(-3, 361)
+scale = Vector2(2.56, 2.56)
+texture = ExtResource("5_kp1x0")
+
+[node name="Foreground" type="ParallaxBackground" parent="BadUSBScenario/GameWorld" unique_id=1231274154]
+layer = 1
+
+[node name="CloseObjects" type="ParallaxLayer" parent="BadUSBScenario/GameWorld/Foreground" unique_id=1018929345]
+motion_scale = Vector2(1.5, 1.5)
+
+[node name="Sprite2D" type="Sprite2D" parent="BadUSBScenario/GameWorld/Foreground/CloseObjects" unique_id=45699623]
+position = Vector2(1819, 834)
+scale = Vector2(9.36, 9.36)
+texture = ExtResource("6_kp1x0")
+
+[node name="CanvasLayer" type="CanvasLayer" parent="BadUSBScenario" unique_id=1957432625]
+
+[node name="Briefing" type="Control" parent="BadUSBScenario/CanvasLayer" unique_id=1780300199]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+script = ExtResource("2_cdqlc")
+
+[node name="Resolve" type="Control" parent="BadUSBScenario/CanvasLayer" unique_id=725475514]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+script = ExtResource("3_usfo3")
