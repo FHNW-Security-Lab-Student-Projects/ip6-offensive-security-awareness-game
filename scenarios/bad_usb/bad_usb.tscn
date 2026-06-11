@@ -9,9 +9,12 @@
 [ext_resource type="Texture2D" uid="uid://ce6q5c54y5g8c" path="res://assets/Aseprite/Characters/Main Character/east.png" id="5_kp1x0"]
 [ext_resource type="Texture2D" uid="uid://bm5ceg8c0aohf" path="res://assets/Aseprite/Environment/Tree_SpriteSheet_Outlined-export_front.png" id="6_kp1x0"]
 [ext_resource type="Texture2D" uid="uid://bo3rdubye8yvr" path="res://assets/sprites/placeholder/infrontOfBuilding.webp" id="7_ap36y"]
+[ext_resource type="Texture2D" uid="uid://dabl1xkhosdfn" path="res://assets/sprites/placeholder/Lobby.jpg" id="8_3r2ah"]
+[ext_resource type="Texture2D" uid="uid://gik7s1wh0f8f" path="res://assets/sprites/placeholder/Charakters.png" id="9_3cyhg"]
+[ext_resource type="Texture2D" uid="uid://cc8wolnoe67ls" path="res://assets/sprites/placeholder/LobbyPlant.jpg" id="10_a3ter"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_0c6e4"]
-size = Vector2(4923, 20)
+size = Vector2(5854.9297, 20)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_kp1x0"]
 size = Vector2(30, 1077)
@@ -23,6 +26,12 @@ size = Vector2(27, 1526.5)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_or8dj"]
 size = Vector2(28.570007, 1254)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_xyppa"]
+size = Vector2(139.14243, 1232)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_3r2ah"]
+size = Vector2(694, 1515)
 
 [node name="bad_usb" type="Node2D" unique_id=291644833]
 script = ExtResource("1_scene2")
@@ -160,7 +169,7 @@ limit_right = 6043
 shape = SubResource("CapsuleShape2D_5yldq")
 
 [node name="Sprite2D" type="Sprite2D" parent="BadUSBScenario/InfrontOfBuilding/Player" unique_id=2144132310]
-position = Vector2(-3, 361)
+position = Vector2(4.305176, 352)
 scale = Vector2(2.56, 2.56)
 texture = ExtResource("5_kp1x0")
 
@@ -179,6 +188,93 @@ texture = ExtResource("6_kp1x0")
 position = Vector2(4500, 1004)
 scale = Vector2(5, 5)
 texture = ExtResource("6_kp1x0")
+
+[node name="BuildingEntrance" type="Area2D" parent="BadUSBScenario/InfrontOfBuilding" unique_id=816856550]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="BadUSBScenario/InfrontOfBuilding/BuildingEntrance" unique_id=115160764]
+position = Vector2(4837.9985, 552)
+shape = SubResource("RectangleShape2D_xyppa")
+
+[node name="InsideBuilding" type="Node2D" parent="BadUSBScenario" unique_id=66269007]
+position = Vector2(3000, 0)
+
+[node name="Background" type="ParallaxBackground" parent="BadUSBScenario/InsideBuilding" unique_id=634610819]
+layer = -1
+offset = Vector2(3000, 0)
+transform = Transform2D(1, 0, 0, 1, 3000, 0)
+
+[node name="Background" type="ParallaxLayer" parent="BadUSBScenario/InsideBuilding/Background" unique_id=1817893185]
+position = Vector2(83, -263)
+
+[node name="Sprite2D" type="Sprite2D" parent="BadUSBScenario/InsideBuilding/Background/Background" unique_id=77744340]
+position = Vector2(3000, 147)
+scale = Vector2(1.985, 1.985)
+texture = ExtResource("8_3r2ah")
+centered = false
+
+[node name="CloserBackground" type="ParallaxLayer" parent="BadUSBScenario/InsideBuilding/Background" unique_id=1681990461]
+position = Vector2(3000, -8)
+
+[node name="Sprite2D" type="Sprite2D" parent="BadUSBScenario/InsideBuilding/Background/CloserBackground" unique_id=583581022]
+position = Vector2(1467, 672.00006)
+scale = Vector2(13.175, 13.175)
+texture = ExtResource("9_3cyhg")
+
+[node name="Environment" type="Node2D" parent="BadUSBScenario/InsideBuilding" unique_id=1671566777]
+
+[node name="TileMapLayer" type="TileMapLayer" parent="BadUSBScenario/InsideBuilding/Environment" unique_id=1580728644]
+
+[node name="StaticBody2D" type="StaticBody2D" parent="BadUSBScenario/InsideBuilding/Environment" unique_id=1816768769]
+
+[node name="BorderBottom" type="CollisionShape2D" parent="BadUSBScenario/InsideBuilding/Environment/StaticBody2D" unique_id=47023500]
+position = Vector2(4117.535, 542)
+shape = SubResource("RectangleShape2D_0c6e4")
+
+[node name="BorderRight" type="CollisionShape2D" parent="BadUSBScenario/InsideBuilding/Environment/StaticBody2D" unique_id=1805717790]
+position = Vector2(6881.0005, 528)
+shape = SubResource("RectangleShape2D_kp1x0")
+
+[node name="BorderLeft" type="CollisionShape2D" parent="BadUSBScenario/InsideBuilding/Environment/StaticBody2D" unique_id=303593069]
+position = Vector2(3196.9998, 500)
+shape = SubResource("RectangleShape2D_or8dj")
+
+[node name="Player" type="CharacterBody2D" parent="BadUSBScenario/InsideBuilding" unique_id=125497279]
+z_index = 10
+position = Vector2(3235.265, 538)
+script = ExtResource("3_0c6e4")
+
+[node name="Camera2D" type="Camera2D" parent="BadUSBScenario/InsideBuilding/Player" unique_id=909583197]
+limit_left = 6113
+limit_top = -10000003
+limit_right = 10031
+limit_bottom = 9999997
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="BadUSBScenario/InsideBuilding/Player" unique_id=548403470]
+shape = SubResource("CapsuleShape2D_5yldq")
+
+[node name="Sprite2D" type="Sprite2D" parent="BadUSBScenario/InsideBuilding/Player" unique_id=1343020933]
+position = Vector2(-10.264641, 255.00002)
+scale = Vector2(12.325, 12.325)
+texture = ExtResource("5_kp1x0")
+
+[node name="Foreground" type="ParallaxBackground" parent="BadUSBScenario/InsideBuilding" unique_id=1096790099]
+layer = 1
+offset = Vector2(3000, 0)
+transform = Transform2D(1, 0, 0, 1, 3000, 0)
+
+[node name="CloseObjects" type="ParallaxLayer" parent="BadUSBScenario/InsideBuilding/Foreground" unique_id=1943696175]
+motion_scale = Vector2(1.5, 1.5)
+
+[node name="Sprite2D2" type="Sprite2D" parent="BadUSBScenario/InsideBuilding/Foreground/CloseObjects" unique_id=2013867831]
+position = Vector2(4014.0005, 1514)
+scale = Vector2(0.7, 0.7)
+texture = ExtResource("10_a3ter")
+
+[node name="ReceptionZone" type="Area2D" parent="BadUSBScenario/InsideBuilding" unique_id=2090746242]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="BadUSBScenario/InsideBuilding/ReceptionZone" unique_id=1190446196]
+position = Vector2(4451, 528.5)
+shape = SubResource("RectangleShape2D_3r2ah")
 
 [node name="CanvasLayer" type="CanvasLayer" parent="BadUSBScenario" unique_id=1957432625]
 
@@ -240,4 +336,80 @@ offset_right = 40.0
 offset_bottom = 40.0
 script = ExtResource("3_usfo3")
 
+[node name="EnterBuildingBtn" type="Button" parent="BadUSBScenario/CanvasLayer" unique_id=1459003390]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -75.0
+offset_top = 230.0
+offset_right = 75.0
+offset_bottom = 261.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "Gebäude Betreten"
+
+[node name="ReceptionMenu" type="VBoxContainer" parent="BadUSBScenario/CanvasLayer" unique_id=703915566]
+anchors_preset = -1
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = 445.0
+offset_top = -29.0
+offset_right = 727.00024
+offset_bottom = 37.00006
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="StressedBtn" type="Button" parent="BadUSBScenario/CanvasLayer/ReceptionMenu" unique_id=1672045493]
+layout_mode = 2
+text = "Rezeptionist gestresst ansprechen"
+
+[node name="ConfidentBtn" type="Button" parent="BadUSBScenario/CanvasLayer/ReceptionMenu" unique_id=923708045]
+layout_mode = 2
+text = "Rezeptionist überzeugt ansprechen"
+
+[node name="DialogueBox" type="Panel" parent="BadUSBScenario/CanvasLayer" unique_id=1043063849]
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -966.0
+offset_top = -241.0
+offset_right = 964.0
+grow_horizontal = 2
+grow_vertical = 0
+
+[node name="NPCText" type="Label" parent="BadUSBScenario/CanvasLayer/DialogueBox" unique_id=1561815548]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 168.0
+grow_horizontal = 2
+horizontal_alignment = 1
+
+[node name="VBoxContainer" type="VBoxContainer" parent="BadUSBScenario/CanvasLayer/DialogueBox" unique_id=1157014421]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -293.0
+offset_top = -56.0
+offset_right = 294.0
+grow_horizontal = 2
+grow_vertical = 0
+
+[node name="DialogChoice1" type="Button" parent="BadUSBScenario/CanvasLayer/DialogueBox/VBoxContainer" unique_id=895890742]
+layout_mode = 2
+
+[node name="DialogChoice2" type="Button" parent="BadUSBScenario/CanvasLayer/DialogueBox/VBoxContainer" unique_id=549351201]
+layout_mode = 2
+
 [connection signal="pressed" from="BadUSBScenario/CanvasLayer/Briefing/MarginContainer/VBoxContainer/Button" to="BadUSBScenario/CanvasLayer/Briefing" method="_on_button_pressed"]
+[connection signal="pressed" from="BadUSBScenario/CanvasLayer/DialogueBox/VBoxContainer/DialogChoice1" to="." method="_on_dialog_choice_1_pressed"]
+[connection signal="pressed" from="BadUSBScenario/CanvasLayer/DialogueBox/VBoxContainer/DialogChoice2" to="." method="_on_dialog_choice_2_pressed"]
