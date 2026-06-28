@@ -31,7 +31,13 @@ size = Vector2(28.570007, 1254)
 size = Vector2(139.14243, 1232)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_3r2ah"]
-size = Vector2(694, 1515)
+size = Vector2(664, 1515)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_g4v7s"]
+size = Vector2(99, 1004)
+
+[sub_resource type="LabelSettings" id="LabelSettings_3r2ah"]
+font_color = Color(0, 0, 0, 1)
 
 [node name="bad_usb" type="Node2D" unique_id=291644833]
 script = ExtResource("1_scene2")
@@ -273,8 +279,14 @@ texture = ExtResource("10_a3ter")
 [node name="ReceptionZone" type="Area2D" parent="BadUSBScenario/InsideBuilding" unique_id=2090746242]
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="BadUSBScenario/InsideBuilding/ReceptionZone" unique_id=1190446196]
-position = Vector2(4451, 528.5)
+position = Vector2(4466, 528.5)
 shape = SubResource("RectangleShape2D_3r2ah")
+
+[node name="SecurityBarrier" type="StaticBody2D" parent="BadUSBScenario/InsideBuilding" unique_id=343283470]
+
+[node name="BarrierShape" type="CollisionShape2D" parent="BadUSBScenario/InsideBuilding/SecurityBarrier" unique_id=1277839673]
+position = Vector2(4751, 553)
+shape = SubResource("RectangleShape2D_g4v7s")
 
 [node name="CanvasLayer" type="CanvasLayer" parent="BadUSBScenario" unique_id=1957432625]
 
@@ -410,6 +422,38 @@ layout_mode = 2
 [node name="DialogChoice2" type="Button" parent="BadUSBScenario/CanvasLayer/DialogueBox/VBoxContainer" unique_id=549351201]
 layout_mode = 2
 
+[node name="FailurePopup" type="ColorRect" parent="BadUSBScenario/CanvasLayer" unique_id=883347007]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -368.0
+offset_top = -169.0
+offset_right = 371.0
+offset_bottom = 257.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Label" type="Label" parent="BadUSBScenario/CanvasLayer/FailurePopup" unique_id=1016776574]
+layout_mode = 0
+offset_right = 736.0
+offset_bottom = 425.0
+text = "Gescheitert:
+Deine Antworten haben aufsehen erregt und du wurdest zurückgewiesen."
+label_settings = SubResource("LabelSettings_3r2ah")
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="FailureOkBtn" type="Button" parent="BadUSBScenario/CanvasLayer/FailurePopup" unique_id=2014288062]
+layout_mode = 0
+offset_left = 296.0
+offset_top = 376.0
+offset_right = 442.0
+offset_bottom = 407.0
+text = "Erneut Versuchen"
+
 [connection signal="pressed" from="BadUSBScenario/CanvasLayer/Briefing/MarginContainer/VBoxContainer/Button" to="BadUSBScenario/CanvasLayer/Briefing" method="_on_button_pressed"]
 [connection signal="pressed" from="BadUSBScenario/CanvasLayer/DialogueBox/VBoxContainer/DialogChoice1" to="." method="_on_dialog_choice_1_pressed"]
 [connection signal="pressed" from="BadUSBScenario/CanvasLayer/DialogueBox/VBoxContainer/DialogChoice2" to="." method="_on_dialog_choice_2_pressed"]
+[connection signal="pressed" from="BadUSBScenario/CanvasLayer/FailurePopup/FailureOkBtn" to="." method="_on_faliure_ok_btn_pressed"]

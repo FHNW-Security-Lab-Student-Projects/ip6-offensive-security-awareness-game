@@ -13,7 +13,7 @@ config_version=5
 config/name="Offensive Security Awareness Game"
 config/description="A 2D serious game for cybersecurity awareness training."
 run/main_scene="uid://bspsghh6va1l1"
-config/features=PackedStringArray("4.6")
+config/features=PackedStringArray("4.7")
 
 [autoload]
 
