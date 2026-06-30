@@ -29,20 +29,20 @@ the gaps.
 extends ScenarioBase
 
 func _on_start() -> void:
-    # Build the scenario UI, present the prompt, arm interactive elements.
-    pass
+	# Build the scenario UI, present the prompt, arm interactive elements.
+	pass
 
 func _on_action(action_id: String) -> void:
-    # Called by submit_action(). Evaluate the decision, emit telemetry,
-    # call complete_scenario() when the scenario is over.
-    var correct: bool = (action_id == "good_choice")
-    EventBus.emit_decision(scenario_id, action_id, correct, 0)
-    if correct:
-        complete_scenario()
+	# Called by submit_action(). Evaluate the decision, emit telemetry,
+	# call complete_scenario() when the scenario is over.
+	var correct: bool = (action_id == "good_choice")
+	EventBus.emit_decision(scenario_id, action_id, correct, 0)
+	if correct:
+		complete_scenario()
 
 func _on_complete() -> void:
-    # Cleanup before the engine transitions to FEEDBACK state.
-    pass
+	# Cleanup before the engine transitions to FEEDBACK state.
+	pass
 ```
 
 `_setup()` is an optional fourth hook that runs once before `_on_start()`
