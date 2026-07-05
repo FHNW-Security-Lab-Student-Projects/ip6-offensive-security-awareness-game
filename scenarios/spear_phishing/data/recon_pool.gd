@@ -9,7 +9,7 @@ static func get_dummy_finds() -> Array[ReconFind]:
 	return [
 		ReconFind.create(&"find_linkedin_role", "Platzhalter: Jobtitel des Ziels", "LinkedIn"),
 		ReconFind.create(&"find_website_team", "Platzhalter: Teamseite mit Namen", "Firmenwebsite"),
-		ReconFind.create(&"find_insta_hobby", "Platzhalter: Hobby-Post", "Instagram"),
-		ReconFind.create(&"find_forum_leak", "Platzhalter: versteckter Forumseintrag", "Forum", true, false),
+		ReconFind.create(&"find_insta_hobby", "Platzhalter: Detail im Foto-Hintergrund", "Instagram", true, false, "Foto zoomen"),
+		ReconFind.create(&"find_forum_leak", "Platzhalter: versteckter Forumseintrag", "Forum", true, false, "Beitrag aufklappen"),
 		ReconFind.create(&"find_junk_horoscope", "Platzhalter: irrelevantes Horoskop", "Boulevard-Seite", false, true),
 	]

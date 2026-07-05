@@ -8,14 +8,18 @@ extends Resource
 @export var source: String
 @export var is_hidden: bool = false
 @export var is_junk: bool = false
+# Text of the reveal action (e.g. "Foto zoomen"). Only relevant if is_hidden.
+@export var reveal_label: String = ""
 
 
 static func create(p_id: StringName, p_title: String, p_source: String,
-		p_is_hidden: bool = false, p_is_junk: bool = false) -> ReconFind:
+		p_is_hidden: bool = false, p_is_junk: bool = false,
+		p_reveal_label: String = "") -> ReconFind:
 	var find := ReconFind.new()
 	find.id = p_id
 	find.title = p_title
 	find.source = p_source
 	find.is_hidden = p_is_hidden
 	find.is_junk = p_is_junk
+	find.reveal_label = p_reveal_label
 	return find
