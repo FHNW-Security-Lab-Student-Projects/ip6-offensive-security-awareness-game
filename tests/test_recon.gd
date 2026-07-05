@@ -65,9 +65,17 @@ func _process(_delta: float) -> bool:
 		if f.is_junk:
 			junk += 1
 		sources[f.source] = true
-	print("pool size (expect 16): ", finds.size())
-	print("junk count (expect 6, ~1/3): ", junk)
-	print("distinct sources (expect 4): ", sources.size())
+	print("pool size (expect 17): ", finds.size())
+	print("junk count (expect 6): ", junk)
+	print("distinct sources (expect 6): ", sources.size())
+
+	# Both q7 namesake traps carry the exact target name.
+	print("q7_jodler names target (expect true): ", _find_by_id(finds, &"q7_jodler").title.contains("Markus Weber"))
+	print("q7x_makler names target (expect true): ", _find_by_id(finds, &"q7x_makler").title.contains("Markus Weber"))
+
+	# Parent wiring, one level.
+	print("whiteboard parent (expect q2d_teamfoto): ", _find_by_id(finds, &"q2d_whiteboard").parent_id)
+	print("schema parent (expect q5_praktikant): ", _find_by_id(finds, &"q5_schema").parent_id)
 
 	# Tabs: one per source, exactly one active at start.
 	var tab_bar := _recon.get_node("%TabBar")
@@ -75,53 +83,58 @@ func _process(_delta: float) -> bool:
 	for t in tab_bar.get_children():
 		if t is Button and t.button_pressed:
 			active += 1
-	print("tab count (expect 4): ", tab_bar.get_child_count(), " active (expect 1): ", active)
+	print("tab count (expect 6): ", tab_bar.get_child_count(), " active (expect 1): ", active)
 
-	# Active tab is the first source (LinkedIn) and shows only its finds.
+	# LinkedIn is first source: 6 surface finds + 1 reveal control (whiteboard).
 	print("deck label at start: ", _recon.get_node("%DeckLabel").text)
-	print("linkedin tab button count (5 finds, whiteboard hidden -> 4 collect + 1 reveal = 5): ", _live_finds().size())
+	print("linkedin finds (expect 7 = 6 collect + 1 reveal): ", _live_finds().size())
 
 	# Collect a good find and a junk find on LinkedIn.
-	_collect_button_titled("Jobtitel").pressed.emit()
+	_collect_button_titled("Vertrauter Kontakt").pressed.emit()
 	print("collected after 1 (expect 1): ", _recon.collected.size(), " label: ", _recon.get_node("%DeckLabel").text)
-	_collect_button_titled("Motivationspost").pressed.emit()
+	_collect_button_titled("Katzen-Smalltalk").pressed.emit()
 	print("junk collected normally (expect 2): ", _recon.collected.size())
 
-	# Reveal on LinkedIn does not cost a slot.
+	# Reveal on LinkedIn does not cost a slot; only the whiteboard is revealed.
 	var before: int = _recon.collected.size()
 	_collect_button_titled("[Aktion] Foto zoomen").pressed.emit()
-	print("whiteboard revealed (expect true): ", _recon.is_revealed(_find_by_id(finds, &"d_li_whiteboard")))
+	print("whiteboard revealed (expect true): ", _recon.is_revealed(_find_by_id(finds, &"q2d_whiteboard")))
+	print("schema still hidden (expect false): ", _recon.is_revealed(_find_by_id(finds, &"q5_schema")))
 	print("deck size unchanged by reveal (expect ", before, "): ", _recon.collected.size())
 
-	# Switch to Google tab: LinkedIn collected state persists, Google finds show.
-	_tab("Google").pressed.emit()
-	var g_active := _tab("Google").button_pressed
-	print("google tab active (expect true): ", g_active)
-	print("google finds shown (expect 4): ", _live_finds().size())
+	# Instagram tab: reveal control present, schema becomes collectable.
+	_tab("Instagram").pressed.emit()
+	print("instagram active (expect true): ", _tab("Instagram").button_pressed)
+	print("instagram finds (expect 3 = 2 collect + 1 reveal): ", _live_finds().size())
 	print("collected persists across tab switch (expect 2): ", _recon.collected.size())
+	_collect_button_titled("[Aktion] Bildschirm zoomen").pressed.emit()
+	_collect_button_titled("Mail-Schema").pressed.emit()
+	print("schema collectable after reveal (expect 3): ", _recon.collected.size())
 
-	# Fill deck to the limit of 7. Currently 2. Collect 5 more good/junk.
-	_collect_button_titled("Pressemitteilung").pressed.emit()
+	# Fill deck to the limit of 7. Currently 3.
+	_tab("Google").pressed.emit()
+	print("google finds (expect 3): ", _live_finds().size())
+	_collect_button_titled("Jodel-Dirigent").pressed.emit()
+	_collect_button_titled("Immobilienmakler").pressed.emit()
 	_collect_button_titled("Vereinsprotokoll").pressed.emit()
-	_collect_button_titled("Namensvetter").pressed.emit()
-	_collect_button_titled("Krypto").pressed.emit()
 	print("collected now (expect 6): ", _recon.collected.size())
-	_tab("kununu").pressed.emit()
-	_collect_button_titled("Firmenkultur").pressed.emit()
+	_tab("JobScout").pressed.emit()
+	_collect_button_titled("Stellenanzeige").pressed.emit()
 	print("collected now (expect 7, full): ", _recon.collected.size(), " ", _recon.get_node("%DeckLabel").text)
 
 	# Deck full: further collect blocked, buttons disabled.
-	var extra := _collect_button_titled("starre Prozesse")
+	_tab("Firmenwebsite").pressed.emit()
+	var extra := _collect_button_titled("Pressemitteilung")
 	print("blocked button disabled at full deck (expect true): ", extra.disabled)
 	extra.pressed.emit()
 	print("collect blocked at limit (expect 7): ", _recon.collected.size())
 
 	# uncollect frees a slot; then collecting works again.
-	_tab("Google").pressed.emit()
-	_collect_button_titled("Krypto").pressed.emit()  # now a ✔ button, so this uncollects
+	_tab("JobScout").pressed.emit()
+	_collect_button_titled("Stellenanzeige").pressed.emit()  # now a ✔ button, so this uncollects
 	print("after uncollect (expect 6): ", _recon.collected.size(), " ", _recon.get_node("%DeckLabel").text)
-	_tab("kununu").pressed.emit()
-	_collect_button_titled("starre Prozesse").pressed.emit()
+	_tab("Firmenwebsite").pressed.emit()
+	_collect_button_titled("Pressemitteilung").pressed.emit()
 	print("collect works again after freeing slot (expect 7): ", _recon.collected.size())
 	print("TEST DONE")
 	return true
