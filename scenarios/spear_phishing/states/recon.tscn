@@ -20,45 +20,37 @@ grow_horizontal = 2
 grow_vertical = 2
 color = Color(0.1, 0.15, 0.18, 1)
 
-[node name="Title" type="Label" parent="."]
+[node name="Layout" type="VBoxContainer" parent="."]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -400.0
-offset_top = -120.0
-offset_right = 400.0
-offset_bottom = -40.0
+offset_left = -300.0
+offset_top = -250.0
+offset_right = 300.0
+offset_bottom = 250.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Title" type="Label" parent="Layout"]
+layout_mode = 2
 text = "RECON — placeholder"
 horizontal_alignment = 1
 
-[node name="Subtitle" type="Label" parent="."]
-layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -400.0
-offset_top = -30.0
-offset_right = 400.0
-offset_bottom = 20.0
-text = "Phase 1 plumbing — real DarkMail OS windows + info chips come in Phase 3."
-horizontal_alignment = 1
+[node name="FindsContainer" type="VBoxContainer" parent="Layout"]
+unique_name_in_owner = true
+layout_mode = 2
 
-[node name="AdvanceButton" type="Button" parent="."]
-layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -200.0
-offset_top = 60.0
-offset_right = 200.0
-offset_bottom = 110.0
+[node name="CollectedLabel" type="Label" parent="Layout"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Eingesammelt: (noch nichts)"
+autowrap_mode = 3
+
+[node name="AdvanceButton" type="Button" parent="Layout"]
+layout_mode = 2
 text = "Recon abschliessen →"
 
-[connection signal="pressed" from="AdvanceButton" to="." method="_on_advance_button_pressed"]
+[connection signal="pressed" from="Layout/AdvanceButton" to="." method="_on_advance_button_pressed"]
