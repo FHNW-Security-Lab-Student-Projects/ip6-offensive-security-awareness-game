@@ -1,5 +1,6 @@
-# Headless test for the Recon sub-state: pool shape, tabs, deck limit,
-# collect/uncollect/reveal logic. No test framework, plain SceneTree script.
+# Headless test for the Recon sub-state: pool shape, embedded LinkBook posts,
+# tab navigation, deck limit, collect/uncollect/reveal logic. Plain SceneTree
+# script, no test framework.
 #
 # Run:
 #   godot --headless --path . -s tests/test_recon.gd
@@ -21,7 +22,7 @@ func _find_by_id(finds: Array[ReconFind], id: StringName) -> ReconFind:
 
 func _tab(source: String) -> Button:
 	for t in _recon.get_node("%TabBar").get_children():
-		if t is Button and t.text == source:
+		if t is Button and t.get_meta("source", "") == source:
 			return t
 	return null
 
@@ -30,19 +31,28 @@ func _finds_container() -> VBoxContainer:
 	return _recon.get_node("%FindsContainer")
 
 
-# Live children only. queue_free defers removal to frame end, so a synchronous
-# test must skip nodes already marked for deletion after a rebuild.
-func _live_finds() -> Array:
-	var out := []
-	for c in _finds_container().get_children():
-		if not c.is_queued_for_deletion():
+# Recursively collects live nodes of the given class under the finds container.
+func _walk(node: Node, cls, out: Array) -> void:
+	for c in node.get_children():
+		if c.is_queued_for_deletion():
+			continue
+		if is_instance_of(c, cls):
 			out.append(c)
-	return out
+		_walk(c, cls, out)
 
 
-func _collect_button_titled(prefix: String) -> Button:
-	for c in _live_finds():
-		if c is Button and c.text.contains(prefix):
+func _rtl_for(find_id: StringName) -> RichTextLabel:
+	var out: Array = []
+	_walk(_finds_container(), RichTextLabel, out)
+	for r in out:
+		if r.get_meta("find_id", &"") == find_id:
+			return r
+	return null
+
+
+func _bare_button(find_id: StringName) -> Button:
+	for c in _finds_container().get_children():
+		if c is Button and not c.is_queued_for_deletion() and c.get_meta("find_id", &"") == find_id:
 			return c
 	return null
 
@@ -69,72 +79,91 @@ func _process(_delta: float) -> bool:
 	print("junk count (expect 6): ", junk)
 	print("distinct sources (expect 6): ", sources.size())
 
-	# Both q7 namesake traps carry the exact target name.
+	# Every LinkBook post's highlight is an exact substring of its body.
+	var bad_highlight := 0
+	for f in finds:
+		if f.source == "LinkedIn" and f.kind != &"photo" and not f.is_hidden:
+			if f.highlight.is_empty() or not f.body.contains(f.highlight):
+				bad_highlight += 1
+	print("linkbook highlights all exact substrings (expect 0 bad): ", bad_highlight)
+
+	# Namesake traps still carry the exact target name.
 	print("q7_jodler names target (expect true): ", _find_by_id(finds, &"q7_jodler").title.contains("Markus Weber"))
-	print("q7x_makler names target (expect true): ", _find_by_id(finds, &"q7x_makler").title.contains("Markus Weber"))
 
-	# Parent wiring, one level.
-	print("whiteboard parent (expect q2d_teamfoto): ", _find_by_id(finds, &"q2d_whiteboard").parent_id)
-	print("schema parent (expect q5_praktikant): ", _find_by_id(finds, &"q5_schema").parent_id)
-
-	# Tabs: one per source, exactly one active at start.
+	# Tabs: one per source, exactly one active; three traffic-light dots.
 	var tab_bar := _recon.get_node("%TabBar")
 	var active := 0
 	for t in tab_bar.get_children():
 		if t is Button and t.button_pressed:
 			active += 1
 	print("tab count (expect 6): ", tab_bar.get_child_count(), " active (expect 1): ", active)
+	print("traffic dots (expect 3): ", _recon.get_node("%TrafficLights").get_child_count())
 
-	# LinkedIn is first source: 6 surface finds + 1 reveal control (whiteboard).
-	print("deck label at start: ", _recon.get_node("%DeckLabel").text)
-	print("linkedin finds (expect 7 = 6 collect + 1 reveal): ", _live_finds().size())
+	# LinkBook view: real posts (RichTextLabels), no collect buttons, one photo.
+	var posts: Array = []
+	_walk(_finds_container(), RichTextLabel, posts)
+	var buttons: Array = []
+	_walk(_finds_container(), Button, buttons)
+	var photos: Array = []
+	_walk(_finds_container(), TextureRect, photos)
+	print("linkbook post labels (expect 5): ", posts.size())
+	print("linkbook buttons in page (expect 0): ", buttons.size())
+	print("linkbook photo surfaces (expect 1): ", photos.size())
+	print("whiteboard not rendered on linkbook (expect null): ", _rtl_for(&"q2d_whiteboard"))
 
-	# Collect a good find and a junk find on LinkedIn.
-	_collect_button_titled("Vertrauter Kontakt").pressed.emit()
-	print("collected after 1 (expect 1): ", _recon.collected.size(), " label: ", _recon.get_node("%DeckLabel").text)
-	_collect_button_titled("Katzen-Smalltalk").pressed.emit()
-	print("junk collected normally (expect 2): ", _recon.collected.size())
+	# Collect via the embedded highlight (meta click), then uncollect.
+	# Marking is value-neutral now: no success glyph in the text.
+	_rtl_for(&"q2a_sonntags").meta_clicked.emit("q2a_sonntags")
+	print("collected via inline highlight (expect 1): ", _recon.collected.size(), " ", _recon.get_node("%DeckLabel").text)
+	print("no success glyph on collected good find (expect false): ", _rtl_for(&"q2a_sonntags").text.contains("✔"))
+	_rtl_for(&"q2a_sonntags").meta_clicked.emit("q2a_sonntags")
+	print("uncollected via second click (expect 0): ", _recon.collected.size())
 
-	# Reveal on LinkedIn does not cost a slot; only the whiteboard is revealed.
-	var before: int = _recon.collected.size()
-	_collect_button_titled("[Aktion] Foto zoomen").pressed.emit()
-	print("whiteboard revealed (expect true): ", _recon.is_revealed(_find_by_id(finds, &"q2d_whiteboard")))
-	print("schema still hidden (expect false): ", _recon.is_revealed(_find_by_id(finds, &"q5_schema")))
-	print("deck size unchanged by reveal (expect ", before, "): ", _recon.collected.size())
+	# Junk collects and marks exactly like a good find (no distinguishing glyph).
+	_rtl_for(&"q2c_katze").meta_clicked.emit("q2c_katze")
+	print("junk collected like any find (expect 1): ", _recon.collected.size())
+	print("no success glyph on collected junk (expect false): ", _rtl_for(&"q2c_katze").text.contains("✔"))
+	_rtl_for(&"q2c_katze").meta_clicked.emit("q2c_katze")
 
-	# Instagram tab: reveal control present, schema becomes collectable.
+	# Hover keeps text readable and shows the add affordance (+), no bgcolor tag.
+	var rtl := _rtl_for(&"q2b_neue_it")
+	rtl.meta_hover_started.emit("q2b_neue_it")
+	print("hover shows add affordance (expect true): ", rtl.text.contains("+"))
+	print("hover keeps highlight text (expect true): ", rtl.text.contains("Bit & Bürli GmbH"))
+	print("no raw bgcolor marking in text (expect false): ", rtl.text.contains("bgcolor"))
+	rtl.meta_hover_ended.emit("q2b_neue_it")
+
+	# Fill the deck to 7 via the bare tabs, junk collected like any find.
 	_tab("Instagram").pressed.emit()
-	print("instagram active (expect true): ", _tab("Instagram").button_pressed)
-	print("instagram finds (expect 3 = 2 collect + 1 reveal): ", _live_finds().size())
-	print("collected persists across tab switch (expect 2): ", _recon.collected.size())
-	_collect_button_titled("[Aktion] Bildschirm zoomen").pressed.emit()
-	_collect_button_titled("Mail-Schema").pressed.emit()
-	print("schema collectable after reveal (expect 3): ", _recon.collected.size())
-
-	# Fill deck to the limit of 7. Currently 3.
+	_bare_button(&"q5_praktikant").pressed.emit()
+	_bare_button(&"q5x_cafe").pressed.emit()
+	_tab("kununu").pressed.emit()
+	_bare_button(&"q6_kununu").pressed.emit()
+	_bare_button(&"q6x_lob").pressed.emit()
 	_tab("Google").pressed.emit()
-	print("google finds (expect 3): ", _live_finds().size())
-	_collect_button_titled("Jodel-Dirigent").pressed.emit()
-	_collect_button_titled("Immobilienmakler").pressed.emit()
-	_collect_button_titled("Vereinsprotokoll").pressed.emit()
-	print("collected now (expect 6): ", _recon.collected.size())
-	_tab("JobScout").pressed.emit()
-	_collect_button_titled("Stellenanzeige").pressed.emit()
-	print("collected now (expect 7, full): ", _recon.collected.size(), " ", _recon.get_node("%DeckLabel").text)
+	_bare_button(&"q7_jodler").pressed.emit()
+	_bare_button(&"q7x_makler").pressed.emit()
+	_bare_button(&"q9_verein").pressed.emit()
+	print("deck filled (expect 7): ", _recon.collected.size(), " ", _recon.get_node("%DeckLabel").text)
 
-	# Deck full: further collect blocked, buttons disabled.
-	_tab("Firmenwebsite").pressed.emit()
-	var extra := _collect_button_titled("Pressemitteilung")
-	print("blocked button disabled at full deck (expect true): ", extra.disabled)
-	extra.pressed.emit()
-	print("collect blocked at limit (expect 7): ", _recon.collected.size())
-
-	# uncollect frees a slot; then collecting works again.
+	# Full deck blocks further collect: bare button disabled, inline click inert.
 	_tab("JobScout").pressed.emit()
-	_collect_button_titled("Stellenanzeige").pressed.emit()  # now a ✔ button, so this uncollects
-	print("after uncollect (expect 6): ", _recon.collected.size(), " ", _recon.get_node("%DeckLabel").text)
-	_tab("Firmenwebsite").pressed.emit()
-	_collect_button_titled("Pressemitteilung").pressed.emit()
-	print("collect works again after freeing slot (expect 7): ", _recon.collected.size())
+	print("bare button disabled at full deck (expect true): ", _bare_button(&"q3_stelle").disabled)
+	_tab("LinkedIn").pressed.emit()
+	_rtl_for(&"q1_kontakt").meta_clicked.emit("q1_kontakt")
+	print("inline collect blocked at full deck (expect 7): ", _recon.collected.size())
+
+	# Free a slot, then inline collect works again.
+	_tab("Google").pressed.emit()
+	_bare_button(&"q9_verein").pressed.emit()  # collected -> uncollect
+	print("after uncollect (expect 6): ", _recon.collected.size())
+	_tab("LinkedIn").pressed.emit()
+	_rtl_for(&"q1_kontakt").meta_clicked.emit("q1_kontakt")
+	print("inline collect works again (expect 7): ", _recon.collected.size())
+
+	# Hidden whiteboard logic stays intact (harvested from the photo later).
+	var wb := _find_by_id(finds, &"q2d_whiteboard")
+	_recon.reveal(wb)
+	print("whiteboard reveal still works (expect true): ", _recon.is_revealed(wb))
 	print("TEST DONE")
 	return true
