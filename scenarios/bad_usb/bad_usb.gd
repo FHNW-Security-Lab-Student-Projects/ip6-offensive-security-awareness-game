@@ -29,11 +29,15 @@ enum SubState { BRIEFING, STREET, FRONT, INSIDE, CORRIDOR, OFFICE, RESOLVE }
 @onready var _ui_corridor_btn = $BadUSBScenario/CanvasLayer/EnterCorridorBtn
 
 @onready var _world_office = $BadUSBScenario/BigOffice
-@onready var _ui_office_btn = $BadUSBScenario/CanvasLayer/EnterOfficeBtn
+@onready var _ui_office_btn = $BadUSBScenario/BeforeElevator/EnterOfficeBtn
 @onready var _ui_usb_btn = $BadUSBScenario/CanvasLayer/InsertUSBBtn
 
-# NEW: The final Finish Button!
+@onready var _ui_missing_badge = $BadUSBScenario/BeforeElevator/MissingBadgeUI
+@onready var _ui_npc_speech = $BadUSBScenario/BeforeElevator/NPCSpeechUI
 @onready var _btn_finish = $BadUSBScenario/CanvasLayer/Resolve/VBoxContainer/FinishBtn
+
+# NEW: The button for the restricted elevator
+@onready var _btn_restricted_elevator = $BadUSBScenario/CanvasLayer/RestrictedElevatorBtn
 
 var _dialogue_step: int = 0
 var _inside_start_pos: Vector2 
@@ -55,6 +59,7 @@ func _setup() -> void:
 	_ui_corridor_btn.visible = false 
 	_ui_office_btn.visible = false 
 	_ui_usb_btn.visible = false    
+	_btn_restricted_elevator.visible = false # NEW: Hide at start
 	
 	_world_street.visible = false
 	_world_street.process_mode = Node.PROCESS_MODE_DISABLED
@@ -67,7 +72,6 @@ func _setup() -> void:
 	_world_office.visible = false
 	_world_office.process_mode = Node.PROCESS_MODE_DISABLED
 	
-	# Note: We removed _ui_resolve.advance_requested since we are using our own button now!
 	if _ui_briefing.has_signal("advance_requested"):
 		_ui_briefing.advance_requested.connect(_advance)
 	
@@ -99,9 +103,17 @@ func _setup() -> void:
 	corridor_zone.body_exited.connect(_on_corridor_zone_exited)
 	_ui_corridor_btn.pressed.connect(_on_corridor_btn_pressed)
 	
-	var elevator_zone = $BadUSBScenario/BeforeElevator/ElevatorZone
-	elevator_zone.body_entered.connect(_on_elevator_zone_entered)
-	elevator_zone.body_exited.connect(_on_elevator_zone_exited)
+	_ui_missing_badge.visible = false
+	_ui_npc_speech.visible = false
+	
+	var restricted_zone = $BadUSBScenario/BeforeElevator/RestrictedElevatorZone
+	restricted_zone.body_entered.connect(_on_restricted_entered)
+	restricted_zone.body_exited.connect(_on_restricted_exited)
+	_btn_restricted_elevator.pressed.connect(_on_restricted_btn_pressed) 
+	
+	var npc_zone = $BadUSBScenario/BeforeElevator/NPCElevatorZone
+	npc_zone.body_entered.connect(_on_npc_zone_entered)
+	npc_zone.body_exited.connect(_on_npc_zone_exited)
 	_ui_office_btn.pressed.connect(_on_office_btn_pressed)
 	
 	var pc_zone = $BadUSBScenario/BigOffice/PCZone
@@ -109,7 +121,6 @@ func _setup() -> void:
 	pc_zone.body_exited.connect(_on_pc_zone_exited)
 	_ui_usb_btn.pressed.connect(_on_usb_btn_pressed)
 	
-	# NEW: Connect the final finish button
 	_btn_finish.pressed.connect(_on_finish_pressed)
 	
 	_inside_start_pos = _world_inside.get_node("Player").position
@@ -147,16 +158,32 @@ func _on_corridor_btn_pressed() -> void:
 	_ui_corridor_btn.visible = false
 	_change_substate(SubState.CORRIDOR)
 
-func _on_elevator_zone_entered(body: Node2D) -> void:
+func _on_restricted_entered(body: Node2D) -> void:
 	if body.name == "Player":
+		_btn_restricted_elevator.visible = true 
+
+func _on_restricted_exited(body: Node2D) -> void:
+	if body.name == "Player":
+		_btn_restricted_elevator.visible = false
+		_ui_missing_badge.visible = false 
+
+func _on_restricted_btn_pressed() -> void:
+	_btn_restricted_elevator.visible = false 
+	_ui_missing_badge.visible = true 
+
+func _on_npc_zone_entered(body: Node2D) -> void:
+	if body.name == "Player":
+		_ui_npc_speech.visible = true
 		_ui_office_btn.visible = true
 
-func _on_elevator_zone_exited(body: Node2D) -> void:
+func _on_npc_zone_exited(body: Node2D) -> void:
 	if body.name == "Player":
+		_ui_npc_speech.visible = false
 		_ui_office_btn.visible = false
 
 func _on_office_btn_pressed() -> void:
 	_ui_office_btn.visible = false
+	_ui_npc_speech.visible = false
 	_change_substate(SubState.OFFICE)
 
 func _on_pc_zone_entered(body: Node2D) -> void:
@@ -264,6 +291,7 @@ func _change_substate(new_state: SubState) -> void:
 				_world_corridor.visible = false
 				_world_corridor.process_mode = Node.PROCESS_MODE_DISABLED
 				_ui_office_btn.visible = false 
+				_btn_restricted_elevator.visible = false # NEW: Safety hide
 			SubState.OFFICE:
 				_world_office.visible = false
 				_world_office.process_mode = Node.PROCESS_MODE_DISABLED
