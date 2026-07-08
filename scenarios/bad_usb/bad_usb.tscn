@@ -76,12 +76,11 @@ font_size = 32
 font_color = Color(0, 0, 0, 1)
 
 [sub_resource type="LabelSettings" id="LabelSettings_yf5fn"]
+font_size = 24
 font_color = Color(0, 0, 0, 1)
 
-[sub_resource type="LabelSettings" id="LabelSettings_a3ter"]
-font_color = Color(0, 0, 0, 1)
-
-[sub_resource type="LabelSettings" id="LabelSettings_xyppa"]
+[sub_resource type="LabelSettings" id="LabelSettings_71k16"]
+font_size = 24
 font_color = Color(0, 0, 0, 1)
 
 [sub_resource type="LabelSettings" id="LabelSettings_3r2ah"]
@@ -296,6 +295,7 @@ shape = SubResource("RectangleShape2D_or8dj")
 z_index = 10
 position = Vector2(3235.265, 538)
 script = ExtResource("3_0c6e4")
+SPEED = 600.0
 
 [node name="Camera2D" type="Camera2D" parent="BadUSBScenario/InsideBuilding/Player" unique_id=909583197]
 limit_left = 6113
@@ -407,6 +407,7 @@ shape = SubResource("RectangleShape2D_or8dj")
 z_index = 10
 position = Vector2(4686, 526)
 script = ExtResource("3_0c6e4")
+SPEED = 600.0
 
 [node name="Camera2D" type="Camera2D" parent="BadUSBScenario/BeforeElevator/Player" unique_id=1124363581]
 limit_left = 11623
@@ -419,7 +420,7 @@ position = Vector2(55, -32)
 shape = SubResource("CapsuleShape2D_5yldq")
 
 [node name="Sprite2D" type="Sprite2D" parent="BadUSBScenario/BeforeElevator/Player" unique_id=1581143643]
-position = Vector2(45.185, 258.075)
+position = Vector2(45.185, 261.735)
 scale = Vector2(12.325, 12.325)
 texture = ExtResource("5_kp1x0")
 
@@ -471,7 +472,7 @@ theme_override_styles/panel = SubResource("StyleBoxFlat_yf5fn")
 [node name="NPCSpeechUI" type="Label" parent="BadUSBScenario/BeforeElevator/NPCSpeechUI" unique_id=855405787]
 layout_mode = 2
 text = "Oh, bei der Kleidung bist du bestimmt 
-vom HR... Wir halten die Tür auf!"
+vom HR... Wir halten dir die Tür auf!"
 label_settings = SubResource("LabelSettings_57qmd")
 
 [node name="EnterOfficeBtn" type="Button" parent="BadUSBScenario/BeforeElevator" unique_id=995535868]
@@ -523,6 +524,7 @@ shape = SubResource("RectangleShape2D_or8dj")
 z_index = 10
 position = Vector2(16203.265, 605)
 script = ExtResource("3_0c6e4")
+SPEED = 500.0
 
 [node name="Camera2D" type="Camera2D" parent="BadUSBScenario/BigOffice/Player" unique_id=1560822566]
 limit_left = 26202
@@ -624,7 +626,7 @@ layout_mode = 0
 offset_left = 564.0
 offset_top = 353.0
 offset_right = 1370.0
-offset_bottom = 858.0
+offset_bottom = 880.545
 
 [node name="VBoxContainer" type="VBoxContainer" parent="BadUSBScenario/CanvasLayer/Resolve" unique_id=2097912191]
 layout_mode = 0
@@ -639,14 +641,21 @@ text = "SIMULATION ABGESCHLOSSEN"
 label_settings = SubResource("LabelSettings_yf5fn")
 horizontal_alignment = 1
 
-[node name="GoodLabel" type="Label" parent="BadUSBScenario/CanvasLayer/Resolve/VBoxContainer" unique_id=749358490]
+[node name="StoryLabel" type="Label" parent="BadUSBScenario/CanvasLayer/Resolve/VBoxContainer" unique_id=2126006601]
+custom_minimum_size = Vector2(40, 10)
 layout_mode = 2
-text = "POSITIV: Du hast ... [Platzhalter]"
-label_settings = SubResource("LabelSettings_a3ter")
+label_settings = SubResource("LabelSettings_71k16")
+autowrap_mode = 2
 
-[node name="BadLabel" type="Label" parent="BadUSBScenario/CanvasLayer/Resolve/VBoxContainer" unique_id=1206437363]
+[node name="StoryImage" type="TextureRect" parent="BadUSBScenario/CanvasLayer/Resolve/VBoxContainer" unique_id=1552437431]
+custom_minimum_size = Vector2(0, 250)
 layout_mode = 2
-label_settings = SubResource("LabelSettings_xyppa")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="NextBtn" type="Button" parent="BadUSBScenario/CanvasLayer/Resolve/VBoxContainer" unique_id=913652576]
+layout_mode = 2
+text = "Weiter"
 
 [node name="FinishBtn" type="Button" parent="BadUSBScenario/CanvasLayer/Resolve/VBoxContainer" unique_id=885307975]
 layout_mode = 2
@@ -775,10 +784,10 @@ offset_bottom = 443.0
 text = "USB-Stick einstecken"
 
 [node name="RestrictedElevatorBtn" type="Button" parent="BadUSBScenario/CanvasLayer" unique_id=667624930]
-offset_left = 953.0
-offset_top = 394.0
-offset_right = 1132.0
-offset_bottom = 445.0
+offset_left = 966.0
+offset_top = 397.0
+offset_right = 1145.0
+offset_bottom = 448.0
 text = "Aufzug benutzen"
 
 [connection signal="pressed" from="BadUSBScenario/CanvasLayer/Briefing/MarginContainer/VBoxContainer/Button" to="BadUSBScenario/CanvasLayer/Briefing" method="_on_button_pressed"]

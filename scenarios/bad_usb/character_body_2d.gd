@@ -1,6 +1,6 @@
 extends CharacterBody2D
 
-const SPEED = 300.0
+@export var SPEED: float = 300.00
 var gravity = ProjectSettings.get_setting("physics/2d/default_gravity")
 
 func _physics_process(delta: float) -> void:

@@ -34,10 +34,13 @@ enum SubState { BRIEFING, STREET, FRONT, INSIDE, CORRIDOR, OFFICE, RESOLVE }
 
 @onready var _ui_missing_badge = $BadUSBScenario/BeforeElevator/MissingBadgeUI
 @onready var _ui_npc_speech = $BadUSBScenario/BeforeElevator/NPCSpeechUI
-@onready var _btn_finish = $BadUSBScenario/CanvasLayer/Resolve/VBoxContainer/FinishBtn
-
-# NEW: The button for the restricted elevator
 @onready var _btn_restricted_elevator = $BadUSBScenario/CanvasLayer/RestrictedElevatorBtn
+
+# NEW: End Scene Variables
+@onready var _img_story = $BadUSBScenario/CanvasLayer/Resolve/VBoxContainer/StoryImage
+@onready var _lbl_story = $BadUSBScenario/CanvasLayer/Resolve/VBoxContainer/StoryLabel
+@onready var _btn_next = $BadUSBScenario/CanvasLayer/Resolve/VBoxContainer/NextBtn
+@onready var _btn_finish = $BadUSBScenario/CanvasLayer/Resolve/VBoxContainer/FinishBtn
 
 var _dialogue_step: int = 0
 var _inside_start_pos: Vector2 
@@ -45,6 +48,10 @@ var _front_door_pos: Vector2
 
 var _current: SubState = SubState.BRIEFING
 var _initialised: bool = false
+
+# NEW: Typewriter settings
+var _story_step: int = 0
+var _typewriter_speed: float = 0.04
 
 func _ready() -> void:
 	start_scenario(SCENARIO_ID)
@@ -59,7 +66,7 @@ func _setup() -> void:
 	_ui_corridor_btn.visible = false 
 	_ui_office_btn.visible = false 
 	_ui_usb_btn.visible = false    
-	_btn_restricted_elevator.visible = false # NEW: Hide at start
+	_btn_restricted_elevator.visible = false 
 	
 	_world_street.visible = false
 	_world_street.process_mode = Node.PROCESS_MODE_DISABLED
@@ -121,12 +128,14 @@ func _setup() -> void:
 	pc_zone.body_exited.connect(_on_pc_zone_exited)
 	_ui_usb_btn.pressed.connect(_on_usb_btn_pressed)
 	
+	_btn_next.pressed.connect(_on_next_pressed)
 	_btn_finish.pressed.connect(_on_finish_pressed)
 	
 	_inside_start_pos = _world_inside.get_node("Player").position
 
 func _on_start() -> void:
-	_change_substate(SubState.INSIDE) # Currently skipping to inside for testing
+	#Starting Point
+	_change_substate(SubState.OFFICE) 
 
 func _on_door_entered(body: Node2D) -> void:
 	if body.name == "Player":
@@ -197,10 +206,6 @@ func _on_pc_zone_exited(body: Node2D) -> void:
 func _on_usb_btn_pressed() -> void:
 	_ui_usb_btn.visible = false
 	_change_substate(SubState.RESOLVE) 
-
-func _on_finish_pressed() -> void:
-	complete_scenario()
-	get_tree().change_scene_to_file("res://scenes/levelAuswahl.tscn")
 
 func _on_reception_entered(body: Node2D) -> void:
 	if body.name == "Player":
@@ -291,7 +296,7 @@ func _change_substate(new_state: SubState) -> void:
 				_world_corridor.visible = false
 				_world_corridor.process_mode = Node.PROCESS_MODE_DISABLED
 				_ui_office_btn.visible = false 
-				_btn_restricted_elevator.visible = false # NEW: Safety hide
+				_btn_restricted_elevator.visible = false 
 			SubState.OFFICE:
 				_world_office.visible = false
 				_world_office.process_mode = Node.PROCESS_MODE_DISABLED
@@ -324,6 +329,7 @@ func _change_substate(new_state: SubState) -> void:
 			_world_office.get_node("Player/Camera2D").make_current()
 		SubState.RESOLVE:
 			_ui_resolve.visible = true
+			_start_resolve_story() 
 
 	_current = new_state
 	_initialised = true
@@ -369,3 +375,53 @@ func _update_dialogue_ui() -> void:
 			_lbl_npc_text.text = "Uhm... Doch alles klar es ist alles korrekt so."
 			_btn_choice1.text = "Vielen Dank"
 			_btn_choice2.visible = false
+
+
+func _start_resolve_story() -> void:
+	_story_step = 0
+	_btn_next.visible = true
+	_btn_finish.visible = false
+	_play_story_step()
+
+func _play_story_step() -> void:
+	_btn_next.disabled = true
+	
+	_img_story.visible = false 
+	
+	var target_text = ""
+	
+	# First page
+	if _story_step == 0:
+		target_text = "Du hast erfolgreich die Firma infiltriert und den Virus über den USB-Stick eingeschleust. Du hast gemerkt wie einfach und vielleicht unrealistisch die Szenarien waren, jedoch kann das genau so in der realen Welt passieren. Aus Höflichkeit wird ein Sicherheitsrisiko."
+		_img_story.texture = preload("res://assets/sprites/placeholder/bspImg.png")
+		
+	# Second Page
+	elif _story_step == 1:
+		target_text = "Weiteres..."
+		# _img_story.texture = preload("res://path_to_your_bad_image.png")
+		
+	_lbl_story.text = target_text
+	_lbl_story.visible_characters = 0
+	
+	var total_time = target_text.length() * _typewriter_speed
+	var tween = create_tween()
+	tween.tween_property(_lbl_story, "visible_characters", target_text.length(), total_time)
+	
+	tween.finished.connect(_on_typing_finished)
+
+func _on_typing_finished() -> void:
+	_btn_next.disabled = false
+	
+	_img_story.visible = true 
+	
+	if _story_step >= 1:
+		_btn_next.visible = false
+		_btn_finish.visible = true
+
+func _on_next_pressed() -> void:
+	_story_step += 1
+	_play_story_step()
+
+func _on_finish_pressed() -> void:
+	complete_scenario()
+	get_tree().change_scene_to_file("res://scenes/levelAuswahl.tscn")
