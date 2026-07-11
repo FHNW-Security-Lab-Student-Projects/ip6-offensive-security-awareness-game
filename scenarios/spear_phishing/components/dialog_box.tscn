@@ -39,7 +39,7 @@ theme_override_constants/separation = 12
 [node name="SpeakerLabel" type="Label" parent="Panel/Margin/VBox"]
 layout_mode = 2
 text = "Speaker"
-theme_override_font_sizes/font_size = 24
+theme_override_font_sizes/font_size = 22
 modulate = Color(0.27, 1.0, 0.45, 1)
 
 [node name="BodyLabel" type="Label" parent="Panel/Margin/VBox"]
@@ -47,7 +47,7 @@ layout_mode = 2
 size_flags_vertical = 3
 text = ""
 autowrap_mode = 2
-theme_override_font_sizes/font_size = 30
+theme_override_font_sizes/font_size = 33
 
 [node name="HintLabel" type="Label" parent="Panel/Margin/VBox"]
 layout_mode = 2

@@ -3,6 +3,9 @@
 # LinkedIn page. Other tabs stay bare in this slice. The look hangs off the
 # existing logic (collect/uncollect/reveal/guard/deck limit) unchanged; the
 # same functions are called, only the presentation differs.
+#
+# Chrome wears the dark DarkMail OS skin (ReconBrowserStyle dark section);
+# the page content inside stays bright and realistic on purpose.
 # Emits advance_requested when the player finishes recon.
 extends Control
 
@@ -119,50 +122,42 @@ func is_revealed(find: ReconFind) -> bool:
 # --- browser chrome ---------------------------------------------------------
 
 func _style_chrome() -> void:
-	%Window.add_theme_stylebox_override("panel", Style.window_box())
+	# Frame in DarkMail OS optics: dark panels, green accents, hard borders.
+	%Window.add_theme_stylebox_override("panel", Style.window_box_dark())
 	# No gaps between the chrome sections, so the active tab meets the page.
 	(%Window.get_node("WindowVBox") as VBoxContainer).add_theme_constant_override("separation", 0)
-	%TitleBar.add_theme_stylebox_override("panel", Style.chrome_box())
-	%UrlBar.add_theme_stylebox_override("panel", Style.chrome_box())
-	%UrlField.add_theme_stylebox_override("panel", Style.url_field_box())
+	%TitleBar.add_theme_stylebox_override("panel", Style.chrome_box_dark())
+	%UrlBar.add_theme_stylebox_override("panel", Style.chrome_box_dark())
+	%UrlField.add_theme_stylebox_override("panel", Style.url_field_box_dark())
+	%TabStrip.add_theme_stylebox_override("panel", Style.tab_strip_box_dark())
 
-	# Tab strip: chrome background, tabs flush with its bottom edge so the
-	# active tab connects into the page directly below.
-	var strip_box := Style._flat(Style.COLOR_CHROME, Style.COLOR_CHROME_BORDER, 0, 0)
-	strip_box.content_margin_left = 14
-	strip_box.content_margin_right = 14
-	strip_box.content_margin_top = 8
-	strip_box.content_margin_bottom = 0
-	%TabStrip.add_theme_stylebox_override("panel", strip_box)
-
+	# The page itself stays bright and realistic — that is the learning goal.
 	var page_box := Style._flat(Style.COLOR_PAGE, Style.COLOR_CHROME_BORDER, 0, 0)
 	%Page.add_theme_stylebox_override("panel", page_box)
 
-	var footer_box := Style._flat(Style.COLOR_CHROME, Style.COLOR_CHROME_BORDER, 0, 0)
-	footer_box.content_margin_left = 20
-	footer_box.content_margin_right = 20
-	footer_box.content_margin_top = 12
-	footer_box.content_margin_bottom = 12
-	%Footer.add_theme_stylebox_override("panel", footer_box)
+	# Footer as a terminal readout: RECON // OSINT-SWEEP · DECK n/m · action.
+	%Footer.add_theme_stylebox_override("panel", Style.footer_box_dark())
 	var footer_row := %Footer.get_node("FooterRow") as HBoxContainer
 	footer_row.add_theme_constant_override("separation", 16)
+	Style.apply_mono_label(%ReadoutLabel as Label, DarkMailPalette.FONT_SIZE_MONO, DarkMailPalette.GREEN)
+	Style.apply_mono_label(_deck_label, DarkMailPalette.FONT_SIZE_MONO, DarkMailPalette.TEXT_GREEN)
+	Style.apply_mono_label(_collected_label, DarkMailPalette.FONT_SIZE_MONO, DarkMailPalette.TEXT_DIM)
 
 	var title := %WindowTitle as Label
-	Style.apply_label(title, Style.FONT_SIZE_SMALL, Style.COLOR_MUTED, true)
+	Style.apply_mono_label(title, DarkMailPalette.FONT_SIZE_MONO_SMALL, DarkMailPalette.TEXT_DIM)
 	title.text = "LinkBook — Recherche"
-	Style.apply_label(%UrlLabel as Label, Style.FONT_SIZE_SMALL, Style.COLOR_TEXT)
-	Style.apply_label(_deck_label, Style.FONT_SIZE_BODY, Style.COLOR_TEXT, true)
-	Style.apply_label(_collected_label, Style.FONT_SIZE_SMALL, Style.COLOR_MUTED)
+	Style.apply_mono_label(%UrlLabel as Label, DarkMailPalette.FONT_SIZE_MONO, DarkMailPalette.TEXT_GREEN)
+	Style.apply_mono_label(%InterceptLabel as Label, DarkMailPalette.FONT_SIZE_MONO_SMALL, DarkMailPalette.GREEN)
 
 	var advance := %AdvanceButton as Button
 	advance.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	Style.style_primary(advance)
+	Style.style_terminal_button(advance)
 
 	_build_traffic_lights()
 	var lock_holder := %LockHolder as Control
 	lock_holder.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	var lock := LockIconScene.new()
-	lock.color = Style.COLOR_CHECK
+	lock.color = DarkMailPalette.GREEN
 	lock_holder.add_child(lock)
 	lock.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 
@@ -208,7 +203,7 @@ func _build_tabs(sources: Array[String]) -> void:
 		# Identify the tab by its bound source, never by the visible label.
 		tab.set_meta("source", source)
 		tab.button_pressed = source == _active_source
-		Style.style_tab(tab, source == _active_source)
+		Style.style_tab_dark(tab, source == _active_source)
 		tab.pressed.connect(_on_tab_pressed.bind(source))
 		_tab_bar.add_child(tab)
 		_tabs[source] = tab
@@ -221,7 +216,7 @@ func _on_tab_pressed(source: String) -> void:
 		var tab: Button = _tabs[entry_source]
 		var active: bool = entry_source == source
 		tab.button_pressed = active
-		Style.style_tab(tab, active)
+		Style.style_tab_dark(tab, active)
 	_rebuild_finds()
 	_update_url()
 
@@ -479,7 +474,7 @@ func _update_collected_label() -> void:
 
 
 func _update_deck_label() -> void:
-	_deck_label.text = "Deck: %d / %d" % [collected.size(), DECK_LIMIT]
+	_deck_label.text = "DECK %d/%d" % [collected.size(), DECK_LIMIT]
 
 
 func _on_advance_button_pressed() -> void:

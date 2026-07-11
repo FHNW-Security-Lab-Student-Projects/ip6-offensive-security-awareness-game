@@ -23,37 +23,12 @@ grow_horizontal = 2
 grow_vertical = 2
 color = Color(0.012, 0.027, 0.020, 1)
 
-[node name="OsBar" type="ColorRect" parent="."]
-layout_mode = 1
-anchor_right = 1.0
-offset_bottom = 36.0
-color = Color(0.027, 0.055, 0.039, 1)
-
-[node name="OsLabel" type="Label" parent="OsBar"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = 16.0
-offset_right = -16.0
-text = "BRIEFING_OS_STATUS"
-vertical_alignment = 1
-theme_override_font_sizes/font_size = 14
-modulate = Color(0.27, 1.0, 0.45, 0.9)
-
-[node name="OsBarUnderline" type="ColorRect" parent="."]
-layout_mode = 1
-anchor_right = 1.0
-offset_top = 36.0
-offset_bottom = 38.0
-color = Color(0.27, 1.0, 0.45, 0.55)
-
 [node name="ChannelWindow" type="Panel" parent="."]
 layout_mode = 1
 offset_left = 160.0
-offset_top = 80.0
+offset_top = 96.0
 offset_right = 1760.0
-offset_bottom = 660.0
+offset_bottom = 676.0
 
 [node name="ChannelTitleStrip" type="ColorRect" parent="ChannelWindow"]
 layout_mode = 1
@@ -81,7 +56,7 @@ offset_left = 40.0
 offset_right = -16.0
 text = "BRIEFING_CHANNEL_TITLE"
 vertical_alignment = 1
-theme_override_font_sizes/font_size = 16
+theme_override_font_sizes/font_size = 22
 modulate = Color(0.27, 1.0, 0.45, 1)
 
 [node name="VideoBg" type="ColorRect" parent="ChannelWindow"]
@@ -114,7 +89,7 @@ text = "▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
 horizontal_alignment = 1
 vertical_alignment = 0
 modulate = Color(0.27, 0.78, 0.40, 0.75)
-theme_override_font_sizes/font_size = 18
+theme_override_font_sizes/font_size = 22
 
 [node name="VideoSubtitle" type="Label" parent="ChannelWindow/VideoBg"]
 layout_mode = 1
@@ -129,7 +104,7 @@ offset_bottom = -32.0
 text = "BRIEFING_VIDEO_SUBTITLE"
 horizontal_alignment = 1
 modulate = Color(0.85, 0.87, 0.82, 0.45)
-theme_override_font_sizes/font_size = 12
+theme_override_font_sizes/font_size = 11
 
 [node name="VideoLiveLabel" type="Label" parent="ChannelWindow/VideoBg"]
 layout_mode = 1
@@ -144,7 +119,7 @@ offset_bottom = -8.0
 text = "BRIEFING_VIDEO_LIVE"
 horizontal_alignment = 1
 modulate = Color(0.95, 0.22, 0.25, 1)
-theme_override_font_sizes/font_size = 14
+theme_override_font_sizes/font_size = 11
 
 [node name="DialogBox" parent="ChannelWindow" instance=ExtResource("2_dialog")]
 layout_mode = 1
@@ -181,7 +156,7 @@ offset_top = 18.0
 offset_right = 1568.0
 offset_bottom = 50.0
 text = "BRIEFING_TASK_TITLE"
-theme_override_font_sizes/font_size = 20
+theme_override_font_sizes/font_size = 22
 modulate = Color(0.27, 1.0, 0.45, 1)
 
 [node name="MissionLabel" type="Label" parent="TaskPanel"]
@@ -191,7 +166,7 @@ offset_top = 78.0
 offset_right = 1568.0
 offset_bottom = 130.0
 text = "MISSION · ..."
-theme_override_font_sizes/font_size = 30
+theme_override_font_sizes/font_size = 33
 
 [node name="RewardLabel" type="Label" parent="TaskPanel"]
 layout_mode = 1
@@ -200,7 +175,7 @@ offset_top = 142.0
 offset_right = 1568.0
 offset_bottom = 184.0
 text = "Belohnung: ... · Zeitlimit: ..."
-theme_override_font_sizes/font_size = 24
+theme_override_font_sizes/font_size = 22
 modulate = Color(0.88, 0.96, 0.88, 1)
 
 [node name="AdvanceButton" type="Button" parent="TaskPanel"]

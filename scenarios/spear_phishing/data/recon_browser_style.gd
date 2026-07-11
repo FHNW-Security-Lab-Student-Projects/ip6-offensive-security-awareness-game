@@ -2,9 +2,14 @@
 # fonts and StyleBox factories. The Slice 5 visual contract lives here so the
 # later rollout to the other tabs reuses the exact same values.
 #
-# Deliberately separate from the green VT323 terminal theme
-# (res://resources/theme/secret_ops_theme.tres): the browser is a bright,
-# clean surface that must read as "not the terminal".
+# Two layers, deliberately split:
+#   - The browser FRAME (title bar, url bar, tab strip, footer) wears the
+#     DarkMail OS skin (dark chrome section below, palette from
+#     DarkMailPalette) so the tool reads as part of the terminal.
+#   - The PAGE CONTENT (card_box/post_box and everything inside) stays a
+#     bright, clean, realistic surface. That realism is didactically
+#     load-bearing — the player must recognise leaks in real-looking posts —
+#     so the terminal look must never bleed into it.
 class_name ReconBrowserStyle
 extends RefCounted
 
@@ -23,11 +28,12 @@ const COLOR_CARD_HOVER := Color("f0f6ff")
 const COLOR_CARD_COLLECTED := Color("eafaf0")
 const COLOR_ACCENT := Color("2f6bd8")          # link/active blue
 const COLOR_CHECK := Color("1f9d55")           # lock icon only (not a marking)
-# Value-neutral marking for collected finds. Junk and good look identical on
-# purpose: this only says "in deck", not "correct". No green, no red. Filled
+# Marking for collected finds, tied to the DarkMail terminal green ("inter-
+# cepted / in deck"). Still value-neutral: junk and good finds look IDENTICAL
+# on purpose — the marking never says "correct", only "collected". Filled
 # highlighter look (no border) so wrapped lines do not read as a framed box.
-const COLOR_MARK_HOVER := Color("d6e2f5")      # pre-collect hover glow
-const COLOR_MARK_DECK := Color("a9c4ef")       # collected fill (clear blue-grey)
+const COLOR_MARK_HOVER := Color(DarkMailPalette.GREEN, 0.18)  # pre-collect glow
+const COLOR_MARK_DECK := Color(DarkMailPalette.GREEN, 0.42)   # collected fill
 const COLOR_TEXT := Color("1c2530")
 const COLOR_MUTED := Color("6b7684")
 const COLOR_TAB_ACTIVE := Color("ffffff")
@@ -146,7 +152,7 @@ static func _btn_box(bg: Color, border: Color, radius: int) -> StyleBoxFlat:
 
 
 # All the browser buttons override the global terminal theme explicitly, so the
-# green VT323 button look never bleeds into the bright browser surface.
+# green terminal button look never bleeds into the bright browser surface.
 static func _set_button_fonts(btn: Button, size: int, color: Color, bold: bool) -> void:
 	btn.add_theme_font_override("font", FONT_BOLD if bold else FONT_REGULAR)
 	btn.add_theme_font_size_override("font_size", size)
@@ -187,3 +193,132 @@ static func style_primary(btn: Button) -> void:
 	btn.add_theme_stylebox_override("pressed", _btn_box(Color("1e4aa0"), Color("1e4aa0"), RADIUS_SMALL))
 	btn.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
 	_set_button_fonts(btn, FONT_SIZE_BODY, Color("ffffff"), true)
+
+
+# --- dark chrome (DarkMail OS skin) ------------------------------------------
+# Everything below styles the browser FRAME only. Hard corners, 2px borders,
+# phosphor green on near-black — palette and metrics from DarkMailPalette so
+# the chrome cannot drift from the terminal theme. The bright page factories
+# above stay untouched.
+
+const FONT_MONO: Font = DarkMailPalette.FONT_MONO
+
+
+static func window_box_dark() -> StyleBoxFlat:
+	var sb := DarkMailPalette.flat_box(
+		DarkMailPalette.BG_PANEL, DarkMailPalette.GREEN, DarkMailPalette.BORDER_WIDTH)
+	sb.shadow_color = Color(0, 0, 0, 0.5)
+	sb.shadow_size = 18
+	return sb
+
+
+static func chrome_box_dark() -> StyleBoxFlat:
+	var sb := DarkMailPalette.flat_box(DarkMailPalette.BG_RAISED)
+	sb.content_margin_left = PAD
+	sb.content_margin_right = PAD
+	sb.content_margin_top = 8
+	sb.content_margin_bottom = 8
+	return sb
+
+
+static func url_field_box_dark() -> StyleBoxFlat:
+	var sb := DarkMailPalette.flat_box(
+		DarkMailPalette.BG_PANEL, Color(DarkMailPalette.GREEN, 0.45), 1)
+	sb.content_margin_left = PAD
+	sb.content_margin_right = PAD
+	sb.content_margin_top = 6
+	sb.content_margin_bottom = 6
+	return sb
+
+
+static func tab_strip_box_dark() -> StyleBoxFlat:
+	var sb := DarkMailPalette.flat_box(DarkMailPalette.BG_RAISED)
+	sb.content_margin_left = PAD
+	sb.content_margin_right = PAD
+	sb.content_margin_top = 8
+	sb.content_margin_bottom = 0
+	return sb
+
+
+static func footer_box_dark() -> StyleBoxFlat:
+	var sb := DarkMailPalette.flat_box(DarkMailPalette.BG_RAISED)
+	sb.border_width_top = DarkMailPalette.BORDER_WIDTH
+	sb.border_color = Color(DarkMailPalette.GREEN, 0.35)
+	sb.content_margin_left = 20
+	sb.content_margin_right = 20
+	sb.content_margin_top = 12
+	sb.content_margin_bottom = 12
+	return sb
+
+
+# Dark tab: flat dark body, hard corners. The active tab carries the green
+# underline; inactive tabs sit back on the strip and lift slightly on hover.
+static func _tab_box_dark(bg: Color, underline: bool) -> StyleBoxFlat:
+	var sb := DarkMailPalette.flat_box(bg)
+	sb.content_margin_left = 18
+	sb.content_margin_right = 18
+	sb.content_margin_top = 9
+	sb.content_margin_bottom = 9
+	if underline:
+		sb.border_width_bottom = DarkMailPalette.BORDER_WIDTH
+		sb.border_color = DarkMailPalette.GREEN
+	return sb
+
+
+static func tab_box_dark(active: bool) -> StyleBoxFlat:
+	return _tab_box_dark(
+		DarkMailPalette.BG_FIELD if active else DarkMailPalette.BG_RAISED, active)
+
+
+static func tab_box_dark_hover() -> StyleBoxFlat:
+	return _tab_box_dark(Color(DarkMailPalette.GREEN, 0.12), false)
+
+
+static func _set_button_fonts_mono(btn: Button, size: int, color: Color) -> void:
+	btn.add_theme_font_override("font", FONT_MONO)
+	btn.add_theme_font_size_override("font_size", size)
+	for state in ["font_color", "font_hover_color", "font_pressed_color", "font_focus_color", "font_hover_pressed_color"]:
+		btn.add_theme_color_override(state, color)
+
+
+static func style_tab_dark(btn: Button, active: bool) -> void:
+	btn.add_theme_stylebox_override("normal", tab_box_dark(active))
+	btn.add_theme_stylebox_override("hover", tab_box_dark(true) if active else tab_box_dark_hover())
+	btn.add_theme_stylebox_override("pressed", tab_box_dark(true))
+	btn.add_theme_stylebox_override("hover_pressed", tab_box_dark(true))
+	btn.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
+	_set_button_fonts_mono(
+		btn, DarkMailPalette.FONT_SIZE_MONO,
+		DarkMailPalette.GREEN if active else DarkMailPalette.TEXT_DIM)
+
+
+# Terminal-styled action button for the dark chrome; mirrors the button look
+# of secret_ops_theme.tres via the shared palette.
+static func style_terminal_button(btn: Button) -> void:
+	var normal := DarkMailPalette.flat_box(
+		DarkMailPalette.BG_FIELD, DarkMailPalette.GREEN, DarkMailPalette.BORDER_WIDTH)
+	var hover := DarkMailPalette.flat_box(
+		Color(DarkMailPalette.GREEN, 0.22), DarkMailPalette.GREEN_BRIGHT, DarkMailPalette.BORDER_WIDTH)
+	var pressed := DarkMailPalette.flat_box(
+		Color(DarkMailPalette.GREEN, 0.45), DarkMailPalette.GREEN_BRIGHT, DarkMailPalette.BORDER_WIDTH)
+	for sb in [normal, hover, pressed]:
+		sb.content_margin_left = 16
+		sb.content_margin_right = 16
+		sb.content_margin_top = 8
+		sb.content_margin_bottom = 8
+	btn.add_theme_stylebox_override("normal", normal)
+	btn.add_theme_stylebox_override("hover", hover)
+	btn.add_theme_stylebox_override("pressed", pressed)
+	btn.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
+	btn.add_theme_font_override("font", FONT_MONO)
+	btn.add_theme_font_size_override("font_size", DarkMailPalette.FONT_SIZE_MONO)
+	btn.add_theme_color_override("font_color", DarkMailPalette.GREEN)
+	btn.add_theme_color_override("font_hover_color", DarkMailPalette.GREEN_BRIGHT)
+	btn.add_theme_color_override("font_pressed_color", Color("fffff2"))
+	btn.add_theme_color_override("font_focus_color", DarkMailPalette.GREEN)
+
+
+# Mono label for dark chrome areas (window title, url, footer readout).
+# Sizes must stay on the Departure Mono 11px grid (see DarkMailPalette).
+static func apply_mono_label(label: Label, size: int = DarkMailPalette.FONT_SIZE_MONO, color: Color = DarkMailPalette.TEXT_GREEN) -> void:
+	DarkMailPalette.apply_mono_label(label, size, color)

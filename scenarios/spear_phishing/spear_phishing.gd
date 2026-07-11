@@ -8,6 +8,9 @@ extends ScenarioBase
 
 const SCENARIO_ID: String = "spear_phishing"
 
+# Single source for the briefing resource path (defined by the briefing state).
+const BriefingState := preload("res://scenarios/spear_phishing/states/briefing.gd")
+
 enum SubState { BRIEFING, RECON, MAIL, RESOLVE }
 
 @onready var _states: Dictionary = {
@@ -16,6 +19,8 @@ enum SubState { BRIEFING, RECON, MAIL, RESOLVE }
 	SubState.MAIL:     $CanvasLayer/MailBuilder,
 	SubState.RESOLVE:  $CanvasLayer/Resolve,
 }
+
+@onready var _os_chrome: OSChrome = $CanvasLayer/OSChrome
 
 var _current: SubState = SubState.BRIEFING
 var _initialised: bool = false
@@ -30,6 +35,22 @@ func _setup() -> void:
 	for state in _states.values():
 		state.visible = false
 		state.advance_requested.connect(_advance)
+	_setup_os_chrome()
+
+# Feeds the persistent OS shell: mission facts from the BriefingResource,
+# live phase / turn budget via GameState. Presentation wiring only.
+func _setup_os_chrome() -> void:
+	var briefing := load(BriefingState.BRIEFING_PATH) as BriefingResource
+	if briefing == null:
+		push_error("%s: failed to load %s" % [SCENARIO_ID, BriefingState.BRIEFING_PATH])
+		return
+	GameState.begin_mission(briefing.turn_budget)
+	var steps: Array[Dictionary] = [
+		{"id": &"RECON", "label": tr("SPEAR_PHASE_RECON")},
+		{"id": &"MAIL", "label": tr("SPEAR_PHASE_MAIL")},
+		{"id": &"RESOLVE", "label": tr("SPEAR_PHASE_RESOLVE")},
+	]
+	_os_chrome.configure(briefing, steps)
 
 func _on_start() -> void:
 	_change_substate(SubState.BRIEFING)
@@ -62,6 +83,8 @@ func _change_substate(new_state: SubState) -> void:
 	_states[new_state].visible = true
 	_current = new_state
 	_initialised = true
+	# Drive the OSChrome phase stepper; ids match the configure() steps.
+	GameState.set_mission_phase(StringName(SubState.keys()[new_state]))
 	EventBus.generic_event.emit({
 		"phase": "substate_change",
 		"scenario_id": scenario_id,

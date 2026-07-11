@@ -1,6 +1,7 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://scenarios/spear_phishing/states/recon.gd" id="1_script"]
+[ext_resource type="Script" path="res://scenarios/base/components/hud_brackets.gd" id="2_brackets"]
 
 [node name="Recon" type="Control"]
 layout_mode = 3
@@ -18,7 +19,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0.075, 0.094, 0.11, 1)
+color = Color(0.027, 0.055, 0.039, 1)
 
 [node name="Window" type="PanelContainer" parent="."]
 unique_name_in_owner = true
@@ -27,11 +28,25 @@ anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 offset_left = 60.0
-offset_top = 50.0
+offset_top = 96.0
 offset_right = -60.0
 offset_bottom = -50.0
 grow_horizontal = 2
 grow_vertical = 2
+
+[node name="HudBrackets" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 48.0
+offset_top = 84.0
+offset_right = -48.0
+offset_bottom = -38.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("2_brackets")
 
 [node name="WindowVBox" type="VBoxContainer" parent="Window"]
 layout_mode = 2
@@ -86,6 +101,12 @@ size_flags_horizontal = 3
 text = "domain.local"
 vertical_alignment = 1
 
+[node name="InterceptLabel" type="Label" parent="Window/WindowVBox/UrlBar/UrlRow/UrlField/UrlFieldRow"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "⇅ INTERCEPT"
+vertical_alignment = 1
+
 [node name="TabStrip" type="PanelContainer" parent="Window/WindowVBox"]
 unique_name_in_owner = true
 layout_mode = 2
@@ -115,10 +136,16 @@ layout_mode = 2
 [node name="FooterRow" type="HBoxContainer" parent="Window/WindowVBox/Footer"]
 layout_mode = 2
 
+[node name="ReadoutLabel" type="Label" parent="Window/WindowVBox/Footer/FooterRow"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "RECON // OSINT-SWEEP"
+vertical_alignment = 1
+
 [node name="DeckLabel" type="Label" parent="Window/WindowVBox/Footer/FooterRow"]
 unique_name_in_owner = true
 layout_mode = 2
-text = "Deck: 0 / 7"
+text = "DECK 0/7"
 vertical_alignment = 1
 
 [node name="CollectedLabel" type="Label" parent="Window/WindowVBox/Footer/FooterRow"]
@@ -132,6 +159,6 @@ vertical_alignment = 1
 [node name="AdvanceButton" type="Button" parent="Window/WindowVBox/Footer/FooterRow"]
 unique_name_in_owner = true
 layout_mode = 2
-text = "Recon abschliessen →"
+text = "RECON ABSCHLIESSEN ▸"
 
 [connection signal="pressed" from="Window/WindowVBox/Footer/FooterRow/AdvanceButton" to="." method="_on_advance_button_pressed"]

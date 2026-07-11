@@ -32,6 +32,38 @@ func transition_to(new_state: State) -> void:
 		},
 	})
 
+# ---- Mission HUD state (presentation only) ----
+# Read by the OSChrome shell, written by scenario shells: begin_mission on
+# scenario start, set_mission_phase from the shell's advance routing, and
+# consume_mission_turn from the mail builder (Phase 4). Deliberately not part
+# of the session state machine above — it carries no game logic.
+
+signal mission_phase_changed(phase: StringName)
+signal mission_turns_changed(turns_left: int, turn_budget: int)
+
+var mission_phase: StringName = &""
+var mission_turn_budget: int = 0
+var mission_turns_left: int = 0
+
+func begin_mission(turn_budget: int) -> void:
+	mission_turn_budget = turn_budget
+	mission_turns_left = turn_budget
+	mission_phase = &""
+	mission_turns_changed.emit(mission_turns_left, mission_turn_budget)
+
+func set_mission_phase(phase: StringName) -> void:
+	if phase == mission_phase:
+		return
+	mission_phase = phase
+	mission_phase_changed.emit(phase)
+
+# One spent turn; clamped at zero so a stray extra call cannot underflow.
+func consume_mission_turn() -> void:
+	if mission_turns_left <= 0:
+		return
+	mission_turns_left -= 1
+	mission_turns_changed.emit(mission_turns_left, mission_turn_budget)
+
 # Sortable, debuggable id: YYYYMMDD_HHMMSS_xxxx (xxxx = 4 hex chars).
 # Not cryptographically unique — fine for ~30 study participants.
 func _generate_session_uuid() -> String:
