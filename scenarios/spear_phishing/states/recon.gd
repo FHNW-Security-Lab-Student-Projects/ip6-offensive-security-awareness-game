@@ -26,10 +26,10 @@ const TAB_LABELS := {
 	"Firmenwebsite": "Firmenseite",
 }
 const TAB_DOMAINS := {
-	"LinkedIn": "linkbook.local/m-weber",
+	"LinkedIn": "linkbook.local/h-zinsli",
 	"Instagram": "instasnap.local/explore",
 	"kununu": "kmunu.local/fintech-ag",
-	"Google": "goggle.local/search?q=markus+weber",
+	"Google": "goggle.local/search?q=hannes+zinsli",
 	"JobScout": "jobscoot.local/fintech-ag",
 	"Firmenwebsite": "fintech-ag.local/presse",
 }

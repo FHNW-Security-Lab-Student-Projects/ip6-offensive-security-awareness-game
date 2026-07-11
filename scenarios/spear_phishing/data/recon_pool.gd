@@ -1,7 +1,7 @@
 # Static pool of recon finds. Single source of truth for what shows up
 # in the Recon sub-state; the UI builds its tabs and buttons from this list.
 # Scenario 1 content (Q1-Q9) minus Q8, which lives in the separate mail app.
-# Target is Markus Weber (see briefing.tres); the q7 namesake traps carry the
+# Target is Hannes Zinsli (see briefing.tres); the q7 namesake traps carry the
 # exact same name on purpose.
 class_name ReconPool
 extends RefCounted
@@ -11,7 +11,7 @@ static func get_finds() -> Array[ReconFind]:
 	return [
 		# LinkedIn (LinkBook) styled feed. highlight is the embedded clickable leak.
 		ReconFind.create_post(&"q1_kontakt", "Vertrauter Kontakt (IT-Firma in Kontaktliste)", "LinkedIn",
-				&"profile", "Markus Weber · CEO bei FinTech AG",
+				&"profile", "Hannes Zinsli · CEO bei FinTech AG",
 				"Gemeinsame Kontakte (3): Bit & Bürli GmbH, Handelskammer Zürich, Swiss Finance Network.",
 				"Bit & Bürli GmbH"),
 		ReconFind.create_post(&"q2a_sonntags", "Sonntags-Post: Chef antwortet spätnachts", "LinkedIn",
@@ -45,8 +45,8 @@ static func get_finds() -> Array[ReconFind]:
 		ReconFind.create(&"q6_kununu", "Anonyme Bewertung: Firmenkultur", "kununu"),
 		ReconFind.create(&"q6x_lob", "Bewertung: Rundum-Lob ohne Inhalt", "kununu", false, true),
 		# Google (2 junk).
-		ReconFind.create(&"q7_jodler", "Suchtreffer: Markus Weber, Jodel-Dirigent", "Google", false, true),
-		ReconFind.create(&"q7x_makler", "Suchtreffer: Markus Weber, Immobilienmakler", "Google", false, true),
+		ReconFind.create(&"q7_jodler", "Suchtreffer: Hannes Zinsli, Jodel-Dirigent", "Google", false, true),
+		ReconFind.create(&"q7x_makler", "Suchtreffer: Hannes Zinsli, Immobilienmakler", "Google", false, true),
 		ReconFind.create(&"q9_verein", "Vereinsprotokoll mit Foto (PDF)", "Google"),
 		# JobScout.
 		ReconFind.create(&"q3_stelle", "Stellenanzeige nennt IT-Partner", "JobScout"),
