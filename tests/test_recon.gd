@@ -183,5 +183,12 @@ func _process(_delta: float) -> bool:
 	var wb := _find_by_id(finds, &"q2d_whiteboard")
 	_recon.reveal(wb)
 	print("whiteboard reveal still works (expect true): ", _recon.is_revealed(wb))
+
+	# Platform-distinct layout: Instasnap arranges its posts in a photo grid,
+	# not a vertical list like the other tabs.
+	_tab("Instagram").pressed.emit()
+	var grids: Array = []
+	_walk(_finds_container(), GridContainer, grids)
+	print("instasnap uses a photo grid (expect true): ", grids.size() >= 1)
 	print("TEST DONE")
 	return true

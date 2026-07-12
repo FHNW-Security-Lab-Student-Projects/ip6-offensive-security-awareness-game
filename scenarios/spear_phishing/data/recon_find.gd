@@ -54,17 +54,22 @@ static func create_post(p_id: StringName, p_source: String, p_kind: StringName,
 func _qid() -> String:
 	return String(id).to_upper()
 
+# Generic key builder: RECON_<QID>_<SUFFIX>. The named helpers below are the
+# common cases; platform cards use key("URL"/"STARS"/…) for their extra fields.
+func key(suffix: String) -> String:
+	return "RECON_%s_%s" % [_qid(), suffix]
+
 func title_key() -> String:
-	return "RECON_%s_TITLE" % _qid()
+	return key("TITLE")
 
 func author_key() -> String:
-	return "RECON_%s_AUTHOR" % _qid()
+	return key("AUTHOR")
 
 func body_key() -> String:
-	return "RECON_%s_BODY" % _qid()
+	return key("BODY")
 
 func reveal_key() -> String:
-	return "RECON_%s_REVEAL" % _qid()
+	return key("REVEAL")
 
 
 # --- leak marker parsing ----------------------------------------------------

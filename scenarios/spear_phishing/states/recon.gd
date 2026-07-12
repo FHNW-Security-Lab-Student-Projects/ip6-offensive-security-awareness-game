@@ -38,6 +38,17 @@ const TAB_DOMAINS := {
 }
 const TEAM_PHOTO_ID := &"q2d_teamfoto"
 
+# Platform layouts (SourcePage subclasses). New platform = new subclass + a
+# case in _page_for, no new scene. Referenced by path so headless runs work
+# without the editor's global class cache.
+const SourcePage := preload("res://scenarios/spear_phishing/components/source_pages/source_page.gd")
+const FeedPage := preload("res://scenarios/spear_phishing/components/source_pages/feed_page.gd")
+const PhotoGridPage := preload("res://scenarios/spear_phishing/components/source_pages/photo_grid_page.gd")
+const SearchPage := preload("res://scenarios/spear_phishing/components/source_pages/search_page.gd")
+const ReviewPage := preload("res://scenarios/spear_phishing/components/source_pages/review_page.gd")
+const ListingPage := preload("res://scenarios/spear_phishing/components/source_pages/listing_page.gd")
+const PressPage := preload("res://scenarios/spear_phishing/components/source_pages/press_page.gd")
+
 # Collected finds, deduplicated by id. Later interface to the MailBuilder;
 # stays local to Recon in this slice (no GameState writes).
 var collected: Array[ReconFind] = []
@@ -48,6 +59,7 @@ var revealed: Array[StringName] = []
 var _finds: Array[ReconFind] = []
 var _active_source: String = ""
 var _tabs: Dictionary = {}  # source(String) -> Button
+var _pages: Dictionary = {}  # source(String) -> SourcePage (cached)
 
 @onready var _tab_bar: HBoxContainer = %TabBar
 @onready var _finds_container: VBoxContainer = %FindsContainer
@@ -222,76 +234,54 @@ func _on_tab_pressed(source: String) -> void:
 
 # --- finds view -------------------------------------------------------------
 
-# Rebuilds the finds column for the active source from persistent state.
-# Every source now renders through the styled post path.
+# Rebuilds the finds column for the active source. Each platform arranges its
+# own finds through its SourcePage; the collect/reveal/leak interaction is the
+# same everywhere (provided by the build_* host methods below).
 func _rebuild_finds() -> void:
 	for child in _finds_container.get_children():
 		child.queue_free()
 	_finds_container.add_theme_constant_override("separation", Style.GAP)
-	_build_styled_page()
-
-
-# Styled page for any source: text finds become embedded post cards, a photo
-# find becomes a viewable image surface, and a hidden find shows a reveal
-# control until revealed (afterwards it renders as a normal post).
-func _build_styled_page() -> void:
-	var parent_available := _parent_available_lookup()
+	var finds_for_source: Array[ReconFind] = []
 	for find in _finds:
-		if find.source != _active_source:
-			continue
-		if find.kind == &"photo":
-			_add_photo(find)
-		elif find.is_hidden and not is_revealed(find):
-			if parent_available.get(find.id, true):
-				_add_reveal_button(find)
-		else:
-			_add_post(find)
+		if find.source == _active_source:
+			finds_for_source.append(find)
+	_page_for(_active_source).build(self, _finds_container, finds_for_source)
 
 
-# One parent->child level only: a hidden find with a parent_id gets its
-# reveal control only if the parent find exists in the pool.
-func _parent_available_lookup() -> Dictionary:
-	var ids := {}
-	for find in _finds:
-		ids[find.id] = true
-	var available := {}
-	for find in _finds:
-		if find.is_hidden and find.parent_id != &"":
-			available[find.id] = ids.has(find.parent_id)
-	return available
+# Registry: source -> platform layout. New platform = new SourcePage subclass
+# plus a case here, no new scene. Pages are stateless and cached per source.
+func _page_for(source: String) -> SourcePage:
+	if not _pages.has(source):
+		var page: SourcePage
+		match source:
+			"Instagram": page = PhotoGridPage.new()
+			"Google": page = SearchPage.new()
+			"kununu": page = ReviewPage.new()
+			"JobScout": page = ListingPage.new()
+			"Firmenwebsite": page = PressPage.new()
+			_: page = FeedPage.new()
+		_pages[source] = page
+	return _pages[source]
 
 
-# A hidden find shows a reveal action until it is harvested; afterwards it
-# renders as a normal post.
-func _add_reveal_button(find: ReconFind) -> void:
-	var button := Button.new()
-	button.set_meta("find_id", find.id)
-	button.set_meta("kind", "reveal")
-	button.text = "[Aktion] " + tr(find.reveal_key())
-	button.pressed.connect(_on_reveal_pressed.bind(find))
-	_finds_container.add_child(button)
+# --- host API for SourcePages (collect/reveal logic stays here, unchanged) --
+
+# True unless the find is a hidden child whose parent is absent from the pool.
+func is_reveal_available(find: ReconFind) -> bool:
+	if find.parent_id == &"":
+		return true
+	for f in _finds:
+		if f.id == find.parent_id:
+			return true
+	return false
 
 
-# --- styled feed posts (LinkedIn / LinkBook) --------------------------------
-
-# A real feed post: author line plus the full body text. The leak is marked
-# inline in the translated body with ⟦…⟧ (parsed to a span here) and rendered
-# as an inline clickable region via RichTextLabel meta. Collecting happens by
-# clicking that region only, never a button, so the post does not advertise
-# where the leak sits.
-func _add_post(find: ReconFind) -> void:
-	var card := PanelContainer.new()
-	card.add_theme_stylebox_override("panel", Style.post_box())
-
-	var col := VBoxContainer.new()
-	col.add_theme_constant_override("separation", 6)
-	card.add_child(col)
-
-	var author := Label.new()
-	Style.apply_label(author, Style.FONT_SIZE_SMALL, Style.COLOR_MUTED, true)
-	author.text = tr(find.author_key())
-	col.add_child(author)
-
+# The shared, ONLY path to collecting: a body carrying the leak span, wired to
+# the collect handler. Every platform card embeds this; nothing else collects.
+# The leak is marked inline in the translated body with ⟦…⟧ (parsed to a span)
+# and rendered as an inline clickable region via RichTextLabel meta — clicking
+# that region collects, so a card never advertises where the leak sits.
+func build_leak_body(find: ReconFind) -> RichTextLabel:
 	var body := RichTextLabel.new()
 	body.set_meta("find_id", find.id)
 	body.set_meta("hovered", false)
@@ -306,7 +296,6 @@ func _add_post(find: ReconFind) -> void:
 	body.add_theme_font_override("normal_font", Style.FONT_REGULAR)
 	body.add_theme_font_size_override("normal_font_size", Style.FONT_SIZE_BODY)
 	body.add_theme_color_override("default_color", Style.COLOR_TEXT)
-	col.add_child(body)
 
 	# Resolve + parse the leak once; the demarked text and span position are
 	# stashed on the body so _render_post_text/_apply_post_state stay stateless.
@@ -327,8 +316,17 @@ func _add_post(find: ReconFind) -> void:
 	body.meta_hover_started.connect(_on_highlight_hover.bind(body, marker, find, true))
 	body.meta_hover_ended.connect(_on_highlight_hover.bind(body, marker, find, false))
 	_apply_post_state(body, marker, find)
+	return body
 
-	_finds_container.add_child(card)
+
+# A hidden find's fallback reveal control (used where no photo hotspot applies).
+func build_reveal_button(find: ReconFind) -> Button:
+	var button := Button.new()
+	button.set_meta("find_id", find.id)
+	button.set_meta("kind", "reveal")
+	button.text = "[Aktion] " + tr(find.reveal_key())
+	button.pressed.connect(_on_reveal_pressed.bind(find))
+	return button
 
 
 # Renders the body text for the current state and drives the neutral marker.
@@ -372,9 +370,10 @@ func _render_post_text(find: ReconFind, leak: Dictionary, hovered: bool) -> Stri
 	return before + wrapped + after
 
 
-# The team photo is a viewable surface, not a collectable find. Zoom and
-# hotspots arrive in the next step; here it is just the image.
-func _add_photo(find: ReconFind) -> void:
+# A photo find: a viewable image surface with author + caption. Not collectable
+# itself; its hidden children are revealed via a reveal control (photo hotspots
+# arrive in Slice B). Returned to the calling SourcePage, not added directly.
+func build_photo_card(find: ReconFind) -> Control:
 	var card := PanelContainer.new()
 	card.set_meta("photo_id", find.id)
 	card.add_theme_stylebox_override("panel", Style.post_box())
@@ -388,12 +387,12 @@ func _add_photo(find: ReconFind) -> void:
 	author.text = tr(find.author_key())
 	col.add_child(author)
 
-	var body := Label.new()
-	Style.apply_label(body, Style.FONT_SIZE_BODY, Style.COLOR_TEXT)
-	body.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	var caption := Label.new()
+	Style.apply_label(caption, Style.FONT_SIZE_BODY, Style.COLOR_TEXT)
+	caption.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	# Caption has no leak; parse_leak strips any stray markers defensively.
-	body.text = ReconFind.parse_leak(tr(find.body_key())).get("text", "")
-	col.add_child(body)
+	caption.text = ReconFind.parse_leak(tr(find.body_key())).get("text", "")
+	col.add_child(caption)
 
 	var photo := TextureRect.new()
 	photo.texture = TEAM_PHOTO
@@ -402,7 +401,7 @@ func _add_photo(find: ReconFind) -> void:
 	photo.custom_minimum_size = Vector2(0, 320)
 	col.add_child(photo)
 
-	_finds_container.add_child(card)
+	return card
 
 
 func _on_highlight_clicked(_meta: Variant, find: ReconFind) -> void:

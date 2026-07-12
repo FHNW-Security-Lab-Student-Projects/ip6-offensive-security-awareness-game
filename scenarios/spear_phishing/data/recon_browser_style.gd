@@ -42,6 +42,9 @@ const COLOR_TAB_HOVER := Color("d6e2f4")        # inactive tab, hovered (blue ti
 const COLOR_TRAFFIC_RED := Color("ff5f57")
 const COLOR_TRAFFIC_YELLOW := Color("febc2e")
 const COLOR_TRAFFIC_GREEN := Color("28c840")
+# Platform-card accents (bright content layer).
+const COLOR_LINK := Color("1a4fc4")            # search-result title (blue link)
+const COLOR_URL := Color("0f7a34")             # search-result url line (green)
 
 # --- spacing / radii -------------------------------------------------------
 const RADIUS := 8
@@ -105,6 +108,12 @@ static func card_box(collected: bool, hover: bool) -> StyleBoxFlat:
 # hover state (the interaction lives on the embedded highlight, not the card).
 static func post_box() -> StyleBoxFlat:
 	return _flat(COLOR_CARD, COLOR_CARD_BORDER, RADIUS, 1)
+
+
+# A borderless search-result container: results sit directly on the page with
+# no card outline, just padding — the classic search-engine look.
+static func search_card_box() -> StyleBoxFlat:
+	return _flat(COLOR_PAGE, Color(0, 0, 0, 0), 0, 0)
 
 
 # A tab body: rounded top, square bottom. The active tab drops its bottom
