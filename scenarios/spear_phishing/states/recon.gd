@@ -224,15 +224,12 @@ func _on_tab_pressed(source: String) -> void:
 # --- finds view -------------------------------------------------------------
 
 # Rebuilds the finds column for the active source from persistent state.
-# The styled contract lives on the LinkedIn tab; other sources stay bare.
+# Every source now renders through the styled post path.
 func _rebuild_finds() -> void:
 	for child in _finds_container.get_children():
 		child.queue_free()
 	_finds_container.add_theme_constant_override("separation", Style.GAP)
-	if _active_source == STYLED_SOURCE:
-		_build_styled_page()
-	else:
-		_build_bare_finds()
+	_build_styled_page()
 
 
 func _build_bare_finds() -> void:
@@ -247,18 +244,19 @@ func _build_bare_finds() -> void:
 			_add_collect_button(find)
 
 
-# LinkedIn styled page: text finds become embedded post cards, the team photo
-# becomes a viewable image surface. Slice 5 part 1 shows the photo as a
-# placeholder without the hotspot/zoom mechanic (that is part 2).
+# Styled page for any source: text finds become embedded post cards, a photo
+# find becomes a viewable image surface, and a hidden find shows a reveal
+# control until revealed (afterwards it renders as a normal post).
 func _build_styled_page() -> void:
+	var parent_available := _parent_available_lookup()
 	for find in _finds:
 		if find.source != _active_source:
 			continue
 		if find.kind == &"photo":
 			_add_photo(find)
-		elif find.is_hidden:
-			# Whiteboard etc. are harvested from the photo in part 2, not here.
-			continue
+		elif find.is_hidden and not is_revealed(find):
+			if parent_available.get(find.id, true):
+				_add_reveal_button(find)
 		else:
 			_add_post(find)
 
@@ -281,13 +279,14 @@ func _parent_available_lookup() -> Dictionary:
 func _add_collect_button(find: ReconFind) -> void:
 	var button := Button.new()
 	button.set_meta("find_id", find.id)
+	var title := tr(find.title_key())
 	if is_collected(find):
 		button.set_meta("kind", "uncollect")
-		button.text = "✔ " + find.title + " (" + find.source + ")"
+		button.text = "✔ " + title + " (" + find.source + ")"
 		button.pressed.connect(_on_uncollect_pressed.bind(find))
 	else:
 		button.set_meta("kind", "collect")
-		button.text = find.title + " (" + find.source + ")"
+		button.text = title + " (" + find.source + ")"
 		button.disabled = is_deck_full()
 		button.pressed.connect(_on_collect_pressed.bind(find))
 	_finds_container.add_child(button)
@@ -297,17 +296,18 @@ func _add_reveal_button(find: ReconFind) -> void:
 	var button := Button.new()
 	button.set_meta("find_id", find.id)
 	button.set_meta("kind", "reveal")
-	button.text = "[Aktion] " + find.reveal_label
+	button.text = "[Aktion] " + tr(find.reveal_key())
 	button.pressed.connect(_on_reveal_pressed.bind(find))
 	_finds_container.add_child(button)
 
 
 # --- styled feed posts (LinkedIn / LinkBook) --------------------------------
 
-# A real feed post: author line plus the full body text. The leak is the
-# highlight substring inside body, rendered as an inline clickable region via
-# RichTextLabel meta. Collecting happens by clicking that region only, never
-# a button, so the post does not advertise where the leak sits.
+# A real feed post: author line plus the full body text. The leak is marked
+# inline in the translated body with ⟦…⟧ (parsed to a span here) and rendered
+# as an inline clickable region via RichTextLabel meta. Collecting happens by
+# clicking that region only, never a button, so the post does not advertise
+# where the leak sits.
 func _add_post(find: ReconFind) -> void:
 	var card := PanelContainer.new()
 	card.add_theme_stylebox_override("panel", Style.post_box())
@@ -318,7 +318,7 @@ func _add_post(find: ReconFind) -> void:
 
 	var author := Label.new()
 	Style.apply_label(author, Style.FONT_SIZE_SMALL, Style.COLOR_MUTED, true)
-	author.text = find.author
+	author.text = tr(find.author_key())
 	col.add_child(author)
 
 	var body := RichTextLabel.new()
@@ -337,13 +337,19 @@ func _add_post(find: ReconFind) -> void:
 	body.add_theme_color_override("default_color", Style.COLOR_TEXT)
 	col.add_child(body)
 
-	# Rounded neutral marking drawn behind the highlight range.
+	# Resolve + parse the leak once; the demarked text and span position are
+	# stashed on the body so _render_post_text/_apply_post_state stay stateless.
+	var leak := ReconFind.parse_leak(tr(find.body_key()))
+	body.set_meta("leak", leak)
+
+	# Rounded neutral marking drawn behind the leak span.
 	var marker := HighlightMarker.new()
 	body.add_child(marker)
 	marker.setup(body, Style.FONT_REGULAR, Style.FONT_SIZE_BODY)
-	var start := find.body.find(find.highlight)
-	if not find.highlight.is_empty() and start != -1:
-		marker.set_range(start, find.highlight.length())
+	var start: int = leak.get("start", -1)
+	var span_len: int = leak.get("len", 0)
+	if start >= 0 and span_len > 0:
+		marker.set_range(start, span_len)
 	body.resized.connect(marker.queue_redraw)
 
 	body.meta_clicked.connect(_on_highlight_clicked.bind(find))
@@ -360,7 +366,8 @@ func _add_post(find: ReconFind) -> void:
 # Text colour never changes, so the text stays readable in every state.
 func _apply_post_state(body: RichTextLabel, marker: HighlightMarker, find: ReconFind) -> void:
 	var hovered: bool = body.get_meta("hovered", false)
-	body.text = _render_post_text(find, hovered)
+	var leak: Dictionary = body.get_meta("leak", {})
+	body.text = _render_post_text(find, leak, hovered)
 	# Fill only, no border: a border makes wrapped highlights read as a framed
 	# box (leftover vertical edges left and right). Highlighter look instead.
 	var fill := Color(0, 0, 0, 0)
@@ -371,23 +378,26 @@ func _apply_post_state(body: RichTextLabel, marker: HighlightMarker, find: Recon
 	marker.set_fill(fill, Color(0, 0, 0, 0))
 
 
-func _render_post_text(find: ReconFind, hovered: bool) -> String:
-	var body := find.body.replace("[", "[lb]")
-	var hl := find.highlight
-	if hl.is_empty():
-		return body
-	var idx := body.find(hl)
-	if idx == -1:
-		return body
-	var before := body.substr(0, idx)
-	var after := body.substr(idx + hl.length())
+# Builds the BBCode for a post from the parsed leak. The span position is on
+# the demarked text (== visible text), so we split there first, THEN escape
+# each part ("[" -> "[lb]") and wrap the span in the clickable url. A post with
+# no leak (start < 0, e.g. a photo caption) renders plain.
+func _render_post_text(find: ReconFind, leak: Dictionary, hovered: bool) -> String:
+	var text: String = leak.get("text", "")
+	var start: int = leak.get("start", -1)
+	var span_len: int = leak.get("len", 0)
+	if start < 0 or span_len <= 0:
+		return text.replace("[", "[lb]")
+	var before := text.substr(0, start).replace("[", "[lb]")
+	var span := text.substr(start, span_len).replace("[", "[lb]")
+	var after := text.substr(start + span_len).replace("[", "[lb]")
 	var affordance := ""
 	if is_collected(find):
 		if hovered:
 			affordance = " [color=#%s]–[/color]" % Style.COLOR_MUTED.to_html(false)
 	elif hovered:
 		affordance = " [color=#%s]+[/color]" % Style.COLOR_MUTED.to_html(false)
-	var wrapped := "[url=%s]%s%s[/url]" % [find.id, hl, affordance]
+	var wrapped := "[url=%s]%s%s[/url]" % [find.id, span, affordance]
 	return before + wrapped + after
 
 
@@ -404,13 +414,14 @@ func _add_photo(find: ReconFind) -> void:
 
 	var author := Label.new()
 	Style.apply_label(author, Style.FONT_SIZE_SMALL, Style.COLOR_MUTED, true)
-	author.text = find.author
+	author.text = tr(find.author_key())
 	col.add_child(author)
 
 	var body := Label.new()
 	Style.apply_label(body, Style.FONT_SIZE_BODY, Style.COLOR_TEXT)
 	body.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	body.text = find.body
+	# Caption has no leak; parse_leak strips any stray markers defensively.
+	body.text = ReconFind.parse_leak(tr(find.body_key())).get("text", "")
 	col.add_child(body)
 
 	var photo := TextureRect.new()
@@ -469,7 +480,7 @@ func _update_collected_label() -> void:
 		return
 	var titles := PackedStringArray()
 	for entry in collected:
-		titles.append(entry.title)
+		titles.append(tr(entry.title_key()))
 	_collected_label.text = "Eingesammelt (%d): %s" % [collected.size(), ", ".join(titles)]
 
 

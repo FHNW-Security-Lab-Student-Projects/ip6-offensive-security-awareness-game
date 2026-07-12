@@ -58,9 +58,21 @@ func _bare_button(find_id: StringName) -> Button:
 
 
 func _initialize() -> void:
+	_ensure_translations()
 	var recon_scene: PackedScene = load("res://scenarios/spear_phishing/states/recon.tscn")
 	_recon = recon_scene.instantiate()
 	root.add_child(_recon)
+
+
+# The recon UI now resolves its content via tr(); the translation tables must
+# be loaded before it is instanced. If the I18n autoload already ran (normal
+# editor / full run) this is a no-op; under `godot -s` we load it here so the
+# same loader (and thus recon_content.csv) is used.
+func _ensure_translations() -> void:
+	if tr("RECON_Q2A_SONNTAGS_BODY") != "RECON_Q2A_SONNTAGS_BODY":
+		return
+	var i18n: Node = (load("res://autoloads/i18n.gd") as GDScript).new()
+	root.add_child(i18n)
 
 
 func _process(_delta: float) -> bool:
@@ -79,16 +91,27 @@ func _process(_delta: float) -> bool:
 	print("junk count (expect 6): ", junk)
 	print("distinct sources (expect 6): ", sources.size())
 
-	# Every LinkBook post's highlight is an exact substring of its body.
-	var bad_highlight := 0
+	# Marker invariant across every post-rendered find (any find that resolves a
+	# body). A body WITHOUT a marker is valid (no leak); a body WITH markers must
+	# hold exactly one well-formed ⟦…⟧ pair with non-empty content. Photo
+	# captions and finds without a body key are exempt.
+	var bad_marker := 0
 	for f in finds:
-		if f.source == "LinkedIn" and f.kind != &"photo" and not f.is_hidden:
-			if f.highlight.is_empty() or not f.body.contains(f.highlight):
-				bad_highlight += 1
-	print("linkbook highlights all exact substrings (expect 0 bad): ", bad_highlight)
+		if f.kind == &"photo":
+			continue
+		var body := tr(f.body_key())
+		if body == f.body_key():
+			continue  # no body content for this find
+		var has_marker := body.contains(ReconFind.LEAK_OPEN) or body.contains(ReconFind.LEAK_CLOSE)
+		if not has_marker:
+			continue  # a body without a leak is valid
+		var leak := ReconFind.parse_leak(body)
+		if int(leak["start"]) < 0 or int(leak["len"]) <= 0:
+			bad_marker += 1
+	print("all post bodies have valid leak spans (expect 0 bad): ", bad_marker)
 
-	# Namesake traps still carry the exact target name.
-	print("q7_jodler names target (expect true): ", _find_by_id(finds, &"q7_jodler").title.contains("Markus Weber"))
+	# Namesake traps still carry the exact target name (Hannes Zinsli).
+	print("q7_jodler names target (expect true): ", tr(_find_by_id(finds, &"q7_jodler").title_key()).contains("Hannes Zinsli"))
 
 	# Tabs: one per source, exactly one active; three traffic-light dots.
 	var tab_bar := _recon.get_node("%TabBar")
@@ -107,9 +130,10 @@ func _process(_delta: float) -> bool:
 	var photos: Array = []
 	_walk(_finds_container(), TextureRect, photos)
 	print("linkbook post labels (expect 5): ", posts.size())
-	print("linkbook buttons in page (expect 0): ", buttons.size())
+	# The whiteboard now shows its reveal button on the LinkBook page.
+	print("linkbook buttons in page (expect 1): ", buttons.size())
 	print("linkbook photo surfaces (expect 1): ", photos.size())
-	print("whiteboard not rendered on linkbook (expect null): ", _rtl_for(&"q2d_whiteboard"))
+	print("whiteboard not yet a post on linkbook (expect null): ", _rtl_for(&"q2d_whiteboard"))
 
 	# Collect via the embedded highlight (meta click), then uncollect.
 	# Marking is value-neutral now: no success glyph in the text.
@@ -133,29 +157,30 @@ func _process(_delta: float) -> bool:
 	print("no raw bgcolor marking in text (expect false): ", rtl.text.contains("bgcolor"))
 	rtl.meta_hover_ended.emit("q2b_neue_it")
 
-	# Fill the deck to 7 via the bare tabs, junk collected like any find.
+	# Fill the deck to 7 via inline collection across tabs; every collectable
+	# post is collected the same way (meta click on the leak span). q5_praktikant
+	# has no leak marker and is intentionally not collectable, so it is skipped.
 	_tab("Instagram").pressed.emit()
-	_bare_button(&"q5_praktikant").pressed.emit()
-	_bare_button(&"q5x_cafe").pressed.emit()
+	_rtl_for(&"q5x_cafe").meta_clicked.emit("q5x_cafe")
 	_tab("kununu").pressed.emit()
-	_bare_button(&"q6_kununu").pressed.emit()
-	_bare_button(&"q6x_lob").pressed.emit()
+	_rtl_for(&"q6_kununu").meta_clicked.emit("q6_kununu")
+	_rtl_for(&"q6x_lob").meta_clicked.emit("q6x_lob")
 	_tab("Google").pressed.emit()
-	_bare_button(&"q7_jodler").pressed.emit()
-	_bare_button(&"q7x_makler").pressed.emit()
-	_bare_button(&"q9_verein").pressed.emit()
+	_rtl_for(&"q7_jodler").meta_clicked.emit("q7_jodler")
+	_rtl_for(&"q7x_makler").meta_clicked.emit("q7x_makler")
+	_rtl_for(&"q9_verein").meta_clicked.emit("q9_verein")
+	_tab("JobScout").pressed.emit()
+	_rtl_for(&"q3_stelle").meta_clicked.emit("q3_stelle")
 	print("deck filled (expect 7): ", _recon.collected.size(), " ", _recon.get_node("%DeckLabel").text)
 
-	# Full deck blocks further collect: bare button disabled, inline click inert.
-	_tab("JobScout").pressed.emit()
-	print("bare button disabled at full deck (expect true): ", _bare_button(&"q3_stelle").disabled)
-	_tab("LinkedIn").pressed.emit()
-	_rtl_for(&"q1_kontakt").meta_clicked.emit("q1_kontakt")
+	# Full deck blocks any further inline collect.
+	_tab("Firmenwebsite").pressed.emit()
+	_rtl_for(&"q4_presse").meta_clicked.emit("q4_presse")
 	print("inline collect blocked at full deck (expect 7): ", _recon.collected.size())
 
 	# Free a slot, then inline collect works again.
 	_tab("Google").pressed.emit()
-	_bare_button(&"q9_verein").pressed.emit()  # collected -> uncollect
+	_rtl_for(&"q9_verein").meta_clicked.emit("q9_verein")  # collected -> uncollect
 	print("after uncollect (expect 6): ", _recon.collected.size())
 	_tab("LinkedIn").pressed.emit()
 	_rtl_for(&"q1_kontakt").meta_clicked.emit("q1_kontakt")
