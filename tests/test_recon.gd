@@ -184,11 +184,11 @@ func _process(_delta: float) -> bool:
 	_recon.reveal(wb)
 	print("whiteboard reveal still works (expect true): ", _recon.is_revealed(wb))
 
-	# Platform-distinct layout: Instasnap arranges its posts in a photo grid,
-	# not a vertical list like the other tabs.
+	# Platform-distinct layout: Instasnap is an image-centric feed — each post
+	# carries its own image (q5_praktikant + q5x_cafe), unlike the text tabs.
 	_tab("Instagram").pressed.emit()
-	var grids: Array = []
-	_walk(_finds_container(), GridContainer, grids)
-	print("instasnap uses a photo grid (expect true): ", grids.size() >= 1)
+	var imgs: Array = []
+	_walk(_finds_container(), TextureRect, imgs)
+	print("instasnap posts are image-centric (expect >=2): ", imgs.size())
 	print("TEST DONE")
 	return true

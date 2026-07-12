@@ -43,7 +43,7 @@ const TEAM_PHOTO_ID := &"q2d_teamfoto"
 # without the editor's global class cache.
 const SourcePage := preload("res://scenarios/spear_phishing/components/source_pages/source_page.gd")
 const FeedPage := preload("res://scenarios/spear_phishing/components/source_pages/feed_page.gd")
-const PhotoGridPage := preload("res://scenarios/spear_phishing/components/source_pages/photo_grid_page.gd")
+const PhotoFeedPage := preload("res://scenarios/spear_phishing/components/source_pages/photo_feed_page.gd")
 const SearchPage := preload("res://scenarios/spear_phishing/components/source_pages/search_page.gd")
 const ReviewPage := preload("res://scenarios/spear_phishing/components/source_pages/review_page.gd")
 const ListingPage := preload("res://scenarios/spear_phishing/components/source_pages/listing_page.gd")
@@ -254,7 +254,7 @@ func _page_for(source: String) -> SourcePage:
 	if not _pages.has(source):
 		var page: SourcePage
 		match source:
-			"Instagram": page = PhotoGridPage.new()
+			"Instagram": page = PhotoFeedPage.new()
 			"Google": page = SearchPage.new()
 			"kununu": page = ReviewPage.new()
 			"JobScout": page = ListingPage.new()
