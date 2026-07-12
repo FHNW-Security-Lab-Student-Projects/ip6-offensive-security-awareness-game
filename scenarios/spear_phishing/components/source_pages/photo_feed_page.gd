@@ -14,10 +14,12 @@ const PLACEHOLDER: Texture2D = preload("res://assets/sprites/placeholder/officeI
 const COLUMN_W := 460
 
 
-# Keep every widget (incl. the shared reveal button) within the centred column,
-# so a hidden find's reveal control matches the feed width instead of spanning
-# the whole page. Other tabs keep the full-width default (no override there).
+# Photo finds render as this platform's own square image card (with any
+# hotspots), not the generic feed photo card. Keep every widget (incl. the
+# shared reveal button) within the centred column so nothing spans the page.
 func _widget_for(host, find) -> Control:
+	if find.kind == &"photo" and not (find.is_hidden and not host.is_revealed(find)):
+		return build_card(host, find)
 	var widget := super._widget_for(host, find)
 	if widget is Button:
 		widget.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
@@ -52,6 +54,9 @@ func build_card(host, find) -> Control:
 	img.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
 	img.custom_minimum_size = Vector2(COLUMN_W, COLUMN_W)
 	col.add_child(img)
+	# Overlay any hotspots for hidden children pointing at this find (e.g. the
+	# mail schema on the screen behind Kevin). No-op for finds without children.
+	host.attach_hotspots(find, img)
 
 	# Caption block, padded away from the flush image.
 	var pad := MarginContainer.new()

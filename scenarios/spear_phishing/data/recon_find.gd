@@ -23,18 +23,28 @@ const LEAK_CLOSE := "⟧"
 # One parent->child level only, no deeper nesting.
 @export var parent_id: StringName = &""
 @export var kind: StringName = &"post"  # "post" | "profile" | "photo"
+# Normalised (0..1) clickable region on the PARENT photo. A hidden find with a
+# hotspot is revealed by clicking that region on the photo instead of a button.
+# Empty (no area) = fall back to a reveal button. Presentation only.
+@export var hotspot: Rect2 = Rect2()
 
 
 static func create(p_id: StringName, p_source: String,
 		p_is_hidden: bool = false, p_is_junk: bool = false,
-		p_parent_id: StringName = &"") -> ReconFind:
+		p_parent_id: StringName = &"", p_hotspot: Rect2 = Rect2()) -> ReconFind:
 	var find := ReconFind.new()
 	find.id = p_id
 	find.source = p_source
 	find.is_hidden = p_is_hidden
 	find.is_junk = p_is_junk
 	find.parent_id = p_parent_id
+	find.hotspot = p_hotspot
 	return find
+
+
+# True if this find is revealed by a clickable region on its parent photo.
+func has_hotspot() -> bool:
+	return hotspot.has_area()
 
 
 # Factory for a styled LinkBook feed item (profile/post/photo). All display

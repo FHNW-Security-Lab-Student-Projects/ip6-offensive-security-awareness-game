@@ -16,6 +16,7 @@ const DECK_LIMIT := 7
 
 const Style := preload("res://scenarios/spear_phishing/data/recon_browser_style.gd")
 const LockIconScene := preload("res://scenarios/spear_phishing/components/lock_icon.gd")
+const PhotoHotspot := preload("res://scenarios/spear_phishing/components/photo_hotspot.gd")
 const TEAM_PHOTO: Texture2D = preload("res://assets/sprites/placeholder/team_photo.png")
 
 # Fantasy platform names for the visible tab labels. Logic uses the source
@@ -329,6 +330,31 @@ func build_reveal_button(find: ReconFind) -> Button:
 	return button
 
 
+# Overlays clickable hotspots on `image` (a TextureRect) for every hidden,
+# unrevealed child of `parent_find` that carries a hotspot rect. The hotspot
+# docks onto the SAME reveal() as the button — only the trigger differs.
+func attach_hotspots(parent_find: ReconFind, image: Control) -> void:
+	image.mouse_filter = Control.MOUSE_FILTER_PASS
+	for child in _finds:
+		if child.parent_id != parent_find.id:
+			continue
+		if not child.is_hidden or is_revealed(child) or not child.has_hotspot():
+			continue
+		var hs := PhotoHotspot.new()
+		hs.set_meta("reveal_id", child.id)
+		var r := child.hotspot
+		hs.anchor_left = r.position.x
+		hs.anchor_top = r.position.y
+		hs.anchor_right = r.position.x + r.size.x
+		hs.anchor_bottom = r.position.y + r.size.y
+		hs.offset_left = 0.0
+		hs.offset_top = 0.0
+		hs.offset_right = 0.0
+		hs.offset_bottom = 0.0
+		hs.activated.connect(_on_hotspot_activated.bind(child))
+		image.add_child(hs)
+
+
 # Renders the body text for the current state and drives the neutral marker.
 # rest = plain text, no marking; hover = light glow plus a "+" (add) affordance;
 # collected = filled neutral marking, hover adds a "–" (remove) affordance.
@@ -371,8 +397,8 @@ func _render_post_text(find: ReconFind, leak: Dictionary, hovered: bool) -> Stri
 
 
 # A photo find: a viewable image surface with author + caption. Not collectable
-# itself; its hidden children are revealed via a reveal control (photo hotspots
-# arrive in Slice B). Returned to the calling SourcePage, not added directly.
+# itself; its hidden children are revealed by clicking a hotspot on the image
+# (see attach_hotspots). Returned to the calling SourcePage, not added directly.
 func build_photo_card(find: ReconFind) -> Control:
 	var card := PanelContainer.new()
 	card.set_meta("photo_id", find.id)
@@ -394,12 +420,16 @@ func build_photo_card(find: ReconFind) -> Control:
 	caption.text = ReconFind.parse_leak(tr(find.body_key())).get("text", "")
 	col.add_child(caption)
 
+	# COVERED so the image fills its rect: hotspot rects are normalised to the
+	# visible image, which only maps cleanly when there is no letterbox.
 	var photo := TextureRect.new()
 	photo.texture = TEAM_PHOTO
 	photo.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	photo.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT
-	photo.custom_minimum_size = Vector2(0, 320)
+	photo.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+	photo.custom_minimum_size = Vector2(0, 340)
+	photo.clip_contents = true
 	col.add_child(photo)
+	attach_hotspots(find, photo)
 
 	return card
 
@@ -424,6 +454,12 @@ func _on_highlight_hover(_meta: Variant, body: RichTextLabel, marker: HighlightM
 # --- interaction handlers (route to unchanged logic) ------------------------
 
 func _on_reveal_pressed(find: ReconFind) -> void:
+	reveal(find)
+	_rebuild_finds()
+
+
+# Same reveal path as the button, triggered by clicking the photo hotspot.
+func _on_hotspot_activated(find: ReconFind) -> void:
 	reveal(find)
 	_rebuild_finds()
 

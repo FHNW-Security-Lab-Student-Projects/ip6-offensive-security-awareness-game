@@ -35,14 +35,17 @@ func _make_layout(container: Control) -> Control:
 
 # Shared routing: photo finds and hidden (unrevealed) finds render the same way
 # on every platform; only the ordinary card differs (build_card, overridden).
-# Returns null to skip a find entirely (hidden child whose parent is absent).
+# Returns null to skip a find entirely (revealed via a photo hotspot, or a
+# hidden child whose parent is absent).
 func _widget_for(host, find) -> Control:
-	if find.kind == &"photo":
-		return host.build_photo_card(find)
 	if find.is_hidden and not host.is_revealed(find):
+		if find.has_hotspot():
+			return null  # revealed by a hotspot on its parent photo, not here
 		if not host.is_reveal_available(find):
 			return null
 		return host.build_reveal_button(find)
+	if find.kind == &"photo":
+		return host.build_photo_card(find)
 	return build_card(host, find)
 
 

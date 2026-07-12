@@ -50,6 +50,15 @@ func _rtl_for(find_id: StringName) -> RichTextLabel:
 	return null
 
 
+func _hotspot_for(find_id: StringName) -> Control:
+	var out: Array = []
+	_walk(_finds_container(), Control, out)
+	for n in out:
+		if n.has_meta("reveal_id") and n.get_meta("reveal_id") == find_id:
+			return n
+	return null
+
+
 func _initialize() -> void:
 	_ensure_translations()
 	var recon_scene: PackedScene = load("res://scenarios/spear_phishing/states/recon.tscn")
@@ -123,10 +132,11 @@ func _process(_delta: float) -> bool:
 	var photos: Array = []
 	_walk(_finds_container(), TextureRect, photos)
 	print("linkbook post labels (expect 5): ", posts.size())
-	# The whiteboard now shows its reveal button on the LinkBook page.
-	print("linkbook buttons in page (expect 1): ", buttons.size())
+	# The whiteboard is now a hotspot on the team photo, not a reveal button.
+	print("linkbook buttons in page (expect 0): ", buttons.size())
 	print("linkbook photo surfaces (expect 1): ", photos.size())
 	print("whiteboard not yet a post on linkbook (expect null): ", _rtl_for(&"q2d_whiteboard"))
+	print("whiteboard has a photo hotspot (expect true): ", _hotspot_for(&"q2d_whiteboard") != null)
 
 	# Collect via the embedded highlight (meta click), then uncollect.
 	# Marking is value-neutral now: no success glyph in the text.
@@ -179,10 +189,14 @@ func _process(_delta: float) -> bool:
 	_rtl_for(&"q1_kontakt").meta_clicked.emit("q1_kontakt")
 	print("inline collect works again (expect 7): ", _recon.collected.size())
 
-	# Hidden whiteboard logic stays intact (harvested from the photo later).
+	# The whiteboard is revealed by clicking its hotspot on the team photo (same
+	# reveal() as the button), after which it renders as a normal post.
 	var wb := _find_by_id(finds, &"q2d_whiteboard")
-	_recon.reveal(wb)
-	print("whiteboard reveal still works (expect true): ", _recon.is_revealed(wb))
+	var hs := _hotspot_for(&"q2d_whiteboard")
+	if hs != null:
+		hs.emit_signal("activated")
+	print("whiteboard revealed via hotspot (expect true): ", _recon.is_revealed(wb))
+	print("whiteboard now renders as a post (expect not null): ", _rtl_for(&"q2d_whiteboard"))
 
 	# Platform-distinct layout: Instasnap is an image-centric feed — each post
 	# carries its own image (q5_praktikant + q5x_cafe), unlike the text tabs.
