@@ -50,13 +50,6 @@ func _rtl_for(find_id: StringName) -> RichTextLabel:
 	return null
 
 
-func _bare_button(find_id: StringName) -> Button:
-	for c in _finds_container().get_children():
-		if c is Button and not c.is_queued_for_deletion() and c.get_meta("find_id", &"") == find_id:
-			return c
-	return null
-
-
 func _initialize() -> void:
 	_ensure_translations()
 	var recon_scene: PackedScene = load("res://scenarios/spear_phishing/states/recon.tscn")

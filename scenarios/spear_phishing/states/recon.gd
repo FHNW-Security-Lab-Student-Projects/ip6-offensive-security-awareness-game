@@ -36,7 +36,6 @@ const TAB_DOMAINS := {
 	"JobScout": "jobscoot.local/fintech-ag",
 	"Firmenwebsite": "fintech-ag.local/presse",
 }
-const STYLED_SOURCE := "LinkedIn"
 const TEAM_PHOTO_ID := &"q2d_teamfoto"
 
 # Collected finds, deduplicated by id. Later interface to the MailBuilder;
@@ -232,18 +231,6 @@ func _rebuild_finds() -> void:
 	_build_styled_page()
 
 
-func _build_bare_finds() -> void:
-	var parent_available := _parent_available_lookup()
-	for find in _finds:
-		if find.source != _active_source:
-			continue
-		if find.is_hidden and not is_revealed(find):
-			if parent_available.get(find.id, true):
-				_add_reveal_button(find)
-		else:
-			_add_collect_button(find)
-
-
 # Styled page for any source: text finds become embedded post cards, a photo
 # find becomes a viewable image surface, and a hidden find shows a reveal
 # control until revealed (afterwards it renders as a normal post).
@@ -274,24 +261,8 @@ func _parent_available_lookup() -> Dictionary:
 	return available
 
 
-# --- bare view widgets (unstyled tabs) --------------------------------------
-
-func _add_collect_button(find: ReconFind) -> void:
-	var button := Button.new()
-	button.set_meta("find_id", find.id)
-	var title := tr(find.title_key())
-	if is_collected(find):
-		button.set_meta("kind", "uncollect")
-		button.text = "✔ " + title + " (" + find.source + ")"
-		button.pressed.connect(_on_uncollect_pressed.bind(find))
-	else:
-		button.set_meta("kind", "collect")
-		button.text = title + " (" + find.source + ")"
-		button.disabled = is_deck_full()
-		button.pressed.connect(_on_collect_pressed.bind(find))
-	_finds_container.add_child(button)
-
-
+# A hidden find shows a reveal action until it is harvested; afterwards it
+# renders as a normal post.
 func _add_reveal_button(find: ReconFind) -> void:
 	var button := Button.new()
 	button.set_meta("find_id", find.id)
@@ -452,20 +423,6 @@ func _on_highlight_hover(_meta: Variant, body: RichTextLabel, marker: HighlightM
 
 
 # --- interaction handlers (route to unchanged logic) ------------------------
-
-func _on_collect_pressed(find: ReconFind) -> void:
-	collect(find)
-	_rebuild_finds()
-	_update_collected_label()
-	_update_deck_label()
-
-
-func _on_uncollect_pressed(find: ReconFind) -> void:
-	uncollect(find)
-	_rebuild_finds()
-	_update_collected_label()
-	_update_deck_label()
-
 
 func _on_reveal_pressed(find: ReconFind) -> void:
 	reveal(find)
