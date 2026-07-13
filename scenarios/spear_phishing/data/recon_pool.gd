@@ -24,20 +24,30 @@ static func get_finds() -> Array[ReconFind]:
 		ReconFind.create(&"q2d_whiteboard", "LinkedIn", true, false, &"q2d_teamfoto",
 				Rect2(0.55, 0.08, 0.32, 0.34)),
 		# Instagram. Kevin's post is a zoomable selfie (bible Q5); the mail schema
-		# is zoomed out of the screen behind him via a hotspot.
+		# is zoomed out of the screen behind him via a hotspot. Noise interleaved
+		# so the relevant post is not simply "the first one".
 		ReconFind.create_post(&"q5_praktikant", "Instagram", &"photo"),
+		ReconFind.create_noise(&"n_insta_sunset", "Instagram"),
 		ReconFind.create(&"q5x_cafe", "Instagram", false, true),
+		ReconFind.create_noise(&"n_insta_hund", "Instagram"),
 		ReconFind.create(&"q5_schema", "Instagram", true, false, &"q5_praktikant",
 				Rect2(0.58, 0.22, 0.34, 0.42)),
-		# kununu (1 junk).
+		# kununu (1 junk + noise reviews).
 		ReconFind.create(&"q6_kununu", "kununu"),
+		ReconFind.create_noise(&"n_kmunu_neutral", "kununu"),
 		ReconFind.create(&"q6x_lob", "kununu", false, true),
-		# Google (2 junk).
+		ReconFind.create_noise(&"n_kmunu_kantine", "kununu"),
+		# Google (2 junk + noise results).
 		ReconFind.create(&"q7_jodler", "Google", false, true),
+		ReconFind.create_noise(&"n_goggle_uni", "Google"),
 		ReconFind.create(&"q7x_makler", "Google", false, true),
 		ReconFind.create(&"q9_verein", "Google"),
-		# JobScout.
+		ReconFind.create_noise(&"n_goggle_ad", "Google"),
+		# JobScout (real inserat + noise listings).
 		ReconFind.create(&"q3_stelle", "JobScout"),
+		ReconFind.create_noise(&"n_jobscoot_verkauf", "JobScout"),
+		ReconFind.create_noise(&"n_jobscoot_pflege", "JobScout"),
 		# Firmenwebsite.
 		ReconFind.create(&"q4_presse", "Firmenwebsite"),
+		ReconFind.create_noise(&"n_presse_jubilaeum", "Firmenwebsite"),
 	]

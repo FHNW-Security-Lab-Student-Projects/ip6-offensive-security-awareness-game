@@ -19,6 +19,9 @@ const LEAK_CLOSE := "⟧"
 @export var source: String
 @export var is_hidden: bool = false
 @export var is_junk: bool = false
+# Non-collectable stage dressing: renders like a real find but carries no leak
+# marker and never enters the deck (guaranteed by this flag, not by content).
+@export var is_noise: bool = false
 # Optional surface find this hidden find is attached to. Empty = standalone.
 # One parent->child level only, no deeper nesting.
 @export var parent_id: StringName = &""
@@ -56,6 +59,16 @@ static func create_post(p_id: StringName, p_source: String, p_kind: StringName,
 	find.source = p_source
 	find.kind = p_kind
 	find.is_junk = p_is_junk
+	return find
+
+
+# Factory for a noise find: renders in the platform card but is never
+# collectable and carries no leak marker (its body key resolves to plain copy).
+static func create_noise(p_id: StringName, p_source: String) -> ReconFind:
+	var find := ReconFind.new()
+	find.id = p_id
+	find.source = p_source
+	find.is_noise = true
 	return find
 
 

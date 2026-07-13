@@ -89,9 +89,17 @@ func _process(_delta: float) -> bool:
 		if f.is_junk:
 			junk += 1
 		sources[f.source] = true
-	print("pool size (expect 17): ", finds.size())
+	print("pool size (expect 26): ", finds.size())
 	print("junk count (expect 6): ", junk)
 	print("distinct sources (expect 6): ", sources.size())
+
+	# Noise is non-collectable stage dressing: collect() rejects it and its body
+	# carries no leak marker (deck is still empty here).
+	var noise := _find_by_id(finds, &"n_goggle_uni")
+	print("noise carries no leak marker (expect true): ", not tr(noise.body_key()).contains(ReconFind.LEAK_OPEN))
+	var before_noise: int = _recon.collected.size()
+	_recon.collect(noise)
+	print("collect() rejects noise (expect unchanged): ", _recon.collected.size() == before_noise)
 
 	# Marker invariant across every post-rendered find (any find that resolves a
 	# body). A body WITHOUT a marker is valid (no leak); a body WITH markers must

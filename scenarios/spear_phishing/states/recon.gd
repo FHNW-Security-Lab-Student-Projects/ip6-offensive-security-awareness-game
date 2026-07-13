@@ -84,6 +84,8 @@ func _ready() -> void:
 # --- collect / reveal logic (unchanged) -------------------------------------
 
 func collect(find: ReconFind) -> void:
+	if find.is_noise:
+		return
 	if find.is_hidden and not is_revealed(find):
 		return
 	if is_collected(find):
@@ -297,6 +299,12 @@ func build_leak_body(find: ReconFind) -> RichTextLabel:
 	body.add_theme_font_override("normal_font", Style.FONT_REGULAR)
 	body.add_theme_font_size_override("normal_font_size", Style.FONT_SIZE_BODY)
 	body.add_theme_color_override("default_color", Style.COLOR_TEXT)
+
+	# Noise is stage dressing: plain, non-clickable text — no leak span and no
+	# collect wiring, so it can never enter the deck (also guarded in collect()).
+	if find.is_noise:
+		body.text = ReconFind.parse_leak(tr(find.body_key())).get("text", "").replace("[", "[lb]")
+		return body
 
 	# Resolve + parse the leak once; the demarked text and span position are
 	# stashed on the body so _render_post_text/_apply_post_state stay stateless.
