@@ -76,6 +76,15 @@ var probe_signature_obtained: bool = false
 func set_collected_finds(ids: Array[StringName]) -> void:
 	collected_find_ids = ids.duplicate()
 
+# ---- MailBuilder → Resolve handoff ----
+# The MailBuilder writes the finished run here (outcome name, final bars,
+# turns used, played card ids); the Resolve phase reads it to build its
+# debrief. Carries no logic itself.
+var mail_result: Dictionary = {}
+
+func set_mail_result(result: Dictionary) -> void:
+	mail_result = result.duplicate(true)
+
 # Sortable, debuggable id: YYYYMMDD_HHMMSS_xxxx (xxxx = 4 hex chars).
 # Not cryptographically unique — fine for ~30 study participants.
 func _generate_session_uuid() -> String:

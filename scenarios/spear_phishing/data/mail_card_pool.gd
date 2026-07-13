@@ -10,6 +10,7 @@ extends RefCounted
 const MailCard := preload("res://scenarios/spear_phishing/data/mail_card.gd")
 
 # --- central tuning: the design's explicit difficulty knobs, one place -------
+const TURN_BUDGET := 5            # mails the player may send before the run ends
 const SUSPICION_START := 3
 const SUSPICION_TARGET := 3       # win requires suspicion <= this
 const SUSPICION_MIN := 0          # bar floor: no banking negative suspicion
@@ -20,6 +21,11 @@ const PRESSURE_MIN := 0
 const KOLLEGEN_MIN := 4           # suspicion in [MIN,MAX] at payload => KOLLEGEN
 const KOLLEGEN_MAX := 7
 const AMPLIFIER_BONUS := 1        # "Keiner fragt nach" adds this to pressure cards
+
+# Display range for the two status bars (0..MAX). Presentation lives with the
+# other tuning knobs so the UI never hardcodes a scale.
+const SUSPICION_BAR_MAX := 10
+const PRESSURE_BAR_MAX := 10
 
 const EPIC := MailCard.Type.EPIC
 const STANDARD := MailCard.Type.STANDARD
@@ -64,7 +70,12 @@ const GENERIC_CARDS := [
 
 const PAYLOAD_CARD := [&"zugang_bestaetigen", PAYLOAD, 0, 0, &"commitment", false]
 
-# Q8 card, only in hand once the mail-phase probe (out-of-office) has run.
+# The probe: a harmless mail whose only effect is to flip the run's probe flag
+# (grants_probe = 7th field). In hand until played; playing it costs a turn and
+# swaps in the Abwesenheits-Fenster card next refresh.
+const PROBE_CARD := [&"probe_ooo", EPIC, 0, 0, &"aufklaerung", false, true]
+
+# Q8 card, enters the hand once the probe has run (replaces PROBE_CARD).
 const ABWESENHEITS_FENSTER := [&"abwesenheits_fenster", EPIC, 0, 3, &"knappheit", false]
 
 # Cross-reference legendaries. `needs`: all find ids required. `needs_any`
@@ -84,12 +95,13 @@ const LEGENDARIES := [
 
 
 static func _make(def: Array) -> MailCard:
-	return MailCard.new(def[0], def[1], def[2], def[3], def[4], def[5])
+	var grants_probe: bool = def[6] if def.size() > 6 else false
+	return MailCard.new(def[0], def[1], def[2], def[3], def[4], def[5], grants_probe)
 
 
 # The player's fixed hand (no draw, no randomness): collected recon cards (incl.
-# traps) + unlocked legendaries + the Q8 card if the probe ran + the fixed
-# generic set + the payload (last).
+# traps) + unlocked legendaries + the probe (or, once run, the Q8 card it
+# unlocks) + the fixed generic set + the payload (last).
 static func build_hand(collected_find_ids: Array, probe_done: bool) -> Array:
 	var hand: Array = []
 	for fid in collected_find_ids:
@@ -98,8 +110,11 @@ static func build_hand(collected_find_ids: Array, probe_done: bool) -> Array:
 	for leg in LEGENDARIES:
 		if _legendary_unlocked(leg, collected_find_ids, probe_done):
 			hand.append(_make(leg["card"]))
+	# Exactly one of the two: the probe before it runs, the unlocked window after.
 	if probe_done:
 		hand.append(_make(ABWESENHEITS_FENSTER))
+	else:
+		hand.append(_make(PROBE_CARD))
 	for def in GENERIC_CARDS:
 		hand.append(_make(def))
 	hand.append(_make(PAYLOAD_CARD))
@@ -119,6 +134,15 @@ static func find_in_hand(hand: Array, card_id: StringName) -> MailCard:
 		if card.id == card_id:
 			return card
 	return null
+
+
+# Generic cards are inexhaustible (always in hand, every turn); everything else
+# is consumed once played. The UI uses this to decide what to remove after send.
+static func is_generic(card_id: StringName) -> bool:
+	for def in GENERIC_CARDS:
+		if def[0] == card_id:
+			return true
+	return false
 
 
 static func _legendary_unlocked(leg: Dictionary, collected: Array, probe_done: bool) -> bool:

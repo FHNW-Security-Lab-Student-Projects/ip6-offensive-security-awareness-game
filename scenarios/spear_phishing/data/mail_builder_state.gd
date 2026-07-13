@@ -17,6 +17,10 @@ var pressure: int
 var turns_left: int
 var outcome: Outcome = Outcome.NONE
 var played: Array[StringName] = []   # card ids in play order
+var probe_done: bool = false         # flipped once the probe card is played
+# Per-card snapshots of the most recent mail: [{id, suspicion, pressure}, ...] in
+# application order. The UI replays it to reveal the effect card by card.
+var last_mail_steps: Array = []
 
 var _turn_budget: int
 var _pressure_amplified: bool = false
@@ -39,32 +43,48 @@ func turns_used() -> int:
 	return _turn_budget - turns_left
 
 
-# Plays a card: applies its effect (with the "Keiner fragt nach" amplifier on
-# pressure cards), spends a turn, and resolves SPAM/IGNORIERT — or, for the
-# payload, the win/fail outcome. Returns the resulting Outcome (NONE if the run
-# continues). A finished run or an exhausted budget rejects further plays.
-func play_card(card: MailCard) -> Outcome:
+# The payload becomes playable on pressure alone; suspicion decides the outcome
+# (win vs Kollegen-Rückfrage). The gate and the win test are the run's single
+# source of truth — the UI reads them, it never re-derives the thresholds.
+func payload_gate_open() -> bool:
+	return pressure >= Pool.PRESSURE_TARGET
+
+
+func payload_would_win() -> bool:
+	return payload_gate_open() and suspicion <= Pool.SUSPICION_TARGET
+
+
+# One mail = one turn. Applies the drafted cards' effects in slot order
+# (bundled), spends a SINGLE turn, then resolves on the SUMMED end state. Records
+# a per-card reveal trace in last_mail_steps so the UI can show the effect card
+# by card AFTER sending (never before). Returns the resulting Outcome. A payload
+# in the draft fires the attack once its gate is open on the current bars.
+func play_mail(cards: Array) -> Outcome:
+	last_mail_steps = []
 	if is_over() or turns_left <= 0:
 		return outcome
-
-	if card.type == MailCard.Type.PAYLOAD:
-		return _resolve_payload(card)
+	if cards.is_empty():
+		return outcome
+	var payload_card := _find_payload(cards)
+	if payload_card != null and not payload_gate_open():
+		return outcome  # cannot fire the link yet; no turn spent
 
 	var suspicion_before := suspicion
 	var pressure_before := pressure
-
-	var applied_pressure := card.pressure
-	if card.pressure > 0 and _pressure_amplified:
-		applied_pressure += Pool.AMPLIFIER_BONUS
-	suspicion = maxi(Pool.SUSPICION_MIN, suspicion + card.suspicion)
-	pressure = maxi(Pool.PRESSURE_MIN, pressure + applied_pressure)
-	if card.amplifies_pressure:
-		_pressure_amplified = true
+	var ids: Array[String] = []
+	for card in cards:
+		ids.append(String(card.id))
+		if card.type == MailCard.Type.PAYLOAD:
+			continue
+		_apply_card(card)
+		last_mail_steps.append({"id": card.id, "suspicion": suspicion, "pressure": pressure})
 
 	turns_left -= 1
-	played.append(card.id)
-	_emit_card_played(card, suspicion_before, pressure_before)
+	_emit_mail_sent(ids, suspicion_before, pressure_before)
 
+	if payload_card != null:
+		last_mail_steps.append({"id": payload_card.id, "suspicion": suspicion, "pressure": pressure})
+		return _resolve_payload(payload_card)
 	if suspicion > Pool.SPAM_THRESHOLD:
 		_finish(Outcome.SPAM)
 	elif turns_left <= 0:
@@ -72,10 +92,67 @@ func play_card(card: MailCard) -> Outcome:
 	return outcome
 
 
-func _resolve_payload(card: MailCard) -> Outcome:
-	turns_left -= 1
+# A single card is just a one-card mail: keeps the earlier per-card semantics
+# (and every existing boundary test) intact while the UI drafts multi-card mails.
+func play_card(card: MailCard) -> Outcome:
+	return play_mail([card])
+
+
+# Applies one card's effect (bars, the "Keiner fragt nach" amplifier, the probe
+# flag) and logs it — WITHOUT spending a turn or resolving. play_mail owns the
+# turn and the outcome so effects bundle into a single mail.
+func _apply_card(card: MailCard) -> void:
+	var suspicion_before := suspicion
+	var pressure_before := pressure
+	var applied_pressure := card.pressure
+	if card.pressure > 0 and _pressure_amplified:
+		applied_pressure += Pool.AMPLIFIER_BONUS
+	suspicion = maxi(Pool.SUSPICION_MIN, suspicion + card.suspicion)
+	pressure = maxi(Pool.PRESSURE_MIN, pressure + applied_pressure)
+	if card.amplifies_pressure:
+		_pressure_amplified = true
+	if card.grants_probe:
+		probe_done = true
 	played.append(card.id)
-	var won := pressure >= Pool.PRESSURE_TARGET and suspicion <= Pool.SUSPICION_TARGET
+	_emit_card_played(card, suspicion_before, pressure_before)
+
+
+func _find_payload(cards: Array) -> MailCard:
+	for card in cards:
+		if card.type == MailCard.Type.PAYLOAD:
+			return card
+	return null
+
+
+# Passing spends a turn without playing a card (telemetry logs it). Lets a
+# player run the budget down to IGNORIERT instead of being forced into SPAM.
+func pass_turn() -> Outcome:
+	if is_over() or turns_left <= 0:
+		return outcome
+	turns_left -= 1
+	_emit({
+		"phase": "mail_pass",
+		"scenario_id": SCENARIO_ID,
+		"action": "pass_turn",
+		"is_correct": null,
+		"latency_ms": null,
+		"payload": {
+			"turn": played.size(),
+			"turns_left": turns_left,
+			"suspicion": suspicion,
+			"pressure": pressure,
+		},
+	})
+	if turns_left <= 0:
+		_finish(Outcome.IGNORIERT)
+	return outcome
+
+
+# Resolves the payload against the final bars. The gate check and the turn are
+# owned by play_mail; here we only score win vs Kollegen-Rückfrage and finish.
+func _resolve_payload(card: MailCard) -> Outcome:
+	played.append(card.id)
+	var won := payload_would_win()
 	var result := Outcome.WIN if won else Outcome.KOLLEGEN_RUECKFRAGE
 	_emit({
 		"phase": "mail_payload_attempt",
@@ -121,6 +198,27 @@ func _emit(payload: Dictionary) -> void:
 			_bus = (loop as SceneTree).root.get_node_or_null("EventBus")
 	if _bus != null:
 		_bus.emit_signal("generic_event", payload)
+
+
+# The mail unit: which cards went out together, on which turn, and the bar delta
+# for the whole mail. Complements the per-card mail_card_played events.
+func _emit_mail_sent(card_ids: Array, suspicion_before: int, pressure_before: int) -> void:
+	_emit({
+		"phase": "mail_sent",
+		"scenario_id": SCENARIO_ID,
+		"action": "mail_sent",
+		"is_correct": null,
+		"latency_ms": null,
+		"payload": {
+			"card_ids": card_ids,
+			"card_count": card_ids.size(),
+			"turn": turns_used(),
+			"suspicion_before": suspicion_before,
+			"suspicion_after": suspicion,
+			"pressure_before": pressure_before,
+			"pressure_after": pressure,
+		},
+	})
 
 
 func _emit_card_played(card: MailCard, suspicion_before: int, pressure_before: int) -> void:

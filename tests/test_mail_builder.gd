@@ -93,10 +93,16 @@ func _process(_delta: float) -> bool:
 	var ign_out := ign.play_card(_card(&"b", MailCard.Type.EPIC, 0, 0))
 	print("budget exhausted (expect IGNORIERT): ", MailRun.Outcome.keys()[ign_out])
 
-	# 6. Payload gate: too-early payload (pressure < 7) is not a win.
+	# 6. Payload gate: below the pressure target the payload is not playable. It
+	# is rejected (no turn spent, run continues) — NOT resolved as a loss. The
+	# gate is pressure-only; suspicion decides win vs kollegen once it is open.
 	var early := MailRun.new(8)
-	var early_out := early.play_card(_card(&"pay", MailCard.Type.PAYLOAD, 0, 0))  # 5/3
-	print("early payload not a win (expect KOLLEGEN_RUECKFRAGE): ", MailRun.Outcome.keys()[early_out])
+	print("gate closed at start pressure 5 (expect false): ", early.payload_gate_open())
+	var early_out := early.play_card(_pay())  # pressure 5 < 7
+	print("early payload rejected, run continues (expect NONE): ", _outcome_name(early_out))
+	print("rejected payload spent no turn (expect 8): ", early.turns_left)
+	early.play_card(_card(&"a", MailCard.Type.EPIC, 0, 2))  # pressure 7
+	print("gate open once pressure hits 7 (expect true): ", early.payload_gate_open())
 
 	# 7. "Keiner fragt nach" amplifier: +1 on later pressure cards only.
 	var amp := MailRun.new(8)
@@ -175,21 +181,93 @@ func _process(_delta: float) -> bool:
 	var pp7 := MailRun.new(8)
 	pp7.play_card(_card(&"a", MailCard.Type.EPIC, 0, 2))  # pressure 7, suspicion 3
 	print("payload at pressure 7 wins (expect WIN): ", _outcome_name(pp7.play_card(_pay())))
+	# One below target the gate is closed, so pressure 6 rejects the payload
+	# (no turn spent) rather than resolving it as a loss.
 	var pp6 := MailRun.new(8)
 	pp6.play_card(_card(&"a", MailCard.Type.EPIC, 0, 1))  # pressure 6, suspicion 3
-	print("payload at pressure 6 loses (expect KOLLEGEN_RUECKFRAGE): ", _outcome_name(pp6.play_card(_pay())))
+	print("payload at pressure 6 rejected, not playable (expect NONE): ", _outcome_name(pp6.play_card(_pay())))
+	print("pressure-6 payload spent no turn (expect 7): ", pp6.turns_left)
 
-	# 15. IGNORIERT boundary: the payload spends the last turn and still RESOLVES;
-	# it is never mistaken for budget exhaustion.
+	# 15. IGNORIERT boundary: a payload played on the last OPEN-gate turn still
+	# RESOLVES; a gate-closed payload is rejected and never ends the run.
 	var ig1 := MailRun.new(1)
 	print("single non-payload turn exhausts (expect IGNORIERT): ",
 		_outcome_name(ig1.play_card(_card(&"x", MailCard.Type.EPIC, 0, 0))))
 	var lp := MailRun.new(1)
-	print("payload on the only turn resolves, not ignoriert (expect KOLLEGEN_RUECKFRAGE): ",
-		_outcome_name(lp.play_card(_pay())))
+	print("gate-closed payload rejected (expect NONE): ", _outcome_name(lp.play_card(_pay())))
+	print("rejected payload left the turn (expect 1 left): ", lp.turns_left)
 	var lw := MailRun.new(2)
 	lw.play_card(_card(&"a", MailCard.Type.EPIC, 0, 2))  # pressure 7, turns_left 1
 	print("win on the last turn, not ignoriert (expect WIN): ", _outcome_name(lw.play_card(_pay())))
+
+	# 16. pass_turn: spends a turn, logs telemetry, runs the budget down to
+	# IGNORIERT instead of forcing a suspicion card (and SPAM).
+	var pt := MailRun.new(2)
+	pt.pass_turn()
+	print("pass spent a turn (expect 1 left): ", pt.turns_left)
+	print("run still open after one pass (expect NONE): ", _outcome_name(pt.outcome))
+	print("passing out the budget (expect IGNORIERT): ", _outcome_name(pt.pass_turn()))
+	print("mail_pass telemetry emitted (expect > 0): ", _events_of("mail_pass").size() > 0)
+
+	# 17. Probe mechanic (engine, not UI): the probe card is in hand before it
+	# runs; playing it flips probe_done and swaps the Abwesenheits-Fenster card
+	# into the hand while removing the probe.
+	print("probe card in hand before probe (expect true): ",
+		_has_card(Pool.build_hand([], false), &"probe_ooo"))
+	print("q8 card absent before probe (expect false): ",
+		_has_card(Pool.build_hand([], false), &"abwesenheits_fenster"))
+	var probe_card := Pool.find_in_hand(Pool.build_hand([], false), &"probe_ooo")
+	var pr := MailRun.new(8)
+	print("probe flag starts false (expect false): ", pr.probe_done)
+	pr.play_card(probe_card)
+	print("probe card flips the flag (expect true): ", pr.probe_done)
+	print("probe spent a turn (expect 7 left): ", pr.turns_left)
+	var after_probe := Pool.build_hand([], pr.probe_done)
+	print("q8 card in hand after probe (expect true): ", _has_card(after_probe, &"abwesenheits_fenster"))
+	print("probe card gone after it ran (expect false): ", _has_card(after_probe, &"probe_ooo"))
+
+	# ---- play_mail: bundled effects, one turn per mail, end-state resolution ----
+
+	# 18. Multiple cards bundle into ONE turn; effects sum.
+	var m := MailRun.new(5)
+	m.play_mail([_card(&"a", MailCard.Type.EPIC, 0, 2), _card(&"b", MailCard.Type.EPIC, 0, 2)])
+	print("two-card mail costs one turn (expect 4): ", m.turns_left)
+	print("two-card mail sums pressure 5+2+2 (expect 9): ", m.pressure)
+	print("reveal trace has one step per card (expect 2): ", m.last_mail_steps.size())
+
+	# 19. The amplifier boosts a later card within the same mail (slot order).
+	var ma := MailRun.new(5)
+	ma.play_mail([_card(&"kfn", MailCard.Type.EPIC, 0, 0, true), _card(&"p", MailCard.Type.STANDARD, 0, 3)])
+	print("amplified pressure inside one mail 5+(3+1) (expect 9): ", ma.pressure)
+
+	# 20. Outcome resolves on the END state: a senker after a raiser dodges spam.
+	var ms := MailRun.new(5)
+	var ms_out := ms.play_mail([_card(&"up", MailCard.Type.STANDARD, 5, 0), _card(&"dn", MailCard.Type.EPIC, -3, 0)])
+	print("mid-mail spike does not spam if end is safe (expect NONE): ", _outcome_name(ms_out))
+	print("end suspicion is the summed value 3+5-3 (expect 5): ", ms.suspicion)
+
+	# 21. Payload bundled with a senker: clean up and fire in one mail.
+	var mp := MailRun.new(5)
+	mp.play_mail([_card(&"pr", MailCard.Type.EPIC, 0, 2)])   # pressure 7, gate opens
+	mp.play_mail([_card(&"dirty", MailCard.Type.EPIC, 4, 0)])  # suspicion 7
+	var mp_out := mp.play_mail([_card(&"clean", MailCard.Type.EPIC, -4, 0), _pay()])  # -> 3, then win
+	print("payload bundled with a senker wins (expect WIN): ", _outcome_name(mp_out))
+
+	# 22. One turn per mail regardless of card count (budget of 5 mails).
+	var mt := MailRun.new(5)
+	mt.play_mail([_card(&"x", MailCard.Type.EPIC, 0, 1), _card(&"y", MailCard.Type.EPIC, 0, 1),
+		_card(&"z", MailCard.Type.EPIC, 0, 1)])
+	print("three-card mail still costs one turn (expect 4): ", mt.turns_left)
+
+	# 23. mail_sent telemetry carries the bundle.
+	var sent := _events_of("mail_sent")
+	print("mail_sent events emitted (expect > 0): ", sent.size() > 0)
+	print("mail_sent carries card_ids (expect true): ", sent[0]["payload"].has("card_ids"))
+	var has_bundle := false
+	for e in sent:
+		if int(e["payload"]["card_count"]) >= 2:
+			has_bundle = true
+	print("a multi-card mail_sent was logged (expect true): ", has_bundle)
 
 	print("TEST DONE")
 	return true

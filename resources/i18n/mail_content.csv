@@ -57,3 +57,52 @@ MAIL_IDENTITAET_GESICHERT_NAME,Identität gesichert
 MAIL_IDENTITAET_GESICHERT_TEXT,"Schema plus Bestätigung. Exakte Adresse und Dringlichkeit zugleich."
 MAIL_ABWESENHEITS_FENSTER_NAME,Abwesenheits-Fenster
 MAIL_ABWESENHEITS_FENSTER_TEXT,"Er ist abwesend und im Stress. Eine Deadline wirkt jetzt völlig normal."
+MAIL_PROBE_OOO_NAME,Erreichbarkeit prüfen
+MAIL_PROBE_OOO_TEXT,"Eine harmlose Testmail. Löst womöglich eine automatische Abwesenheitsnotiz aus."
+MAIL_SONNTAGS_HANNES_FRAG,Entschuldigen Sie die Nachricht ausserhalb der üblichen Zeit.
+MAIL_FRISCHE_IT_FRAG,wir betreuen ab sofort die IT-Infrastruktur Ihres Hauses.
+MAIL_KEINER_FRAGT_NACH_FRAG,Bitte führen Sie die Schritte wie gewohnt direkt aus.
+MAIL_MIGRATIONS_AUFHAENGER_FRAG,Im Zuge der laufenden Systemmigration ist eine Bestätigung erforderlich.
+MAIL_PROJEKT_HELVETIA_FRAG,Es betrifft die Zugänge im Umfeld von Projekt Helvetia.
+MAIL_VEREINSKOLLEGE_FRAG,Wir kennen uns übrigens aus dem Verein.
+MAIL_VERTRAUTER_KONTAKT_FRAG,Ein gemeinsamer Kontakt hat mich an Sie verwiesen.
+MAIL_MAIL_SCHEMA_FRAG,Diese Nachricht folgt dem üblichen Format des Supports.
+MAIL_BIT_BUERLI_FRAG,Wir handeln im Auftrag Ihres IT-Partners Bit & Bürli.
+MAIL_SYSTEMWISSEN_FRAG,"Es geht um Ihr Kernsystem, mit dem Sie täglich arbeiten."
+MAIL_ARCHIV_FUND_FRAG,Ihre hinterlegten Angaben stimmen mit unseren Unterlagen überein.
+MAIL_BADGE_LECK_FRAG,Zur Verifizierung nennen wir Ihre bekannten Badge-Details.
+MAIL_KATZEN_SMALLTALK_FRAG,"PS: Anbei ein Foto meiner Katze, herzig oder?"
+MAIL_NAMENSVETTER_JODLER_FRAG,"Grüsse auch vom Jodlerklub, wie letztes Mal."
+MAIL_NAMENSVETTER_MAKLER_FRAG,Zur Immobilie melde ich mich separat noch.
+MAIL_FALSCHE_FIRMA_FRAG,Dies betrifft Ihr Konto bei der Muster GmbH.
+MAIL_RUNDUM_LOB_FRAG,Ganz generell machen Sie wirklich einen super Job!
+MAIL_ALTER_BEITRAG_FRAG,Bezugnehmend auf das längst abgeschlossene Altprojekt.
+MAIL_CAFE_STANDORT_FRAG,"Schöner Ort übrigens, das Café von neulich."
+MAIL_KONTO_GESPERRT_FRAG,Ihr Konto wurde vorübergehend gesperrt.
+MAIL_RECHNUNG_UNBEZAHLT_FRAG,Eine offene Rechnung ist noch nicht beglichen.
+MAIL_FRIST_HEUTE_FRAG,Die Frist zur Bestätigung läuft heute ab.
+MAIL_GRATIS_KRYPTO_FRAG,Sichern Sie sich jetzt Ihr kostenloses Krypto-Guthaben!
+MAIL_ZUGANG_BESTAETIGEN_FRAG,Bitte bestätigen Sie hier Ihren Zugang: [ zugang-bestaetigen.example ]
+MAIL_PERFEKTER_ABSENDER_FRAG,Als Ihr verifizierter IT-Partner schreiben wir Sie direkt an.
+MAIL_ECHTER_VORWAND_FRAG,Konkret geht es um die migrationsbedingte Freischaltung bis heute.
+MAIL_VERIFIZIERT_FRAG,Zur Sicherheit: die Anfrage ist intern bestätigt und legitim.
+MAIL_IDENTITAET_GESICHERT_FRAG,Absender und Vorgang sind eindeutig Ihrem Konto zugeordnet.
+MAIL_ABWESENHEITS_FENSTER_FRAG,"Da Sie gleich abwesend sind, erledigen wir das jetzt rasch."
+MAIL_PREVIEW_FROM_VALUE,it-support@bit-buerli-services.example
+MAIL_PREVIEW_TO_VALUE,hannes.zinsli@fintech-ag.example
+MAIL_PREVIEW_SUBJECT_VALUE,Dringend: Zugang bestätigen
+MAIL_BOSS_INTRO,"Bau die Mail zusammen. Erst Druck aufbauen, dann den Link setzen. Und halt das Misstrauen unten."
+MAIL_BOSS_SUSPICION_HIGH,Vorsicht. Das wird ihm langsam suspekt.
+MAIL_BOSS_SUSPICION_CRITICAL,Noch eine falsche Karte und er meldet uns als Spam. Rudere zurück.
+MAIL_BOSS_PRESSURE_OK,Gut. Er steht unter Druck und die Mail ist sendebereit.
+MAIL_BOSS_PAYLOAD_READY,Sauber, kaum Misstrauen. Jetzt den Link, das sitzt.
+MAIL_BOSS_SCHROTT,Was soll das? Der Mist gehört nicht in die Mail.
+MAIL_TOAST_PROBE,Automatische Antwort erhalten. Er ist abwesend.
+MAIL_OUTCOME_WIN_TITLE,ZUGANG ERLANGT
+MAIL_OUTCOME_WIN_TEXT,Er hat geklickt. Der Zugang steht. Sauber gespielt.
+MAIL_OUTCOME_SPAM_TITLE,ALS SPAM MARKIERT
+MAIL_OUTCOME_SPAM_TEXT,Zu plump. Die Mail landete im Spam und kam nie an.
+MAIL_OUTCOME_KOLLEGEN_RUECKFRAGE_TITLE,RÜCKFRAGE AUSGELÖST
+MAIL_OUTCOME_KOLLEGEN_RUECKFRAGE_TEXT,Er wurde stutzig und fragt intern nach. Aufgeflogen.
+MAIL_OUTCOME_IGNORIERT_TITLE,IGNORIERT
+MAIL_OUTCOME_IGNORIERT_TEXT,Zu zögerlich. Er hat die Mail einfach ignoriert.
