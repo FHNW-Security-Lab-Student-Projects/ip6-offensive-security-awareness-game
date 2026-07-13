@@ -64,6 +64,18 @@ func consume_mission_turn() -> void:
 	mission_turns_left -= 1
 	mission_turns_changed.emit(mission_turns_left, mission_turn_budget)
 
+# ---- Recon → MailBuilder handoff ----
+# Recon writes the ids of the collected finds here on advance; the MailBuilder
+# reads them to build the hand (find id -> card). Carries no logic itself.
+var collected_find_ids: Array[StringName] = []
+
+# Set true once the mail-phase probe (out-of-office reply, bible Q8) has run.
+# Deferred to a future UI task; the MailBuilder catalog gates the Q8 cards on it.
+var probe_signature_obtained: bool = false
+
+func set_collected_finds(ids: Array[StringName]) -> void:
+	collected_find_ids = ids.duplicate()
+
 # Sortable, debuggable id: YYYYMMDD_HHMMSS_xxxx (xxxx = 4 hex chars).
 # Not cryptographically unique — fine for ~30 study participants.
 func _generate_session_uuid() -> String:

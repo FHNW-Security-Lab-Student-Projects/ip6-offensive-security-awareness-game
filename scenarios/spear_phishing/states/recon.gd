@@ -518,4 +518,9 @@ func _update_deck_label() -> void:
 
 
 func _on_advance_button_pressed() -> void:
+	# Hand the collected finds to the MailBuilder phase (find id -> card there).
+	var ids: Array[StringName] = []
+	for entry in collected:
+		ids.append(entry.id)
+	GameState.set_collected_finds(ids)
 	advance_requested.emit()

@@ -1,0 +1,59 @@
+keys,de
+MAIL_SONNTAGS_HANNES_NAME,Sonntags-Hannes
+MAIL_SONNTAGS_HANNES_TEXT,"Er antwortet noch spätabends zuverlässig. Eine Mail zur Unzeit wirkt bei ihm normal."
+MAIL_FRISCHE_IT_NAME,Frische IT
+MAIL_FRISCHE_IT_TEXT,"Die neue IT-Firma kennt niemand persönlich. Ideal, um sie vorzutäuschen."
+MAIL_KEINER_FRAGT_NACH_NAME,Keiner fragt nach
+MAIL_KEINER_FRAGT_NACH_TEXT,"Anweisungen von der IT werden ohne Rückfrage befolgt. Verstärkt deine Druckkarten."
+MAIL_MIGRATIONS_AUFHAENGER_NAME,Migrations-Aufhänger
+MAIL_MIGRATIONS_AUFHAENGER_TEXT,Die laufende Migration ist ein legitimer Vorwand für eine dringende IT-Mail.
+MAIL_PROJEKT_HELVETIA_NAME,Projekt Helvetia
+MAIL_PROJEKT_HELVETIA_TEXT,Der interne Projektname macht dich zum vermeintlichen Insider.
+MAIL_VEREINSKOLLEGE_NAME,Vereinskollege
+MAIL_VEREINSKOLLEGE_TEXT,"Allein kaum nützlich. Wertvoll erst kombiniert mit einem zweiten Fund."
+MAIL_VERTRAUTER_KONTAKT_NAME,Vertrauter Kontakt
+MAIL_VERTRAUTER_KONTAKT_TEXT,"Ein gemeinsamer Kontakt im Netzwerk. Kein Effekt allein, aber ein Baustein."
+MAIL_MAIL_SCHEMA_NAME,Mail-Schema
+MAIL_MAIL_SCHEMA_TEXT,"Das Adressformat der Firma. Technische Voraussetzung, allein ohne Wirkung."
+MAIL_BIT_BUERLI_NAME,Bit & Bürli bestätigt
+MAIL_BIT_BUERLI_TEXT,Bestätigt Bit & Bürli als IT-Partner und legt den Spoof-Absender fest.
+MAIL_SYSTEMWISSEN_NAME,Systemwissen
+MAIL_SYSTEMWISSEN_TEXT,Nennt das echte Kernsystem beim Namen und wirkt dadurch legitim.
+MAIL_ARCHIV_FUND_NAME,Archiv-Fund
+MAIL_ARCHIV_FUND_TEXT,Ein Archiv-Snapshot bestätigt das Adressschema ein zweites Mal.
+MAIL_BADGE_LECK_NAME,Badge-Leck
+MAIL_BADGE_LECK_TEXT,Interne Badge-Details beweisen Zugehörigkeit und senken Misstrauen.
+MAIL_KATZEN_SMALLTALK_NAME,Katzen-Smalltalk
+MAIL_KATZEN_SMALLTALK_TEXT,"Ein Katzenfoto in einer Phishing-Mail. Wirkt creepy und ahnungslos."
+MAIL_NAMENSVETTER_JODLER_NAME,Namensvetter: Jodler
+MAIL_NAMENSVETTER_JODLER_TEXT,"Der falsche Hannes Zinsli. Ein Hobby, das dein Ziel gar nicht hat."
+MAIL_NAMENSVETTER_MAKLER_NAME,Namensvetter: Makler
+MAIL_NAMENSVETTER_MAKLER_TEXT,"Wieder der falsche Hannes Zinsli, diesmal ein Immobilienmakler."
+MAIL_FALSCHE_FIRMA_NAME,Falsche Firma
+MAIL_FALSCHE_FIRMA_TEXT,Gehört zu einem anderen Unternehmen. Komplett am Ziel vorbei.
+MAIL_RUNDUM_LOB_NAME,Rundum-Lob
+MAIL_RUNDUM_LOB_TEXT,Nichtssagendes Lob ohne jeden verwertbaren Inhalt.
+MAIL_ALTER_BEITRAG_NAME,Alter Beitrag
+MAIL_ALTER_BEITRAG_TEXT,Ein längst beendetes Projekt. Veraltet und wertlos.
+MAIL_CAFE_STANDORT_NAME,Café-Standort
+MAIL_CAFE_STANDORT_TEXT,"Ein getaggter Café-Standort. Nett, aber keine Munition."
+MAIL_KONTO_GESPERRT_NAME,Konto gesperrt
+MAIL_KONTO_GESPERRT_TEXT,"Ihr Konto wurde gesperrt. Plumper Druck, der Misstrauen weckt."
+MAIL_RECHNUNG_UNBEZAHLT_NAME,Rechnung unbezahlt
+MAIL_RECHNUNG_UNBEZAHLT_TEXT,"Offene Rechnung, letzte Mahnung. Druck mit Beigeschmack."
+MAIL_FRIST_HEUTE_NAME,Frist heute
+MAIL_FRIST_HEUTE_TEXT,"Die Frist läuft heute ab. Zeitdruck, der auch Misstrauen hebt."
+MAIL_GRATIS_KRYPTO_NAME,Gratis Krypto
+MAIL_GRATIS_KRYPTO_TEXT,"Gratis Krypto für Sie. Viel zu offensichtlich, reiner Alarm."
+MAIL_ZUGANG_BESTAETIGEN_NAME,Zugang bestätigen
+MAIL_ZUGANG_BESTAETIGEN_TEXT,Der eigentliche Angriff: der Link zum Bestätigen des Zugangs.
+MAIL_PERFEKTER_ABSENDER_NAME,Perfekter Absender
+MAIL_PERFEKTER_ABSENDER_TEXT,"Frische IT plus bestätigter Partner. Ein Absender ganz ohne Baseline."
+MAIL_ECHTER_VORWAND_NAME,Echter Vorwand
+MAIL_ECHTER_VORWAND_TEXT,"Migration plus Projektname. Ein konkreter, zeitlich begrenzter Grund."
+MAIL_VERIFIZIERT_NAME,Verifiziert
+MAIL_VERIFIZIERT_TEXT,Das Vereinsfoto entschärft die Namensvetter-Falle und sichert das Ziel.
+MAIL_IDENTITAET_GESICHERT_NAME,Identität gesichert
+MAIL_IDENTITAET_GESICHERT_TEXT,"Schema plus Bestätigung. Exakte Adresse und Dringlichkeit zugleich."
+MAIL_ABWESENHEITS_FENSTER_NAME,Abwesenheits-Fenster
+MAIL_ABWESENHEITS_FENSTER_TEXT,"Er ist abwesend und im Stress. Eine Deadline wirkt jetzt völlig normal."
