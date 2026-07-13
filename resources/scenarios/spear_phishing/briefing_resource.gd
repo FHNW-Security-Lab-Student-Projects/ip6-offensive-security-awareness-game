@@ -5,6 +5,8 @@ class_name BriefingResource
 extends Resource
 
 @export var speaker_name: String = ""
+# Short target descriptor for the OS status bar (e.g. "H. Zinsli · CEO").
+@export var target_name: String = ""
 @export var intro_lines: PackedStringArray = PackedStringArray()
 @export_multiline var mission_text: String = ""
 @export_multiline var reward_text: String = ""

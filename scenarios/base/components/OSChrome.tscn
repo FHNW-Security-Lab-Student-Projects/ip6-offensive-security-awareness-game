@@ -1,0 +1,155 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scenarios/base/components/os_chrome.gd" id="1_script"]
+
+[node name="OSChrome" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("1_script")
+
+[node name="Bar" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 80.0
+grow_horizontal = 2
+theme_override_constants/separation = 0
+
+[node name="StatusBar" type="PanelContainer" parent="Bar"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 34)
+layout_mode = 2
+
+[node name="StatusRow" type="HBoxContainer" parent="Bar/StatusBar"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="AppLabel" type="Label" parent="Bar/StatusBar/StatusRow"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "OSCHROME_APP_NAME"
+vertical_alignment = 1
+
+[node name="TargetLabel" type="Label" parent="Bar/StatusBar/StatusRow"]
+unique_name_in_owner = true
+layout_mode = 2
+vertical_alignment = 1
+
+[node name="StatusSpacer" type="Control" parent="Bar/StatusBar/StatusRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="SecureLabel" type="Label" parent="Bar/StatusBar/StatusRow"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "OSCHROME_SECURE"
+vertical_alignment = 1
+
+[node name="ClockLabel" type="Label" parent="Bar/StatusBar/StatusRow"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "--:--"
+vertical_alignment = 1
+
+[node name="MissionBar" type="PanelContainer" parent="Bar"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 46)
+layout_mode = 2
+
+[node name="MissionRow" type="HBoxContainer" parent="Bar/MissionBar"]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="MissionTag" type="Button" parent="Bar/MissionBar/MissionRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 4
+text = "OSCHROME_MISSION_TAG"
+
+[node name="GoalLabel" type="Label" parent="Bar/MissionBar/MissionRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "..."
+text_overrun_behavior = 3
+vertical_alignment = 1
+
+[node name="StepperRow" type="HBoxContainer" parent="Bar/MissionBar/MissionRow"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="TurnsLabel" type="Label" parent="Bar/MissionBar/MissionRow"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "..."
+vertical_alignment = 1
+
+[node name="Dossier" type="Control" parent="."]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 0
+
+[node name="DossierDim" type="ColorRect" parent="Dossier"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0, 0, 0, 0.62)
+
+[node name="DossierPanel" type="PanelContainer" parent="Dossier"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(720, 0)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="DossierVBox" type="VBoxContainer" parent="Dossier/DossierPanel"]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="DossierTitle" type="Label" parent="Dossier/DossierPanel/DossierVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "OSCHROME_DOSSIER_TITLE"
+
+[node name="DossierMission" type="Label" parent="Dossier/DossierPanel/DossierVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "..."
+autowrap_mode = 3
+
+[node name="DossierReward" type="Label" parent="Dossier/DossierPanel/DossierVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "..."
+autowrap_mode = 3
+
+[node name="DossierClose" type="Label" parent="Dossier/DossierPanel/DossierVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "OSCHROME_DOSSIER_CLOSE"
+horizontal_alignment = 1
+
+[node name="ClockTimer" type="Timer" parent="."]
+unique_name_in_owner = true
+autostart = true
