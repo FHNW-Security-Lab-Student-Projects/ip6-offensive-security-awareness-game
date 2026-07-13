@@ -79,7 +79,7 @@ Drei Regeln, die daraus folgen und die den ganzen Recon-Inhalt tragen:
 | Q8 | Mail (Probe) | Abwesenheitsnotiz | Hannes ist weg, Signatur, Assistentin | Sein eigener Posteingang verrät ihn. |
 | Q9 | Google/PDF | Vereins-Leak | bestätigt Identität, Rapport | Privatleben offen, Schutz nutzlos. |
 
-Hidden-Interaktionen (Info erst nach Aktion sichtbar): Kommentare aufklappen (Q2), Foto zoomen (Q2, Q5), Probe-Mail senden (Q8), Suchergebnis anklicken (Q7, Q9). Technisch entspricht das dem Feld `is_hidden` auf dem ReconFind.
+Hidden-Interaktionen (Info erst nach Aktion sichtbar): Kommentare aufklappen (Q2), Foto zoomen (Q2, Q5), Probe-Mail senden (Q8), Suchergebnis anklicken (Q7, Q9). Technisch: Foto-Zoom-Funde tragen ein `hotspot: Rect2` (normierte Region) auf dem ReconFind und werden per Klick auf die Bildstelle direkt eingesammelt, Hover zeigt den Hinweis. Die übrigen Hidden-Interaktionen (Kommentare aufklappen, Probe-Mail) sind Future Work.
 
 ---
 
@@ -319,6 +319,47 @@ Theoretischer Anker: Ferreira, Coventry und Lenzini (2015) fassen die dominieren
 **PDF-Metadaten.** Im Geschäftsbericht steht im Autorfeld ein interner Benutzername wie "h.zinsli", plus "zuletzt bearbeitet von" einer zweiten Person. Bestätigt das Login-Schema, ohne dass es jemand bewusst preisgegeben hat. Karte-Idee: Epic "Metadaten-Leck", technischer Wow-Moment.
 
 Realer Anker für beide: die Strava-Heatmap 2018, die weltweit Standorte und Routinen von Militärpersonal verriet, einfach weil Leute ihre Laufstrecken öffentlich teilten. Gleiche Logik, anderes Fenster.
+
+## Anhang C: Recon-Ausbau (umgesetzt im Spiel)
+
+Zusätzliche Funde, die die dünnen Fenster (JobScout, Instagram, Google) füllen und die OSINT-Fläche verbreitern. Gleiche Designregeln wie Abschnitt 0. Code-Ids in Klammern.
+
+### Q3b · JobScout, zweite Anzeige, Systemwissen (Code: q3z_system)
+
+> **FinTech AG sucht: Sachbearbeiter/in Zahlungsverkehr, 80%**
+> Sie verarbeiten Zahlungen in unserem Kernbankensystem Finnova und betreuen den Fernzugang über unser VPN. Bewerbungen an jobs@fintech.ch.
+
+**Leck:** das interne Kernsystem (Finnova) und der VPN-Fernzugang. Der Angreifer weiss jetzt, über welches System und welchen Zugang er glaubwürdig schreiben kann, etwa eine Mail "Finnova-Wartung, bitte VPN neu bestätigen".
+**Karte:** Epic "Systemwissen", senkt Misstrauen, weil eine Mail, die das echte interne System nennt, legitim wirkt.
+**Awareness-Wink:** "Ein Inserat nennt euer Kernsystem beim Namen. Jetzt weiss er, worüber er schreiben muss."
+
+### Q5b · Instagram, Kevins Badge, Badge-Leck per Zoom (Code: q5b_badge, q5b_details)
+
+> **kevin_broesmeli** · FinTech AG
+> Endlich offiziell, mein eigener Badge ist da. Fühlt sich richtig gut an. #newjob #fintech
+> *(Foto vom Badge am Lanyard. Zoombar.)*
+
+*Hidden, nach Zoom:* auf dem Badge lesbar sind Firmenlogo, "Kevin Brösmeli", die Mitarbeiternummer "MA-0473" und "Gebäude A, 4. OG".
+
+**Leck:** das Badge-Format, das Mitarbeiternummern-Schema und das Gebäude mit Stockwerk. Physische Recon (ein Vorwand fürs Tailgating) oder ein ID-basierter Pretext. Verstärkt Q5: Kevins Stolz zeigt jetzt auch die physische Zugangsseite.
+**Karte:** Epic "Badge-Leck".
+**Awareness-Wink:** "Der Badge im Selfie. Logo, Name, Mitarbeiternummer, Stockwerk. Alles lesbar."
+
+### Q10 · Google, der Archiv-Fund (aus Anhang A übernommen, Code: q10_archiv)
+
+Erreichbar über ein weiteres Google-Resultat, das ins Webarchiv führt.
+
+> **FinTech AG Team (archivierte Seite)**
+> web.archive.org, Snapshot 12.03.2019
+> "...eine inzwischen ausgeschiedene Mitarbeiterin mit Direktwahl 044 555 21 40 und der Adresse vorname.nachname@fintech.ch..."
+
+**Leck:** bestätigt das Mail-Schema ein zweites Mal und liefert eine Durchwahl, die die längst gelöschte Live-Seite nicht mehr zeigt.
+**Karte:** Epic "Archiv-Fund", Schema-Bestätigung.
+**Awareness-Wink:** "Die Seite ist seit Jahren offline. Das Archiv hat sie trotzdem noch."
+
+### Junk-Ergänzung (Code: q3y_konkurrenz)
+
+Eine zusätzliche Schrott-Falle: ein Stelleninserat der "ZugFin AG" (Community Manager), ein anderes Unternehmen der Branche. Wer im JobScout-Fenster wahllos einsammelt, greift es mit und vertut einen Deck-Slot. Lektion wie beim Namensvetter (Q7): prüfe, WEM der Fund gehört, nicht nur, dass er nach Firma aussieht.
 
 ## Anhang B: Quellen für die schriftliche Arbeit (nicht Spielinhalt)
 

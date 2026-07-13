@@ -14,6 +14,11 @@ signal advance_requested
 # Max finds the player can carry into the mail builder. One place to tune.
 const DECK_LIMIT := 7
 
+# Centred photo box (feed photos). Landscape-ish so the placeholder reads as a
+# normal photo, not a stretched strip; hotspot rects map onto this box.
+const PHOTO_W := 520
+const PHOTO_H := 340
+
 const Style := preload("res://scenarios/spear_phishing/data/recon_browser_style.gd")
 const LockIconScene := preload("res://scenarios/spear_phishing/components/lock_icon.gd")
 const PhotoHotspot := preload("res://scenarios/spear_phishing/components/photo_hotspot.gd")
@@ -54,9 +59,6 @@ const PressPage := preload("res://scenarios/spear_phishing/components/source_pag
 # stays local to Recon in this slice (no GameState writes).
 var collected: Array[ReconFind] = []
 
-# Ids of revealed hidden finds. Monotonic: reveal has no undo.
-var revealed: Array[StringName] = []
-
 var _finds: Array[ReconFind] = []
 var _active_source: String = ""
 var _tabs: Dictionary = {}  # source(String) -> Button
@@ -81,12 +83,10 @@ func _ready() -> void:
 	_update_url()
 
 
-# --- collect / reveal logic (unchanged) -------------------------------------
+# --- collect logic ----------------------------------------------------------
 
 func collect(find: ReconFind) -> void:
 	if find.is_noise:
-		return
-	if find.is_hidden and not is_revealed(find):
 		return
 	if is_collected(find):
 		return
@@ -118,19 +118,6 @@ func is_collected(find: ReconFind) -> bool:
 
 func is_deck_full() -> bool:
 	return collected.size() >= DECK_LIMIT
-
-
-func reveal(find: ReconFind) -> void:
-	if not find.is_hidden or is_revealed(find):
-		return
-	var updated: Array[StringName] = revealed.duplicate()
-	updated.append(find.id)
-	revealed = updated
-	# TODO(telemetry): recon_find_revealed → EventBus.generic_event
-
-
-func is_revealed(find: ReconFind) -> bool:
-	return revealed.has(find.id)
 
 
 # --- browser chrome ---------------------------------------------------------
@@ -267,17 +254,7 @@ func _page_for(source: String) -> SourcePage:
 	return _pages[source]
 
 
-# --- host API for SourcePages (collect/reveal logic stays here, unchanged) --
-
-# True unless the find is a hidden child whose parent is absent from the pool.
-func is_reveal_available(find: ReconFind) -> bool:
-	if find.parent_id == &"":
-		return true
-	for f in _finds:
-		if f.id == find.parent_id:
-			return true
-	return false
-
+# --- host API for SourcePages (collect logic stays here) --------------------
 
 # The shared, ONLY path to collecting: a body carrying the leak span, wired to
 # the collect handler. Every platform card embeds this; nothing else collects.
@@ -328,28 +305,18 @@ func build_leak_body(find: ReconFind) -> RichTextLabel:
 	return body
 
 
-# A hidden find's fallback reveal control (used where no photo hotspot applies).
-func build_reveal_button(find: ReconFind) -> Button:
-	var button := Button.new()
-	button.set_meta("find_id", find.id)
-	button.set_meta("kind", "reveal")
-	button.text = "[Aktion] " + tr(find.reveal_key())
-	button.pressed.connect(_on_reveal_pressed.bind(find))
-	return button
-
-
-# Overlays clickable hotspots on `image` (a TextureRect) for every hidden,
-# unrevealed child of `parent_find` that carries a hotspot rect. The hotspot
-# docks onto the SAME reveal() as the button — only the trigger differs.
+# Overlays a collectable hotspot on `image` (a TextureRect) for every find that
+# carries a hotspot rect and points at `parent_find`. The find lives only here:
+# hovering shows a hint of what is in the image, clicking collects it directly
+# (no separate reveal step, no standalone card).
 func attach_hotspots(parent_find: ReconFind, image: Control) -> void:
 	image.mouse_filter = Control.MOUSE_FILTER_PASS
 	for child in _finds:
-		if child.parent_id != parent_find.id:
-			continue
-		if not child.is_hidden or is_revealed(child) or not child.has_hotspot():
+		if child.parent_id != parent_find.id or not child.has_hotspot():
 			continue
 		var hs := PhotoHotspot.new()
-		hs.set_meta("reveal_id", child.id)
+		hs.set_meta("hotspot_for", child.id)
+		hs.setup(ReconFind.parse_leak(tr(child.body_key())).get("text", ""), is_collected(child))
 		var r := child.hotspot
 		hs.anchor_left = r.position.x
 		hs.anchor_top = r.position.y
@@ -359,7 +326,7 @@ func attach_hotspots(parent_find: ReconFind, image: Control) -> void:
 		hs.offset_top = 0.0
 		hs.offset_right = 0.0
 		hs.offset_bottom = 0.0
-		hs.activated.connect(_on_hotspot_activated.bind(child))
+		hs.clicked.connect(_on_hotspot_clicked.bind(child))
 		image.add_child(hs)
 
 
@@ -405,8 +372,12 @@ func _render_post_text(find: ReconFind, leak: Dictionary, hovered: bool) -> Stri
 
 
 # A photo find: a viewable image surface with author + caption. Not collectable
-# itself; its hidden children are revealed by clicking a hotspot on the image
-# (see attach_hotspots). Returned to the calling SourcePage, not added directly.
+# itself; the finds embedded in it are collected by clicking a hotspot on the
+# image (see attach_hotspots). Returned to the calling SourcePage.
+#
+# The image sits in a centred, fixed-size box (not full-width) so it reads as a
+# normal photo instead of a stretched strip, and COVERED fills that box so the
+# normalised hotspot rects map onto the visible image.
 func build_photo_card(find: ReconFind) -> Control:
 	var card := PanelContainer.new()
 	card.set_meta("photo_id", find.id)
@@ -428,14 +399,14 @@ func build_photo_card(find: ReconFind) -> Control:
 	caption.text = ReconFind.parse_leak(tr(find.body_key())).get("text", "")
 	col.add_child(caption)
 
-	# COVERED so the image fills its rect: hotspot rects are normalised to the
-	# visible image, which only maps cleanly when there is no letterbox.
+	# No clip_contents: COVERED already crops the image to its rect, and clipping
+	# here would cut off a hotspot's hover hint at the image edge.
 	var photo := TextureRect.new()
 	photo.texture = TEAM_PHOTO
 	photo.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	photo.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
-	photo.custom_minimum_size = Vector2(0, 340)
-	photo.clip_contents = true
+	photo.custom_minimum_size = Vector2(PHOTO_W, PHOTO_H)
+	photo.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	col.add_child(photo)
 	attach_hotspots(find, photo)
 
@@ -459,17 +430,18 @@ func _on_highlight_hover(_meta: Variant, body: RichTextLabel, marker: HighlightM
 	_apply_post_state(body, marker, find)
 
 
-# --- interaction handlers (route to unchanged logic) ------------------------
+# --- interaction handlers (route to collect logic) --------------------------
 
-func _on_reveal_pressed(find: ReconFind) -> void:
-	reveal(find)
+# Clicking a photo hotspot collects (or uncollects) the embedded find directly,
+# the same toggle as an inline leak span, just triggered from the image.
+func _on_hotspot_clicked(find: ReconFind) -> void:
+	if is_collected(find):
+		uncollect(find)
+	else:
+		collect(find)
 	_rebuild_finds()
-
-
-# Same reveal path as the button, triggered by clicking the photo hotspot.
-func _on_hotspot_activated(find: ReconFind) -> void:
-	reveal(find)
-	_rebuild_finds()
+	_update_collected_label()
+	_update_deck_label()
 
 
 # --- status labels ----------------------------------------------------------

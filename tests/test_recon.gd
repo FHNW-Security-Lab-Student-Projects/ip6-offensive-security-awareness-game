@@ -54,7 +54,7 @@ func _hotspot_for(find_id: StringName) -> Control:
 	var out: Array = []
 	_walk(_finds_container(), Control, out)
 	for n in out:
-		if n.has_meta("reveal_id") and n.get_meta("reveal_id") == find_id:
+		if n.has_meta("hotspot_for") and n.get_meta("hotspot_for") == find_id:
 			return n
 	return null
 
@@ -89,8 +89,8 @@ func _process(_delta: float) -> bool:
 		if f.is_junk:
 			junk += 1
 		sources[f.source] = true
-	print("pool size (expect 26): ", finds.size())
-	print("junk count (expect 6): ", junk)
+	print("pool size (expect 31): ", finds.size())
+	print("junk count (expect 7): ", junk)
 	print("distinct sources (expect 6): ", sources.size())
 
 	# Noise is non-collectable stage dressing: collect() rejects it and its body
@@ -143,8 +143,17 @@ func _process(_delta: float) -> bool:
 	# The whiteboard is now a hotspot on the team photo, not a reveal button.
 	print("linkbook buttons in page (expect 0): ", buttons.size())
 	print("linkbook photo surfaces (expect 1): ", photos.size())
-	print("whiteboard not yet a post on linkbook (expect null): ", _rtl_for(&"q2d_whiteboard"))
-	print("whiteboard has a photo hotspot (expect true): ", _hotspot_for(&"q2d_whiteboard") != null)
+	# The whiteboard lives only as a hotspot on the team photo, never a card.
+	print("whiteboard is never a standalone post (expect null): ", _rtl_for(&"q2d_whiteboard"))
+	var wb_hs := _hotspot_for(&"q2d_whiteboard")
+	print("whiteboard has a photo hotspot (expect true): ", wb_hs != null)
+	# Clicking the hotspot collects the find directly (no reveal step), and
+	# clicking again uncollects it. Deck is empty here.
+	if wb_hs != null:
+		wb_hs.emit_signal("clicked")
+	print("whiteboard collected via hotspot (expect 1): ", _recon.collected.size())
+	_hotspot_for(&"q2d_whiteboard").emit_signal("clicked")
+	print("whiteboard uncollected via second click (expect 0): ", _recon.collected.size())
 
 	# Collect via the embedded highlight (meta click), then uncollect.
 	# Marking is value-neutral now: no success glyph in the text.
@@ -197,20 +206,14 @@ func _process(_delta: float) -> bool:
 	_rtl_for(&"q1_kontakt").meta_clicked.emit("q1_kontakt")
 	print("inline collect works again (expect 7): ", _recon.collected.size())
 
-	# The whiteboard is revealed by clicking its hotspot on the team photo (same
-	# reveal() as the button), after which it renders as a normal post.
-	var wb := _find_by_id(finds, &"q2d_whiteboard")
-	var hs := _hotspot_for(&"q2d_whiteboard")
-	if hs != null:
-		hs.emit_signal("activated")
-	print("whiteboard revealed via hotspot (expect true): ", _recon.is_revealed(wb))
-	print("whiteboard now renders as a post (expect not null): ", _rtl_for(&"q2d_whiteboard"))
-
 	# Platform-distinct layout: Instasnap is an image-centric feed — each post
-	# carries its own image (q5_praktikant + q5x_cafe), unlike the text tabs.
+	# carries its own image, unlike the text tabs. Kevin's selfie + badge photos
+	# carry their own collectable hotspots (schema, badge details).
 	_tab("Instagram").pressed.emit()
 	var imgs: Array = []
 	_walk(_finds_container(), TextureRect, imgs)
 	print("instasnap posts are image-centric (expect >=2): ", imgs.size())
+	print("instasnap schema hotspot present (expect true): ", _hotspot_for(&"q5_schema") != null)
+	print("instasnap badge hotspot present (expect true): ", _hotspot_for(&"q5b_details") != null)
 	print("TEST DONE")
 	return true

@@ -14,17 +14,13 @@ const PLACEHOLDER: Texture2D = preload("res://assets/sprites/placeholder/officeI
 const COLUMN_W := 460
 
 
-# Photo finds render as this platform's own square image card (with any
-# hotspots), not the generic feed photo card. Keep every widget (incl. the
-# shared reveal button) within the centred column so nothing spans the page.
+# Photo finds render as this platform's own square image card (with hotspots),
+# not the generic feed photo card. Hotspot finds are skipped by super (they live
+# on their parent photo).
 func _widget_for(host, find) -> Control:
-	if find.kind == &"photo" and not (find.is_hidden and not host.is_revealed(find)):
+	if find.kind == &"photo" and not find.has_hotspot():
 		return build_card(host, find)
-	var widget := super._widget_for(host, find)
-	if widget is Button:
-		widget.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
-		widget.custom_minimum_size = Vector2(COLUMN_W, 0)
-	return widget
+	return super._widget_for(host, find)
 
 
 func build_card(host, find) -> Control:
@@ -39,15 +35,17 @@ func build_card(host, find) -> Control:
 	card.add_theme_stylebox_override("panel", box)
 	card.custom_minimum_size = Vector2(COLUMN_W, 0)
 	card.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
-	card.clip_contents = true
+	# No clip_contents: it would cut off a hotspot's hover hint at the card edge.
+	# COVERED already crops the image; the trade-off is square (not rounded) image
+	# corners, which is barely visible at this radius.
 
 	var col := VBoxContainer.new()
 	col.add_theme_constant_override("separation", 0)
 	card.add_child(col)
 
-	# Square image: fixed height == column width, cropped to fill (clipped by the
-	# card). A fixed custom_minimum_size avoids AspectRatioContainer reporting a
-	# zero min-height inside a VBox (which would let the image overlap the text).
+	# Square image: fixed height == column width, cropped to fill by COVERED. A
+	# fixed custom_minimum_size avoids AspectRatioContainer reporting a zero
+	# min-height inside a VBox (which would let the image overlap the text).
 	var img := TextureRect.new()
 	img.texture = PLACEHOLDER
 	img.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
