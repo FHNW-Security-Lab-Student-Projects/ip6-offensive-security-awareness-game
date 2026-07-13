@@ -284,19 +284,25 @@ func _on_confident_pressed() -> void:
 	_update_dialogue_ui()
 
 func _on_dialog_choice_1_pressed() -> void:
-	if _dialogue_step == 10 or _dialogue_step == 20:
-		_dialogue_step += 1
-		_update_dialogue_ui()
-	elif _dialogue_step == 11 or _dialogue_step == 21:
-		_dialogue_step += 1
-		_update_dialogue_ui()
-	elif _dialogue_step == 12 or _dialogue_step == 22:
-		_ui_dialogue_box.visible = false
-		_barrier_shape.disabled = true 
+	match _dialogue_step:
+		11, 21: 
+			_dialogue_step += 1
+			_update_dialogue_ui()
+		12, 22: 
+			_ui_dialogue_box.visible = false
+			_barrier_shape.disabled = true 
+		10, 20: 
+			_ui_dialogue_box.visible = false
+			_ui_failure_popup.visible = true
 
 func _on_dialog_choice_2_pressed() -> void:
-	_ui_dialogue_box.visible = false
-	_ui_failure_popup.visible = true
+	match _dialogue_step:
+		10, 20: 
+			_dialogue_step += 1
+			_update_dialogue_ui()
+		11, 21: 
+			_ui_dialogue_box.visible = false
+			_ui_failure_popup.visible = true
 
 func _on_failure_ok_pressed() -> void:
 	_ui_failure_popup.visible = false

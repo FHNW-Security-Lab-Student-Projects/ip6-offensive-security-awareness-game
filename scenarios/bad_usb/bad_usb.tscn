@@ -4,12 +4,13 @@
 [ext_resource type="Script" uid="uid://ba7pie5wfblvt" path="res://scenarios/bad_usb/briefing.gd" id="2_cdqlc"]
 [ext_resource type="Texture2D" uid="uid://b2f73u3borvbw" path="res://assets/sprites/placeholder/background.webp" id="2_usfo3"]
 [ext_resource type="Script" uid="uid://dpibu0k7wghi0" path="res://scenarios/bad_usb/character_body_2d.gd" id="3_0c6e4"]
-[ext_resource type="Texture2D" uid="uid://cu7d1gilm0mj2" path="res://assets/Aseprite/Environment/Tree_SpriteSheet_Outlined-export.png" id="3_anqnk"]
 [ext_resource type="Script" uid="uid://dvhdvboyrsv1x" path="res://scenarios/bad_usb/resolve.gd" id="3_usfo3"]
 [ext_resource type="Texture2D" uid="uid://ce6q5c54y5g8c" path="res://assets/Aseprite/Characters/Main Character/east.png" id="5_kp1x0"]
+[ext_resource type="Texture2D" uid="uid://bsxf6d725mym3" path="res://assets/sprites/placeholder/backgroundCar.png" id="6_ehnmy"]
 [ext_resource type="Texture2D" uid="uid://bm5ceg8c0aohf" path="res://assets/Aseprite/Environment/Tree_SpriteSheet_Outlined-export_front.png" id="6_kp1x0"]
 [ext_resource type="Texture2D" uid="uid://bo3rdubye8yvr" path="res://assets/sprites/placeholder/infrontOfBuilding.webp" id="7_ap36y"]
 [ext_resource type="Texture2D" uid="uid://dabl1xkhosdfn" path="res://assets/sprites/placeholder/Lobby.jpg" id="8_3r2ah"]
+[ext_resource type="Texture2D" uid="uid://c45ryfbsda2xx" path="res://assets/sprites/placeholder/infrontOfBuildingCars.png" id="8_skyq6"]
 [ext_resource type="Texture2D" uid="uid://gik7s1wh0f8f" path="res://assets/sprites/placeholder/Charakters.png" id="9_3cyhg"]
 [ext_resource type="Texture2D" uid="uid://cc8wolnoe67ls" path="res://assets/sprites/placeholder/LobbyPlant.jpg" id="10_a3ter"]
 [ext_resource type="Texture2D" uid="uid://ppct87gxa0gr" path="res://assets/sprites/placeholder/elevator.webp" id="11_3cyhg"]
@@ -109,11 +110,6 @@ centered = false
 [node name="CloserBackground" type="ParallaxLayer" parent="BadUSBScenario/GameWorld/Background" unique_id=1458236915]
 position = Vector2(-8, -8)
 
-[node name="Sprite2D" type="Sprite2D" parent="BadUSBScenario/GameWorld/Background/CloserBackground" unique_id=207850800]
-position = Vector2(1672, 858)
-scale = Vector2(4.9, 4.9)
-texture = ExtResource("3_anqnk")
-
 [node name="Environment" type="Node2D" parent="BadUSBScenario/GameWorld" unique_id=1489106454]
 
 [node name="TileMapLayer" type="TileMapLayer" parent="BadUSBScenario/GameWorld/Environment" unique_id=977995304]
@@ -137,7 +133,7 @@ limit_right = 3067
 shape = SubResource("CapsuleShape2D_5yldq")
 
 [node name="Sprite2D" type="Sprite2D" parent="BadUSBScenario/GameWorld/Player" unique_id=699634802]
-position = Vector2(-3, 361)
+position = Vector2(0, 348)
 scale = Vector2(2.56, 2.56)
 texture = ExtResource("5_kp1x0")
 
@@ -156,6 +152,13 @@ texture = ExtResource("6_kp1x0")
 position = Vector2(4500, 1004)
 scale = Vector2(5, 5)
 texture = ExtResource("6_kp1x0")
+
+[node name="ParallaxLayer" type="ParallaxLayer" parent="BadUSBScenario/GameWorld/Foreground" unique_id=377106868]
+
+[node name="Sprite2D" type="Sprite2D" parent="BadUSBScenario/GameWorld/Foreground/ParallaxLayer" unique_id=1608897199]
+position = Vector2(2435, 506)
+scale = Vector2(5, 5)
+texture = ExtResource("6_ehnmy")
 
 [node name="Area2D" type="Area2D" parent="BadUSBScenario/GameWorld" unique_id=1351701357]
 position = Vector2(0, -200)
@@ -181,11 +184,6 @@ centered = false
 
 [node name="CloserBackground" type="ParallaxLayer" parent="BadUSBScenario/InfrontOfBuilding/Background" unique_id=1112395464]
 position = Vector2(-8, -8)
-
-[node name="Sprite2D" type="Sprite2D" parent="BadUSBScenario/InfrontOfBuilding/Background/CloserBackground" unique_id=28199949]
-position = Vector2(1672, 858)
-scale = Vector2(4.9, 4.9)
-texture = ExtResource("3_anqnk")
 
 [node name="Environment" type="Node2D" parent="BadUSBScenario/InfrontOfBuilding" unique_id=660879625]
 
@@ -233,6 +231,14 @@ texture = ExtResource("6_kp1x0")
 position = Vector2(4500, 1004)
 scale = Vector2(5, 5)
 texture = ExtResource("6_kp1x0")
+
+[node name="Cars" type="ParallaxLayer" parent="BadUSBScenario/InfrontOfBuilding/Foreground" unique_id=1318772351]
+position = Vector2(3747, 770)
+
+[node name="Sprite2D" type="Sprite2D" parent="BadUSBScenario/InfrontOfBuilding/Foreground/Cars" unique_id=1487485936]
+position = Vector2(824, -293)
+scale = Vector2(3, 3)
+texture = ExtResource("8_skyq6")
 
 [node name="BuildingEntrance" type="Area2D" parent="BadUSBScenario/InfrontOfBuilding" unique_id=816856550]
 
