@@ -1,17 +1,16 @@
 extends CharacterBody2D
 
-@export var SPEED: float = 300.00
-var gravity = ProjectSettings.get_setting("physics/2d/default_gravity")
+@export var SPEED: float = 300.0
 
-func _physics_process(delta: float) -> void:
-	# Add gravity
-	if not is_on_floor():
-		velocity.y += gravity * delta
-
-	# Get input for left and right movement
+func _physics_process(_delta: float) -> void:
+	
 	var direction = Input.get_axis("move_left", "move_right")
 	
-	# Apply speed based on direction
+	if direction < 0:
+		$Sprite2D.flip_h = true 
+	elif direction > 0:
+		$Sprite2D.flip_h = false 
+
 	if direction:
 		velocity.x = direction * SPEED
 	else:

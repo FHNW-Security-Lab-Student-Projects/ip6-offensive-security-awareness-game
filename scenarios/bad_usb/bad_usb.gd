@@ -2,7 +2,7 @@ extends ScenarioBase
 
 const SCENARIO_ID: String = "bad_usb"
 
-enum SubState { BRIEFING, STREET, FRONT, INSIDE, CORRIDOR, OFFICE, RESOLVE }
+enum SubState { BRIEFING, STREET, FRONT, INSIDE, TAILGATE, CORRIDOR, OFFICE, RESOLVE }
 
 @onready var _ui_briefing = $BadUSBScenario/CanvasLayer/Briefing
 @onready var _ui_resolve = $BadUSBScenario/CanvasLayer/Resolve
@@ -27,20 +27,29 @@ enum SubState { BRIEFING, STREET, FRONT, INSIDE, CORRIDOR, OFFICE, RESOLVE }
 
 @onready var _world_corridor = $BadUSBScenario/BeforeElevator
 @onready var _ui_corridor_btn = $BadUSBScenario/CanvasLayer/EnterCorridorBtn
-
-@onready var _world_office = $BadUSBScenario/BigOffice
-@onready var _ui_office_btn = $BadUSBScenario/BeforeElevator/EnterOfficeBtn
-@onready var _ui_usb_btn = $BadUSBScenario/CanvasLayer/InsertUSBBtn
-
 @onready var _ui_missing_badge = $BadUSBScenario/BeforeElevator/MissingBadgeUI
 @onready var _ui_npc_speech = $BadUSBScenario/BeforeElevator/NPCSpeechUI
+@onready var _ui_office_btn = $BadUSBScenario/BeforeElevator/EnterOfficeBtn
 @onready var _btn_restricted_elevator = $BadUSBScenario/CanvasLayer/RestrictedElevatorBtn
 
-# NEW: End Scene Variables
+@onready var _world_office = $BadUSBScenario/BigOffice
+@onready var _ui_usb_btn = $BadUSBScenario/CanvasLayer/InsertUSBBtn
+
+@onready var _lbl_title = $BadUSBScenario/CanvasLayer/Resolve/VBoxContainer/TitleLabel
 @onready var _img_story = $BadUSBScenario/CanvasLayer/Resolve/VBoxContainer/StoryImage
 @onready var _lbl_story = $BadUSBScenario/CanvasLayer/Resolve/VBoxContainer/StoryLabel
 @onready var _btn_next = $BadUSBScenario/CanvasLayer/Resolve/VBoxContainer/NextBtn
 @onready var _btn_finish = $BadUSBScenario/CanvasLayer/Resolve/VBoxContainer/FinishBtn
+
+@onready var _world_tailgate = $BadUSBScenario/TailgateDoor
+@onready var _npc_tailgate = $BadUSBScenario/TailgateDoor/Background/Background/NPC
+@onready var _sprite_open_door = $BadUSBScenario/TailgateDoor/Background/Background/Door
+
+@onready var _ui_tailgate_locked = $BadUSBScenario/TailgateDoor/MissingBadgeUI
+@onready var _btn_tailgate_trigger = $BadUSBScenario/TailgateDoor/TriggerTailgateBtn
+@onready var _btn_tailgate_enter = $BadUSBScenario/TailgateDoor/EnterTailgateDoorBtn
+
+var _tailgate_event_triggered: bool = false
 
 var _dialogue_step: int = 0
 var _inside_start_pos: Vector2 
@@ -49,7 +58,6 @@ var _front_door_pos: Vector2
 var _current: SubState = SubState.BRIEFING
 var _initialised: bool = false
 
-# NEW: Typewriter settings
 var _story_step: int = 0
 var _typewriter_speed: float = 0.04
 
@@ -68,12 +76,19 @@ func _setup() -> void:
 	_ui_usb_btn.visible = false    
 	_btn_restricted_elevator.visible = false 
 	
+	_ui_tailgate_locked.visible = false
+	_btn_tailgate_trigger.visible = false
+	_btn_tailgate_enter.visible = false
+	_sprite_open_door.visible = false 
+	
 	_world_street.visible = false
 	_world_street.process_mode = Node.PROCESS_MODE_DISABLED
 	_world_front.visible = false
 	_world_front.process_mode = Node.PROCESS_MODE_DISABLED
 	_world_inside.visible = false
 	_world_inside.process_mode = Node.PROCESS_MODE_DISABLED
+	_world_tailgate.visible = false 
+	_world_tailgate.process_mode = Node.PROCESS_MODE_DISABLED 
 	_world_corridor.visible = false
 	_world_corridor.process_mode = Node.PROCESS_MODE_DISABLED
 	_world_office.visible = false
@@ -131,11 +146,16 @@ func _setup() -> void:
 	_btn_next.pressed.connect(_on_next_pressed)
 	_btn_finish.pressed.connect(_on_finish_pressed)
 	
+	var tailgate_locked_zone = $BadUSBScenario/TailgateDoor/LockedDoorZone
+	tailgate_locked_zone.body_entered.connect(_on_locked_door_entered)
+	tailgate_locked_zone.body_exited.connect(_on_locked_door_exited)
+	_btn_tailgate_trigger.pressed.connect(_on_tailgate_trigger_pressed)
+	_btn_tailgate_enter.pressed.connect(_on_tailgate_enter_pressed)
+	
 	_inside_start_pos = _world_inside.get_node("Player").position
 
 func _on_start() -> void:
-	#Starting Point
-	_change_substate(SubState.OFFICE) 
+	_change_substate(SubState.BRIEFING) 
 
 func _on_door_entered(body: Node2D) -> void:
 	if body.name == "Player":
@@ -167,6 +187,42 @@ func _on_corridor_btn_pressed() -> void:
 	_ui_corridor_btn.visible = false
 	_change_substate(SubState.CORRIDOR)
 
+
+func _on_locked_door_entered(body: Node2D) -> void:
+	if body.name == "Player":
+		if not _tailgate_event_triggered:
+			_btn_tailgate_trigger.visible = true 
+		elif _sprite_open_door.visible: 
+			_btn_tailgate_enter.visible = true
+
+func _on_locked_door_exited(body: Node2D) -> void:
+	if body.name == "Player":
+		_btn_tailgate_trigger.visible = false
+		_btn_tailgate_enter.visible = false 
+		_ui_tailgate_locked.visible = false
+
+func _on_tailgate_trigger_pressed() -> void:
+	_btn_tailgate_trigger.visible = false 
+	_ui_tailgate_locked.visible = true 
+	_tailgate_event_triggered = true 
+	_start_npc_walk_event()
+
+func _start_npc_walk_event() -> void:
+	var door_position = Vector2(5534, _npc_tailgate.position.y) 
+	var tween = create_tween()
+	tween.tween_property(_npc_tailgate, "position", door_position, 6) 
+	tween.finished.connect(_on_npc_arrived_at_door)
+
+func _on_npc_arrived_at_door() -> void:
+	_ui_tailgate_locked.visible = false 
+	_sprite_open_door.visible = true 
+	_npc_tailgate.visible = false    
+	_btn_tailgate_enter.visible = true 
+
+func _on_tailgate_enter_pressed() -> void:
+	_btn_tailgate_enter.visible = false
+	_change_substate(SubState.OFFICE) 
+
 func _on_restricted_entered(body: Node2D) -> void:
 	if body.name == "Player":
 		_btn_restricted_elevator.visible = true 
@@ -193,7 +249,7 @@ func _on_npc_zone_exited(body: Node2D) -> void:
 func _on_office_btn_pressed() -> void:
 	_ui_office_btn.visible = false
 	_ui_npc_speech.visible = false
-	_change_substate(SubState.OFFICE)
+	_change_substate(SubState.TAILGATE) 
 
 func _on_pc_zone_entered(body: Node2D) -> void:
 	if body.name == "Player":
@@ -263,9 +319,11 @@ func _advance() -> void:
 		SubState.FRONT:
 			_change_substate(SubState.INSIDE)
 		SubState.INSIDE:
-			_change_substate(SubState.CORRIDOR)
+			_change_substate(SubState.CORRIDOR) # UPDATED
 		SubState.CORRIDOR:
-			_change_substate(SubState.OFFICE)
+			_change_substate(SubState.TAILGATE) # UPDATED
+		SubState.TAILGATE:
+			_change_substate(SubState.OFFICE)   # UPDATED
 		SubState.OFFICE:
 			_change_substate(SubState.RESOLVE)
 		SubState.RESOLVE:
@@ -292,6 +350,12 @@ func _change_substate(new_state: SubState) -> void:
 				_world_inside.process_mode = Node.PROCESS_MODE_DISABLED
 				_ui_reception_menu.visible = false
 				_ui_corridor_btn.visible = false 
+			SubState.TAILGATE: 
+				_world_tailgate.visible = false
+				_world_tailgate.process_mode = Node.PROCESS_MODE_DISABLED
+				_ui_tailgate_locked.visible = false
+				_btn_tailgate_trigger.visible = false
+				_btn_tailgate_enter.visible = false
 			SubState.CORRIDOR:
 				_world_corridor.visible = false
 				_world_corridor.process_mode = Node.PROCESS_MODE_DISABLED
@@ -319,6 +383,10 @@ func _change_substate(new_state: SubState) -> void:
 			_world_inside.visible = true
 			_world_inside.process_mode = Node.PROCESS_MODE_INHERIT
 			_world_inside.get_node("Player/Camera2D").make_current()
+		SubState.TAILGATE: 
+			_world_tailgate.visible = true
+			_world_tailgate.process_mode = Node.PROCESS_MODE_INHERIT
+			_world_tailgate.get_node("Player/Camera2D").make_current()
 		SubState.CORRIDOR:
 			_world_corridor.visible = true
 			_world_corridor.process_mode = Node.PROCESS_MODE_INHERIT
@@ -350,55 +418,68 @@ func _update_dialogue_ui() -> void:
 	_btn_choice2.visible = true
 	
 	match _dialogue_step:
+		# --- STRESSED PATH ---
 		10: 
 			_lbl_npc_text.text = "Guten Tag, kann ich Ihnen helfen? Sie wirken völlig außer Atem!"
-			_btn_choice1.text = "Ich bin zu spät für mein Meeting!"
-			_btn_choice2.text = "Wo sind hier die Computer? Lassen Sie mich durch!"
+			_btn_choice1.text = "Lassen Sie mich durch, sonst werde ich zusehen, wie Sie gefeuert werden!"
+			_btn_choice2.text = "Ich bin von der externen Security und bin zu spät für mein Meeting!"
 		11: 
 			_lbl_npc_text.text = "Oh je, beruhigen Sie sich. Mit wem haben Sie das Meeting denn?"
-			_btn_choice1.text = "Herr Müller! Dritter Stock, richtig?"
+			_btn_choice1.text = "Herrn Müller... Dritter Stock, richtig?"
 			_btn_choice2.text = "Das geht Sie nichts an!"
 		12: 
-			_lbl_npc_text.text = "Nein die Meetingräume sind im zweiten Stock! Beeilen Sie sich."
-			_btn_choice1.text = "Vielen Dank"
+			_lbl_npc_text.text = "Genau, dritter Stock! Beeilen Sie sich."
+			_btn_choice1.text = "Vielen Dank!"
 			_btn_choice2.visible = false
 			
+		# --- CONFIDENT PATH ---
 		20: 
 			_lbl_npc_text.text = "Guten Tag. Haben Sie einen Termin? Sie tragen keinen Besucherausweis."
-			_btn_choice1.text = "Ja, externes IT-Audit. Ich soll ein kritisches Update durchführen."
-			_btn_choice2.text = "Ich bin der neue Chef. Hat man Sie nicht informiert?"
+			_btn_choice1.text = "Ich bin der neue Chef. Hat man Sie nicht informiert?"
+			_btn_choice2.text = "Ich wurde angestellt, um die Sicherheit in diesem Unternehmen zu überprüfen."
 		21: 
-			_lbl_npc_text.text = "Ein Update? Haben Sie eine Bestätigung?"
-			_btn_choice1.text = "Ihr Kollege hat mich hier her bestellt... Ich denke er hat Sie informiert?"
-			_btn_choice2.text = "Hab ich vergessen. Darf ich trotzdem rein?"
+			_lbl_npc_text.text = "Ein Audit? Davon weiß ich absolut nichts."
+			_btn_choice1.text = "Wie ich sehe, lesen Sie Ihre Mails nicht. Das ist ein Sicherheitsrisiko. Dann bräuchte ich einmal Ihren Namen und den Ihres Vorgesetzten."
+			_btn_choice2.text = "Oh, bitte rufen Sie niemanden an, ich muss unangekündigt bleiben!"
 		22: 
-			_lbl_npc_text.text = "Uhm... Doch alles klar es ist alles korrekt so."
-			_btn_choice1.text = "Vielen Dank"
+			_lbl_npc_text.text = "Oh... warten Sie, das ist nicht nötig! Ich erinnere mich dunkel an die Mail. Es ist alles in Ordnung, gehen Sie ruhig durch!"
+			_btn_choice1.text = "Vielen Dank. Achten Sie künftig besser auf interne Mitteilungen."
 			_btn_choice2.visible = false
-
 
 func _start_resolve_story() -> void:
 	_story_step = 0
-	_btn_next.visible = true
-	_btn_finish.visible = false
 	_play_story_step()
 
 func _play_story_step() -> void:
-	_btn_next.disabled = true
-	
+	_btn_next.visible = false
+	_btn_finish.visible = false
 	_img_story.visible = false 
 	
 	var target_text = ""
 	
-	# First page
 	if _story_step == 0:
-		target_text = "Du hast erfolgreich die Firma infiltriert und den Virus über den USB-Stick eingeschleust. Du hast gemerkt wie einfach und vielleicht unrealistisch die Szenarien waren, jedoch kann das genau so in der realen Welt passieren. Aus Höflichkeit wird ein Sicherheitsrisiko."
-		_img_story.texture = preload("res://assets/sprites/placeholder/bspImg.png")
+		_lbl_title.text = "Schritt 1: Die Rezeption"
+		target_text = "Du hast die Empfangsperson unter Druck gesetzt oder mit falscher Autorität getäuscht. Selbst geschultes Personal kann in Stresssituationen Sicherheitsrichtlinien vergessen. Ausweise müssen immer und ohne Ausnahme kontrolliert werden, egal wer vor einem steht."
+		_img_story.texture = preload("res://assets/sprites/placeholder/storyImages/lobby_img.png")
 		
-	# Second Page
 	elif _story_step == 1:
-		target_text = "Weiteres..."
-		# _img_story.texture = preload("res://path_to_your_bad_image.png")
+		_lbl_title.text = "Schritt 2: Der Aufzug (Mitläufer-Effekt)"
+		target_text = "Du konntest den eingeschränkten Bereich betreten, weil die Mitarbeiter am Aufzug dachten: 'Wenn die Person schon hier drin ist, wird sie wohl hier arbeiten.' Wachsamkeit endet nicht an der Eingangstür. Unbekannte ohne sichtbaren Ausweis müssen freundlich angesprochen werden."
+		_img_story.texture = preload("res://assets/sprites/placeholder/storyImages/elevator_img.png")
+		
+	elif _story_step == 2:
+		_lbl_title.text = "Schritt 3: Tailgating an der Tür"
+		target_text = "Jemand hat dir aus reiner Freundlichkeit oder aus Unachtsamkeit die gesicherte Tür aufgelassen. In der realen Welt ist dies eine der häufigsten Schwachstellen. Höflichkeit darf Sicherheit nicht überschreiben. Jeder muss seinen eigenen Ausweis scannen, um Zutritt zu erhalten."
+		_img_story.texture = preload("res://assets/sprites/placeholder/storyImages/door_img.png")
+		
+	elif _story_step == 3:
+		_lbl_title.text = "Schritt 4: Der ungesperrte Arbeitsplatz"
+		target_text = "Ein kurzer Moment der Unachtsamkeit – ein nicht gesperrter Computer. Dies ermöglichte es dir erst, den präparierten USB-Stick anzuschließen. Der Bildschirm muss beim Verlassen des Platzes immer und sofort gesperrt werden auch wenn man nur kurz weggeht."
+		_img_story.texture = preload("res://assets/sprites/placeholder/storyImages/pc_img.png")
+		
+	elif _story_step == 4:
+		_lbl_title.text = "Fazit: Hätten die anderen ihren Job gemacht"
+		target_text = "Das Unternehmen hatte eigentlich gute Sicherheits-Vorkehrungen. Doch weil sich jeder auf den anderen verließ, funktionierte deine Infiltration. Physische Sicherheit ist eine Teamaufgabe – sie funktioniert nur, wenn jeder die Verantwortung übernimmt und Sicherheit nicht als 'die Aufgabe der Anderen' ansieht."
 		
 	_lbl_story.text = target_text
 	_lbl_story.visible_characters = 0
@@ -410,13 +491,15 @@ func _play_story_step() -> void:
 	tween.finished.connect(_on_typing_finished)
 
 func _on_typing_finished() -> void:
-	_btn_next.disabled = false
+	if _story_step < 4:
+		_img_story.visible = true 
 	
-	_img_story.visible = true 
-	
-	if _story_step >= 1:
+	if _story_step >= 4:
 		_btn_next.visible = false
 		_btn_finish.visible = true
+	else:
+		_btn_next.visible = true
+		_btn_finish.visible = false
 
 func _on_next_pressed() -> void:
 	_story_step += 1

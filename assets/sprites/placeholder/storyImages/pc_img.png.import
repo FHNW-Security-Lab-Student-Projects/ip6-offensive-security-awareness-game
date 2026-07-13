@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cop65jnyimabr"
-path="res://.godot/imported/west.png-a9bf0a18e9e9aa426c898e19a7b92142.ctex"
+uid="uid://8avyglgpc6j"
+path="res://.godot/imported/pc_img.png-48045dc5c2d7f4d69e58cc8644a4c77f.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/Aseprite/Characters/Main Character/west.png"
-dest_files=["res://.godot/imported/west.png-a9bf0a18e9e9aa426c898e19a7b92142.ctex"]
+source_file="res://assets/sprites/placeholder/storyImages/pc_img.png"
+dest_files=["res://.godot/imported/pc_img.png-48045dc5c2d7f4d69e58cc8644a4c77f.ctex"]
 
 [params]
 
