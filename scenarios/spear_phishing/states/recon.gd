@@ -22,7 +22,17 @@ const PHOTO_H := 340
 const Style := preload("res://scenarios/spear_phishing/data/recon_browser_style.gd")
 const LockIconScene := preload("res://scenarios/spear_phishing/components/lock_icon.gd")
 const PhotoHotspot := preload("res://scenarios/spear_phishing/components/photo_hotspot.gd")
-const TEAM_PHOTO: Texture2D = preload("res://assets/sprites/placeholder/team_photo.png")
+
+# Per-find photos (res://assets/sprites/recon/<id>.png). Finds without an entry
+# fall back to a neutral desk image. New image = drop a file named by find id.
+const RECON_PHOTOS := {
+	&"q2d_teamfoto": preload("res://assets/sprites/recon/q2d_teamfoto.png"),
+	&"q5_praktikant": preload("res://assets/sprites/recon/q5_praktikant.png"),
+	&"q5b_badge": preload("res://assets/sprites/recon/q5b_badge.png"),
+	&"q5x_cafe": preload("res://assets/sprites/recon/q5x_cafe.png"),
+	&"n_insta_sunset": preload("res://assets/sprites/recon/n_insta_sunset.png"),
+}
+const RECON_PHOTO_DEFAULT: Texture2D = preload("res://assets/sprites/recon/office_default.png")
 
 # Fantasy platform names for the visible tab labels. Logic uses the source
 # StringName, never these labels.
@@ -118,6 +128,11 @@ func is_collected(find: ReconFind) -> bool:
 
 func is_deck_full() -> bool:
 	return collected.size() >= DECK_LIMIT
+
+
+# The photo for a find, or the neutral default if it has no dedicated image.
+func photo_texture(find: ReconFind) -> Texture2D:
+	return RECON_PHOTOS.get(find.id, RECON_PHOTO_DEFAULT)
 
 
 # --- browser chrome ---------------------------------------------------------
@@ -311,12 +326,17 @@ func build_leak_body(find: ReconFind) -> RichTextLabel:
 # (no separate reveal step, no standalone card).
 func attach_hotspots(parent_find: ReconFind, image: Control) -> void:
 	image.mouse_filter = Control.MOUSE_FILTER_PASS
+	var bar := _build_hint_bar()
+	var bar_label := bar.get_child(0) as Label
+	var has_hotspot := false
 	for child in _finds:
 		if child.parent_id != parent_find.id or not child.has_hotspot():
 			continue
+		has_hotspot = true
+		var hint: String = ReconFind.parse_leak(tr(child.body_key())).get("text", "")
 		var hs := PhotoHotspot.new()
 		hs.set_meta("hotspot_for", child.id)
-		hs.setup(ReconFind.parse_leak(tr(child.body_key())).get("text", ""), is_collected(child))
+		hs.setup(hint, is_collected(child))
 		var r := child.hotspot
 		hs.anchor_left = r.position.x
 		hs.anchor_top = r.position.y
@@ -327,7 +347,44 @@ func attach_hotspots(parent_find: ReconFind, image: Control) -> void:
 		hs.offset_right = 0.0
 		hs.offset_bottom = 0.0
 		hs.clicked.connect(_on_hotspot_clicked.bind(child))
+		hs.mouse_entered.connect(_on_hotspot_hover.bind(bar, bar_label, hint, true))
+		hs.mouse_exited.connect(_on_hotspot_hover.bind(bar, bar_label, hint, false))
 		image.add_child(hs)
+	# Add the bar last so it draws above the hotspots; only if the image has any.
+	if has_hotspot:
+		image.add_child(bar)
+
+
+# A hover-hint bar overlaid on the bottom edge of a photo (Instagram caption
+# style): dark terminal panel, full image width, hidden until a hotspot is
+# hovered. Shared by all hotspots on the image.
+func _build_hint_bar() -> PanelContainer:
+	var bar := PanelContainer.new()
+	bar.visible = false
+	bar.mouse_filter = Control.MOUSE_FILTER_IGNORE  # clicks pass through to the hotspot
+	bar.anchor_left = 0.0
+	bar.anchor_right = 1.0
+	bar.anchor_top = 1.0
+	bar.anchor_bottom = 1.0
+	bar.grow_vertical = Control.GROW_DIRECTION_BEGIN
+	var sb := DarkMailPalette.flat_box(
+		Color(DarkMailPalette.BG_PANEL, 0.92), DarkMailPalette.GREEN, DarkMailPalette.BORDER_WIDTH)
+	sb.content_margin_left = 10
+	sb.content_margin_right = 10
+	sb.content_margin_top = 8
+	sb.content_margin_bottom = 8
+	bar.add_theme_stylebox_override("panel", sb)
+	var label := Label.new()
+	label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	DarkMailPalette.apply_mono_label(label, DarkMailPalette.FONT_SIZE_MONO_SMALL, DarkMailPalette.TEXT_GREEN)
+	bar.add_child(label)
+	return bar
+
+
+func _on_hotspot_hover(bar: Control, label: Label, hint: String, entered: bool) -> void:
+	if entered:
+		label.text = hint
+	bar.visible = entered
 
 
 # Renders the body text for the current state and drives the neutral marker.
@@ -402,7 +459,7 @@ func build_photo_card(find: ReconFind) -> Control:
 	# No clip_contents: COVERED already crops the image to its rect, and clipping
 	# here would cut off a hotspot's hover hint at the image edge.
 	var photo := TextureRect.new()
-	photo.texture = TEAM_PHOTO
+	photo.texture = photo_texture(find)
 	photo.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	photo.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
 	photo.custom_minimum_size = Vector2(PHOTO_W, PHOTO_H)

@@ -2,12 +2,11 @@
 # each post a square image on top with the caption (carrying the leak) below.
 # Image-centric on purpose: the platform reads as a photo feed, not a list.
 #
-# The placeholder image is a stand-in until real, AI-generated visuals land;
-# swap PLACEHOLDER per find in Slice B when photo finds carry their own image.
+# Each find shows its own photo (host.photo_texture), falling back to a neutral
+# default for finds without a dedicated image.
 extends "res://scenarios/spear_phishing/components/source_pages/source_page.gd"
 
 const Style := preload("res://scenarios/spear_phishing/data/recon_browser_style.gd")
-const PLACEHOLDER: Texture2D = preload("res://assets/sprites/placeholder/officeInside.jpg")
 
 # Feed column width; the square image derives its height from it. Centred in the
 # page, so the tab reads as a narrow photo feed rather than a full-width list.
@@ -47,7 +46,7 @@ func build_card(host, find) -> Control:
 	# fixed custom_minimum_size avoids AspectRatioContainer reporting a zero
 	# min-height inside a VBox (which would let the image overlap the text).
 	var img := TextureRect.new()
-	img.texture = PLACEHOLDER
+	img.texture = host.photo_texture(find)
 	img.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	img.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
 	img.custom_minimum_size = Vector2(COLUMN_W, COLUMN_W)
