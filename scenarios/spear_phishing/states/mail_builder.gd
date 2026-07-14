@@ -25,6 +25,8 @@ const HandCard := preload("res://scenarios/spear_phishing/components/mail_hand_c
 const MAX_SLOTS := 3
 const REVEAL_STEP_TIME := 0.5
 const TOAST_HOLD := 2.6
+const REPLY_VARIANTS := 3     # HANNES_REPLY_<STATE>_1..N per state, rotated
+const REPLY_HOLD := 1.4       # let the final reply read before the outcome overlay
 
 var _run
 var _slots: Array = []          # cards drafted into the current mail (order)
@@ -42,6 +44,7 @@ var _built := false
 var _revealing := false
 var _boss_fired: Dictionary = {}
 var _last_probe_done := false
+var _reply_rotation: Dictionary = {}  # Hannes state name -> times shown (rotation)
 
 
 func _ready() -> void:
@@ -223,12 +226,14 @@ func _toggle_slot(_card, widget) -> void:
 	if _slots.has(card):
 		_slots.erase(card)
 		widget.set_slotted(false)
+		_preview.rebuild_draft(_slots)
 	elif _slots.size() < MAX_SLOTS:
 		_slots.append(card)
 		widget.set_slotted(true)
+		_preview.finish_typing()  # skip any running type-in before the next one
+		_preview.add_draft_fragment(card, true)
 	else:
 		return
-	_preview.set_draft(_slots)
 	_refresh_controls()
 
 
@@ -237,6 +242,7 @@ func _toggle_slot(_card, widget) -> void:
 func _on_send() -> void:
 	if _revealing or _run.is_over() or _slots.is_empty():
 		return
+	_preview.finish_typing()
 	var cards: Array = _slots.duplicate()
 	_commit_mail(cards)
 	_start_reveal(cards)
@@ -294,13 +300,27 @@ func _finish_reveal(cards: Array) -> void:
 		if not Pool.is_generic(card.id):
 			_consumed[card.id] = true
 	_slots.clear()
-	_preview.set_draft([])
+	# Seal the sent mail into the thread, then Hannes replies from the new state.
+	_preview.seal_draft()
+	_preview.add_reply(tr(_hannes_reply_key()))
 	_check_probe_flip()
-	_rebuild_hand()
-	_refresh_committed()
 	_boss_react(cards)
 	if _run.is_over():
-		_handle_outcome()
+		_refresh_committed()
+		_handle_outcome()  # sets the result now; the overlay follows the reply
+	else:
+		_preview.begin_new_draft()
+		_rebuild_hand()
+		_refresh_committed()
+
+
+# Picks Hannes' reply key for his current state, rotating through the variants so
+# a repeated state does not repeat the same line.
+func _hannes_reply_key() -> String:
+	var state_name: String = Pool.HannesState.keys()[_run.hannes_state()]
+	var seen: int = _reply_rotation.get(state_name, 0)
+	_reply_rotation[state_name] = seen + 1
+	return "HANNES_REPLY_%s_%d" % [state_name, (seen % REPLY_VARIANTS) + 1]
 
 
 # --- probe: flip the flag + toast (the hand rebuild swaps the unlocked card) --
@@ -359,6 +379,8 @@ func _refresh_controls() -> void:
 
 func _handle_outcome() -> void:
 	var name: String = MailRun.Outcome.keys()[_run.outcome]
+	# The handoff is state and happens now; the overlay is cosmetic and waits so
+	# Hannes' final reply can be read first.
 	GameState.set_mail_result({
 		"outcome": name,
 		"suspicion": _run.suspicion,
@@ -366,7 +388,9 @@ func _handle_outcome() -> void:
 		"turns_used": _run.turns_used(),
 		"played": _run.played.duplicate(),
 	})
-	_show_outcome_overlay(name)
+	var tween := create_tween()
+	tween.tween_interval(REPLY_HOLD)
+	tween.tween_callback(_show_outcome_overlay.bind(name))
 
 
 func _show_outcome_overlay(name: String) -> void:

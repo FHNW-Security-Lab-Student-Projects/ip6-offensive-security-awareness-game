@@ -27,6 +27,12 @@ const AMPLIFIER_BONUS := 1        # "Keiner fragt nach" adds this to pressure ca
 const SUSPICION_BAR_MAX := 10
 const PRESSURE_BAR_MAX := 10
 
+# Hannes' reactive state, mirrored from the two bars (no new numbers, no effect
+# on the bars). ANGEBISSEN is exactly the win-ready state (payload_would_win);
+# gate-open-but-suspicious reads as MISSTRAUISCH — the "playable but risky"
+# moment. Derived from the existing thresholds only.
+enum HannesState { NEUTRAL, MISSTRAUISCH, INTERESSIERT, ANGEBISSEN }
+
 const EPIC := MailCard.Type.EPIC
 const STANDARD := MailCard.Type.STANDARD
 const PAYLOAD := MailCard.Type.PAYLOAD
@@ -143,6 +149,19 @@ static func is_generic(card_id: StringName) -> bool:
 		if def[0] == card_id:
 			return true
 	return false
+
+
+# Derives Hannes' state from the current bars using the existing thresholds. The
+# order matters: a suspicious target stays suspicious regardless of pressure;
+# only with suspicion in the safe zone does pressure decide interest vs the bite.
+static func hannes_state(suspicion: int, pressure: int) -> HannesState:
+	if suspicion > SUSPICION_TARGET:
+		return HannesState.MISSTRAUISCH
+	if pressure >= PRESSURE_TARGET:
+		return HannesState.ANGEBISSEN
+	if pressure > PRESSURE_START:
+		return HannesState.INTERESSIERT
+	return HannesState.NEUTRAL
 
 
 static func _legendary_unlocked(leg: Dictionary, collected: Array, probe_done: bool) -> bool:

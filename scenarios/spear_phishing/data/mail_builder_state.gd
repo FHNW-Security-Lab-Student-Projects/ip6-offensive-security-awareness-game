@@ -54,6 +54,12 @@ func payload_would_win() -> bool:
 	return payload_gate_open() and suspicion <= Pool.SUSPICION_TARGET
 
 
+# Hannes' reactive state, derived from the current bars (read-only, no effect on
+# the run). The UI reads it to pick his reply; the thresholds live in the Pool.
+func hannes_state() -> int:
+	return Pool.hannes_state(suspicion, pressure)
+
+
 # One mail = one turn. Applies the drafted cards' effects in slot order
 # (bundled), spends a SINGLE turn, then resolves on the SUMMED end state. Records
 # a per-card reveal trace in last_mail_steps so the UI can show the effect card
@@ -81,6 +87,7 @@ func play_mail(cards: Array) -> Outcome:
 
 	turns_left -= 1
 	_emit_mail_sent(ids, suspicion_before, pressure_before)
+	_emit_hannes_state()
 
 	if payload_card != null:
 		last_mail_steps.append({"id": payload_card.id, "suspicion": suspicion, "pressure": pressure})
@@ -198,6 +205,25 @@ func _emit(payload: Dictionary) -> void:
 			_bus = (loop as SceneTree).root.get_node_or_null("EventBus")
 	if _bus != null:
 		_bus.emit_signal("generic_event", payload)
+
+
+# Hannes' state after the mail, mirrored from the final bars. Additive telemetry;
+# it carries no game effect (he only reflects the bars the player already drove).
+func _emit_hannes_state() -> void:
+	var state := Pool.hannes_state(suspicion, pressure)
+	_emit({
+		"phase": "hannes_state",
+		"scenario_id": SCENARIO_ID,
+		"action": Pool.HannesState.keys()[state],
+		"is_correct": null,
+		"latency_ms": null,
+		"payload": {
+			"state": Pool.HannesState.keys()[state],
+			"turn": turns_used(),
+			"suspicion": suspicion,
+			"pressure": pressure,
+		},
+	})
 
 
 # The mail unit: which cards went out together, on which turn, and the bar delta

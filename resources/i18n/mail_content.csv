@@ -106,3 +106,15 @@ MAIL_OUTCOME_KOLLEGEN_RUECKFRAGE_TITLE,RÜCKFRAGE AUSGELÖST
 MAIL_OUTCOME_KOLLEGEN_RUECKFRAGE_TEXT,Er wurde stutzig und fragt intern nach. Aufgeflogen.
 MAIL_OUTCOME_IGNORIERT_TITLE,IGNORIERT
 MAIL_OUTCOME_IGNORIERT_TEXT,Zu zögerlich. Er hat die Mail einfach ignoriert.
+HANNES_REPLY_NEUTRAL_1,Guten Tag. Worum geht es genau?
+HANNES_REPLY_NEUTRAL_2,Hallo. Ich schaue es mir bei Gelegenheit an.
+HANNES_REPLY_NEUTRAL_3,Danke für die Nachricht. Was steht an?
+HANNES_REPLY_MISSTRAUISCH_1,Wer sind Sie nochmal? Das kommt mir komisch vor.
+HANNES_REPLY_MISSTRAUISCH_2,Woher haben Sie meine Adresse? Ich kenne Sie nicht.
+HANNES_REPLY_MISSTRAUISCH_3,Das klingt nicht seriös. Ich frage besser intern nach.
+HANNES_REPLY_INTERESSIERT_1,Okay, das klingt dringend. Erzählen Sie mehr.
+HANNES_REPLY_INTERESSIERT_2,Verstehe. Was genau brauchen Sie von mir?
+HANNES_REPLY_INTERESSIERT_3,"Gut, ich höre zu. Wie geht es weiter?"
+HANNES_REPLY_ANGEBISSEN_1,"Alles klar, was muss ich tun? Sagen Sie mir wo ich klicke."
+HANNES_REPLY_ANGEBISSEN_2,"Verstanden, ich erledige das sofort. Wohin muss ich?"
+HANNES_REPLY_ANGEBISSEN_3,"Passt, machen wir. Schicken Sie mir den Link."

@@ -269,5 +269,27 @@ func _process(_delta: float) -> bool:
 			has_bundle = true
 	print("a multi-card mail_sent was logged (expect true): ", has_bundle)
 
+	# ---- Hannes state: derived from the bars, mirrors only (no effect) ----
+
+	# 24. All four states over the bar combinations (existing thresholds only).
+	print("neutral at start 3/5 (expect NEUTRAL): ", Pool.HannesState.keys()[Pool.hannes_state(3, 5)])
+	print("misstrauisch at suspicion 4 (expect MISSTRAUISCH): ", Pool.HannesState.keys()[Pool.hannes_state(4, 5)])
+	print("interessiert at pressure 6 (expect INTERESSIERT): ", Pool.HannesState.keys()[Pool.hannes_state(3, 6)])
+	print("angebissen at 3/7 (expect ANGEBISSEN): ", Pool.HannesState.keys()[Pool.hannes_state(3, 7)])
+	# Gate open (pressure 8) but suspicious (5) -> misstrauisch, not angebissen.
+	print("gate-open-but-suspicious reads misstrauisch (expect MISSTRAUISCH): ",
+		Pool.HannesState.keys()[Pool.hannes_state(5, 8)])
+
+	# ANGEBISSEN coincides exactly with the win-ready state.
+	var hw := MailRun.new(5)
+	hw.play_mail([_card(&"a", MailCard.Type.EPIC, 0, 2)])  # pressure 7, suspicion 3
+	print("run reports angebissen when win-ready (expect ANGEBISSEN): ", Pool.HannesState.keys()[hw.hannes_state()])
+	print("angebissen matches payload_would_win (expect true): ", hw.payload_would_win())
+
+	# 25. hannes_state telemetry emitted per mail.
+	var hs := _events_of("hannes_state")
+	print("hannes_state events emitted (expect > 0): ", hs.size() > 0)
+	print("hannes_state carries the state (expect true): ", hs[0]["payload"].has("state"))
+
 	print("TEST DONE")
 	return true

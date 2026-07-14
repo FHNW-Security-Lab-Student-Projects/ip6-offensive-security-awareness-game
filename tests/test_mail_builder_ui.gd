@@ -60,11 +60,12 @@ func _process(_delta: float) -> bool:
 	_draft(mb, &"migrations_aufhaenger")
 	_draft(mb, &"projekt_helvetia")
 	print("draft holds two cards (expect 2): ", mb._slots.size())
-	print("draft preview shows two fragments (expect 2): ", mb._preview._body.get_child_count())
+	print("drafting leaves engine bars untouched (expect 5): ", mb._run.pressure)
 	_send(mb)
 
 	print("one mail spent one turn (expect 4 left): ", mb._run.turns_left)
 	print("bundled pressure applied 5+2+2 (expect 9): ", mb._run.pressure)
+	print("hannes replied in the thread (expect 1): ", mb._preview.replies)
 	print("recon card consumed after send (expect true): ", _card_widget(mb, &"migrations_aufhaenger") == null)
 	print("generic card still in hand (expect true): ", _card_widget(mb, &"konto_gesperrt") != null)
 	print("uninvolved trap still in hand (expect true): ", _card_widget(mb, &"katzen_smalltalk") != null)
@@ -76,6 +77,7 @@ func _process(_delta: float) -> bool:
 	print("payload mail wins (expect WIN): ", ["NONE","WIN","SPAM","KOLLEGEN_RUECKFRAGE","IGNORIERT"][mb._run.outcome])
 	var result := (root.get_node("GameState").mail_result as Dictionary)
 	print("mail_result handed to GameState (expect WIN): ", result.get("outcome", ""))
+	print("final reply appended before overlay (expect 2): ", mb._preview.replies)
 	mb.queue_free()
 
 	# --- 2. Generics are inexhaustible; pass runs the budget down --------------
