@@ -11,11 +11,11 @@ const MailCard := preload("res://scenarios/spear_phishing/data/mail_card.gd")
 
 # --- central tuning: the design's explicit difficulty knobs, one place -------
 const TURN_BUDGET := 5            # mails the player may send before the run ends
-const SUSPICION_START := 3
+const SUSPICION_START := 4        # one above target: lowering suspicion is real work
 const SUSPICION_TARGET := 3       # win requires suspicion <= this
 const SUSPICION_MIN := 0          # bar floor: no banking negative suspicion
 const SPAM_THRESHOLD := 7         # suspicion > this => SPAM outcome
-const PRESSURE_START := 5
+const PRESSURE_START := 3         # 4 below target: one +2 card no longer opens the gate
 const PRESSURE_TARGET := 7        # win requires pressure >= this
 const PRESSURE_MIN := 0
 const KOLLEGEN_MIN := 4           # suspicion in [MIN,MAX] at payload => KOLLEGEN

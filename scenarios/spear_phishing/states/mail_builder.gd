@@ -23,6 +23,7 @@ const BossChat := preload("res://scenarios/spear_phishing/components/mail_boss_c
 const HandCard := preload("res://scenarios/spear_phishing/components/mail_hand_card.gd")
 
 const MAX_SLOTS := 3
+const PAYLOAD_SCROLL_TIME := 0.45
 const REVEAL_STEP_TIME := 0.5
 const TOAST_HOLD := 2.6
 const REPLY_VARIANTS := 3     # HANNES_REPLY_<STATE>_1..N per state, rotated
@@ -36,6 +37,7 @@ var _bars
 var _preview
 var _boss
 var _hand_row: HBoxContainer
+var _hand_scroll: ScrollContainer
 var _turn_label: Label
 var _count_label: Label
 var _send_button: Button
@@ -122,15 +124,15 @@ func _build_hand_bar() -> Control:
 	row.add_theme_constant_override("separation", 16)
 	bar.add_child(row)
 
-	var scroll := ScrollContainer.new()
-	scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	row.add_child(scroll)
+	_hand_scroll = ScrollContainer.new()
+	_hand_scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	_hand_scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_hand_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	row.add_child(_hand_scroll)
 
 	_hand_row = HBoxContainer.new()
 	_hand_row.add_theme_constant_override("separation", 12)
-	scroll.add_child(_hand_row)
+	_hand_scroll.add_child(_hand_row)
 
 	var controls := VBoxContainer.new()
 	controls.alignment = BoxContainer.ALIGNMENT_CENTER
@@ -200,6 +202,38 @@ func _rebuild_hand() -> void:
 			_add_card_widget(card)
 	for widget in _cards:
 		widget.refresh(_run)
+	_scroll_to_payload_if_ready()
+
+
+# Once the gate is open the (pulsing) payload must not hide off-screen: after
+# the rebuilt hand has laid out, glide the scroll until the card is fully in
+# view. Cosmetic only; it never touches slots or the run.
+func _scroll_to_payload_if_ready() -> void:
+	if _run == null or _run.is_over() or not _run.payload_gate_open():
+		return
+	var widget = _payload_widget()
+	if widget == null:
+		return
+	await get_tree().process_frame  # fresh widgets: wait for the HBox layout pass
+	if not is_instance_valid(widget) or not is_instance_valid(_hand_scroll):
+		return
+	var view_left := float(_hand_scroll.scroll_horizontal)
+	var view_right := view_left + _hand_scroll.size.x
+	if widget.position.x >= view_left and widget.position.x + widget.size.x <= view_right:
+		return  # already fully visible, do not fight the player's scroll
+	var target := clampf(
+		widget.position.x + widget.size.x * 0.5 - _hand_scroll.size.x * 0.5,
+		0.0, maxf(0.0, _hand_row.size.x - _hand_scroll.size.x))
+	var tween := create_tween()
+	tween.tween_property(_hand_scroll, "scroll_horizontal", int(target), PAYLOAD_SCROLL_TIME) \
+		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+
+
+func _payload_widget():
+	for widget in _cards:
+		if widget.card.type == MailCard.Type.PAYLOAD:
+			return widget
+	return null
 
 
 func _add_card_widget(card) -> void:
@@ -264,6 +298,11 @@ func _on_pass() -> void:
 	_run.pass_turn()
 	if _run.turns_left < turns_before:
 		GameState.consume_mission_turn()
+	# Passing discards the unsent draft: the rebuilt widgets start unslotted, so
+	# stale _slots entries would ghost (identity check) and mis-pulse the payload.
+	if not _slots.is_empty():
+		_slots.clear()
+		_preview.rebuild_draft(_slots)
 	_rebuild_hand()
 	_refresh_committed()
 	if _run.is_over():
@@ -306,6 +345,10 @@ func _finish_reveal(cards: Array) -> void:
 	_check_probe_flip()
 	_boss_react(cards)
 	if _run.is_over():
+		# No hand rebuild on this path: refresh the surviving widgets so the
+		# payload pulse/arrow stop and every card disables with the dead run.
+		for widget in _cards:
+			widget.refresh(_run)
 		_refresh_committed()
 		_handle_outcome()  # sets the result now; the overlay follows the reply
 	else:
