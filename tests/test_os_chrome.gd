@@ -32,13 +32,17 @@ func _process(_delta: float) -> bool:
 		return true
 	_done = true
 
+	# GameState reached by node path: the autoload global is not resolvable in a
+	# bare `-s` script's compile scope (same reason test_recon loads i18n by path).
+	var gs = root.get_node_or_null("GameState")
+
 	var briefing := BriefingResource.new()
 	briefing.target_name = "H. Zinsli · CEO"
 	briefing.mission_text = "Phishe Hannes Zinsli, CEO der FinTech AG"
 	briefing.reward_text = "Zugang zum internen Netzwerk"
 	briefing.turn_budget = 8
 
-	GameState.begin_mission(briefing.turn_budget)
+	gs.begin_mission(briefing.turn_budget)
 	var steps: Array[Dictionary] = [
 		{"id": &"RECON", "label": "Recon"},
 		{"id": &"MAIL", "label": "Mail"},
@@ -60,25 +64,25 @@ func _process(_delta: float) -> bool:
 	var mail_label := _find_step_label(stepper, "Mail")
 	print("no highlight during briefing (expect true): ",
 		recon_label.get_theme_color("font_color") == DarkMailPalette.TEXT_DIM)
-	GameState.set_mission_phase(&"RECON")
+	gs.set_mission_phase(&"RECON")
 	print("recon highlighted after phase change (expect true): ",
 		recon_label.get_theme_color("font_color") == DarkMailPalette.GREEN_BRIGHT)
-	GameState.set_mission_phase(&"MAIL")
+	gs.set_mission_phase(&"MAIL")
 	print("highlight moved to mail (expect true): ",
 		mail_label.get_theme_color("font_color") == DarkMailPalette.GREEN_BRIGHT
 		and recon_label.get_theme_color("font_color") == DarkMailPalette.TEXT_DIM)
 
 	# Turn budget: down to the threshold -> amber + pulse, to zero -> red.
 	for i in 6:
-		GameState.consume_mission_turn()
+		gs.consume_mission_turn()
 	print("turns label at threshold (expect true): ", turns.text.contains("2/8"))
 	print("turns amber at <=2 (expect true): ",
 		turns.get_theme_color("font_color") == DarkMailPalette.WARN_AMBER)
-	GameState.consume_mission_turn()
-	GameState.consume_mission_turn()
+	gs.consume_mission_turn()
+	gs.consume_mission_turn()
 	print("turns red at 0 (expect true): ",
 		turns.get_theme_color("font_color") == DarkMailPalette.ALERT_RED)
-	GameState.consume_mission_turn()
+	gs.consume_mission_turn()
 	print("clamped at zero, no underflow (expect true): ", turns.text.contains("0/8"))
 
 	# Dossier: opens via the MISSION tag and carries the briefing facts.

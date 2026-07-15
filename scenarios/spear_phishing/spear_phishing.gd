@@ -10,6 +10,9 @@ const SCENARIO_ID: String = "spear_phishing"
 
 # Single source for the briefing resource path (defined by the briefing state).
 const BriefingState := preload("res://scenarios/spear_phishing/states/briefing.gd")
+# The mail turn budget is a MailBuilder balancing knob (Pool.TURN_BUDGET); the
+# briefing .tres mirrors the number for its display text.
+const MailPool := preload("res://scenarios/spear_phishing/data/mail_card_pool.gd")
 
 enum SubState { BRIEFING, RECON, MAIL, RESOLVE }
 
@@ -44,7 +47,7 @@ func _setup_os_chrome() -> void:
 	if briefing == null:
 		push_error("%s: failed to load %s" % [SCENARIO_ID, BriefingState.BRIEFING_PATH])
 		return
-	GameState.begin_mission(briefing.turn_budget)
+	GameState.begin_mission(MailPool.TURN_BUDGET)
 	var steps: Array[Dictionary] = [
 		{"id": &"RECON", "label": tr("SPEAR_PHASE_RECON")},
 		{"id": &"MAIL", "label": tr("SPEAR_PHASE_MAIL")},
