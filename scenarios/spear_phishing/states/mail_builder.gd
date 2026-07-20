@@ -350,7 +350,7 @@ func _finish_reveal(cards: Array) -> void:
 		for widget in _cards:
 			widget.refresh(_run)
 		_refresh_committed()
-		_handle_outcome()  # sets the result now; the overlay follows the reply
+		_handle_outcome()  # records the result now; the advance follows the reply
 	else:
 		_preview.begin_new_draft()
 		_rebuild_hand()
@@ -418,12 +418,13 @@ func _refresh_controls() -> void:
 	_pass_button.disabled = _revealing or _run.is_over()
 
 
-# --- outcome: hand off the run to Resolve, show a simple transition ----------
+# --- outcome: hand the run to Resolve ----------------------------------------
 
+# Records the finished run for Resolve, lets Hannes' final reply read for a
+# beat, then advances. Resolve now owns the whole outcome presentation, so
+# there is no result popup here anymore — this just hands off.
 func _handle_outcome() -> void:
 	var name: String = MailRun.Outcome.keys()[_run.outcome]
-	# The handoff is state and happens now; the overlay is cosmetic and waits so
-	# Hannes' final reply can be read first.
 	GameState.set_mail_result({
 		"outcome": name,
 		"suspicion": _run.suspicion,
@@ -433,58 +434,7 @@ func _handle_outcome() -> void:
 	})
 	var tween := create_tween()
 	tween.tween_interval(REPLY_HOLD)
-	tween.tween_callback(_show_outcome_overlay.bind(name))
-
-
-func _show_outcome_overlay(name: String) -> void:
-	var overlay := ColorRect.new()
-	overlay.color = Color(0, 0, 0, 0.72)
-	overlay.anchor_right = 1.0
-	overlay.anchor_bottom = 1.0
-	add_child(overlay)
-
-	var panel := PanelContainer.new()
-	panel.anchor_left = 0.5
-	panel.anchor_top = 0.5
-	panel.anchor_right = 0.5
-	panel.anchor_bottom = 0.5
-	panel.offset_left = -320
-	panel.offset_top = -140
-	panel.offset_right = 320
-	panel.offset_bottom = 140
-	var accent := DarkMailPalette.GREEN_BRIGHT if name == "WIN" else DarkMailPalette.ALERT_RED
-	var box := DarkMailPalette.flat_box(DarkMailPalette.BG_PANEL, accent, DarkMailPalette.BORDER_WIDTH)
-	box.content_margin_left = 40
-	box.content_margin_right = 40
-	box.content_margin_top = 32
-	box.content_margin_bottom = 32
-	panel.add_theme_stylebox_override("panel", box)
-	overlay.add_child(panel)
-
-	var col := VBoxContainer.new()
-	col.alignment = BoxContainer.ALIGNMENT_CENTER
-	col.add_theme_constant_override("separation", 20)
-	panel.add_child(col)
-
-	var title := Label.new()
-	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	DarkMailPalette.apply_mono_label(title, DarkMailPalette.FONT_SIZE_MONO_LARGE, accent)
-	title.text = tr("MAIL_OUTCOME_%s_TITLE" % name)
-	col.add_child(title)
-
-	var text := Label.new()
-	text.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	text.custom_minimum_size.x = 560
-	DarkMailPalette.apply_mono_label(text, DarkMailPalette.FONT_SIZE_MONO, DarkMailPalette.TEXT_GREEN)
-	text.text = tr("MAIL_OUTCOME_%s_TEXT" % name)
-	col.add_child(text)
-
-	var button := Button.new()
-	button.text = tr("MAIL_OUTCOME_CONTINUE")
-	_style_button(button)
-	button.pressed.connect(func() -> void: advance_requested.emit())
-	col.add_child(button)
+	tween.tween_callback(func() -> void: advance_requested.emit())
 
 
 # --- probe toast: a brief note that floats in and fades out -------------------

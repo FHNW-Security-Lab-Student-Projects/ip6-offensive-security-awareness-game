@@ -98,14 +98,6 @@ MAIL_BOSS_PRESSURE_OK,Gut. Er steht unter Druck und die Mail ist sendebereit.
 MAIL_BOSS_PAYLOAD_READY,Sauber, kaum Misstrauen. Jetzt den Link, das sitzt.
 MAIL_BOSS_SCHROTT,Was soll das? Der Mist gehört nicht in die Mail.
 MAIL_TOAST_PROBE,Automatische Antwort erhalten. Er ist abwesend.
-MAIL_OUTCOME_WIN_TITLE,ZUGANG ERLANGT
-MAIL_OUTCOME_WIN_TEXT,Er hat geklickt. Der Zugang steht. Sauber gespielt.
-MAIL_OUTCOME_SPAM_TITLE,ALS SPAM MARKIERT
-MAIL_OUTCOME_SPAM_TEXT,Zu plump. Die Mail landete im Spam und kam nie an.
-MAIL_OUTCOME_KOLLEGEN_RUECKFRAGE_TITLE,RÜCKFRAGE AUSGELÖST
-MAIL_OUTCOME_KOLLEGEN_RUECKFRAGE_TEXT,Er wurde stutzig und fragt intern nach. Aufgeflogen.
-MAIL_OUTCOME_IGNORIERT_TITLE,IGNORIERT
-MAIL_OUTCOME_IGNORIERT_TEXT,Zu zögerlich. Er hat die Mail einfach ignoriert.
 HANNES_REPLY_NEUTRAL_1,Guten Tag. Worum geht es genau?
 HANNES_REPLY_NEUTRAL_2,Hallo. Ich schaue es mir bei Gelegenheit an.
 HANNES_REPLY_NEUTRAL_3,Danke für die Nachricht. Was steht an?

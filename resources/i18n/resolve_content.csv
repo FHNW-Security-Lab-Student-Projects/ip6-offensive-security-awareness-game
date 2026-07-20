@@ -1,0 +1,15 @@
+keys,de
+RESOLVE_WIN_TITLE,Zugriff erhalten
+RESOLVE_WIN_BODY,"Hannes hat geklickt. Drei Sekunden nach dem die Mail ankam. Er war ja im Stress."
+RESOLVE_SPAM_TITLE,Abgeblockt
+RESOLVE_SPAM_BODY,"Zu dick aufgetragen. Der Druck kam zu platt und zu schnell. Hannes wurde stutzig und brach den Austausch ab, bevor es zum Link kam. Generischer Druck ohne Vertrauen fliegt auf."
+RESOLVE_KOLLEGEN_TITLE,Aufgeflogen
+RESOLVE_KOLLEGEN_BODY,"Hannes wurde misstrauisch und hat bei der echten Bit & Bürli angerufen. Druck alleine reicht nicht, wenn das Vertrauen fehlt."
+RESOLVE_IGNORIERT_TITLE,Kein Treffer
+RESOLVE_IGNORIERT_BODY,"Kein Treffer. Deine Mails blieben unbeantwortet, das Zeitfenster ist zu. Die IT von Hannes ist jetzt wach. Zu wenig Recon, kein gezielter Angriff."
+RESOLVE_TWIST,"Hannes Zinsli hat kaum je etwas online gestellt. Du bist trotzdem reingekommen. Nadja wollte nur nett sein. Kevin war stolz auf seinen ersten Tag. Der Verein wollte sein Protokoll teilen. Und Hannes' eigener Posteingang hat dir die Tür aufgehalten. So funktioniert echtes Spear Phishing. Nicht der Chef leakt. Sondern alle um ihn herum."
+RESOLVE_STAT,"In einer Studie mit über 14.000 Mitarbeitenden fiel fast jeder Dritte auf Phishing herein. Und das war ungezieltes Massen-Phishing. Du hast gerade gesehen, wie viel gefährlicher es wird, wenn es auf eine Person zugeschnitten ist."
+RESOLVE_STAT_SOURCE,"Lain, Kostiainen & Čapkun (2022), IEEE S&P"
+RESOLVE_NEXT,Nächstes Szenario
+RESOLVE_HOME,Zum Hauptmenü
+RESOLVE_RETRY,Nochmal spielen

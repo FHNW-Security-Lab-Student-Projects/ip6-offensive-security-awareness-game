@@ -94,7 +94,7 @@ func _process(_delta: float) -> bool:
 	print("payload mail wins (expect WIN): ", ["NONE","WIN","SPAM","KOLLEGEN_RUECKFRAGE","IGNORIERT"][mb._run.outcome])
 	var result := (root.get_node("GameState").mail_result as Dictionary)
 	print("mail_result handed to GameState (expect WIN): ", result.get("outcome", ""))
-	print("final reply appended before overlay (expect 2): ", mb._preview.replies)
+	print("final reply appended before advance (expect 2): ", mb._preview.replies)
 	mb.queue_free()
 
 	# --- 2. Generics are inexhaustible; pass runs the budget down --------------
