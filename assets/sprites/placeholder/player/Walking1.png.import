@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cu7d1gilm0mj2"
-path="res://.godot/imported/Tree_SpriteSheet_Outlined-export.png-f94a5981659543a8bb9c009e80636c52.ctex"
+uid="uid://1iy783vjyfw2"
+path="res://.godot/imported/Walking1.png-c6e4daba859ca5f291c984fb2ff02851.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/Aseprite/Environment/Tree_SpriteSheet_Outlined-export.png"
-dest_files=["res://.godot/imported/Tree_SpriteSheet_Outlined-export.png-f94a5981659543a8bb9c009e80636c52.ctex"]
+source_file="res://assets/sprites/placeholder/player/Walking1.png"
+dest_files=["res://.godot/imported/Walking1.png-c6e4daba859ca5f291c984fb2ff02851.ctex"]
 
 [params]
 

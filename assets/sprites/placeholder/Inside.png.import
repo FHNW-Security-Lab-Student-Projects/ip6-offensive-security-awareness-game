@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://crrg33x7fwfm2"
-path="res://.godot/imported/Tree_SpriteSheet_Outlined.png-e1de9575d42e0efbbbf32f36e6d4c611.ctex"
+uid="uid://cyhbgre8n7s0g"
+path="res://.godot/imported/Inside.png-62ba331d2e92f1e9dcc0a12c67887b30.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/Aseprite/Environment/Tree_SpriteSheet_Outlined.png"
-dest_files=["res://.godot/imported/Tree_SpriteSheet_Outlined.png-e1de9575d42e0efbbbf32f36e6d4c611.ctex"]
+source_file="res://assets/sprites/placeholder/Inside.png"
+dest_files=["res://.godot/imported/Inside.png-62ba331d2e92f1e9dcc0a12c67887b30.ctex"]
 
 [params]
 

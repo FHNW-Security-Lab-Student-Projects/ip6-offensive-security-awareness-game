@@ -45,15 +45,20 @@ enum SubState { BRIEFING, STREET, FRONT, INSIDE, TAILGATE, CORRIDOR, OFFICE, RES
 @onready var _npc_tailgate = $BadUSBScenario/TailgateDoor/Background/Background/NPC
 @onready var _sprite_open_door = $BadUSBScenario/TailgateDoor/Background/Background/Door
 
+@onready var _npc_office = $BadUSBScenario/BigOffice/OfficeNPC
+
 @onready var _ui_tailgate_locked = $BadUSBScenario/TailgateDoor/MissingBadgeUI
 @onready var _btn_tailgate_trigger = $BadUSBScenario/TailgateDoor/TriggerTailgateBtn
 @onready var _btn_tailgate_enter = $BadUSBScenario/TailgateDoor/EnterTailgateDoorBtn
 
 var _tailgate_event_triggered: bool = false
+var _office_npc_triggered: bool = false 
+var _office_dialogue_done: bool = false 
 
 var _dialogue_step: int = 0
 var _inside_start_pos: Vector2 
 var _front_door_pos: Vector2 
+var _office_npc_start_pos: Vector2 
 
 var _current: SubState = SubState.BRIEFING
 var _initialised: bool = false
@@ -153,9 +158,11 @@ func _setup() -> void:
 	_btn_tailgate_enter.pressed.connect(_on_tailgate_enter_pressed)
 	
 	_inside_start_pos = _world_inside.get_node("Player").position
+	_office_npc_start_pos = _npc_office.position 
+	_npc_office.flip_h = false 
 
 func _on_start() -> void:
-	_change_substate(SubState.BRIEFING) 
+	_change_substate(SubState.OFFICE) 
 
 func _on_door_entered(body: Node2D) -> void:
 	if body.name == "Player":
@@ -186,7 +193,6 @@ func _on_corridor_zone_exited(body: Node2D) -> void:
 func _on_corridor_btn_pressed() -> void:
 	_ui_corridor_btn.visible = false
 	_change_substate(SubState.CORRIDOR)
-
 
 func _on_locked_door_entered(body: Node2D) -> void:
 	if body.name == "Player":
@@ -251,13 +257,46 @@ func _on_office_btn_pressed() -> void:
 	_ui_npc_speech.visible = false
 	_change_substate(SubState.TAILGATE) 
 
+func _start_office_npc_approach() -> void:
+	var player_pos = _world_office.get_node("Player").position
+	var target_x = player_pos.x + 150 
+	
+	var tween = create_tween()
+	tween.tween_property(_npc_office, "position:x", target_x, 2.5)
+	tween.finished.connect(_on_office_npc_arrived)
+
+func _on_office_npc_arrived() -> void:
+	_npc_office.flip_h = true 
+	
+	var player = _world_office.get_node("Player")
+	player.set_physics_process(false) 
+	player.get_node("AnimatedSprite2D").flip_h = true
+	
+	_ui_dialogue_box.visible = true
+	_dialogue_step = 30
+	_update_dialogue_ui()
+	
+func _start_office_npc_run_away() -> void:
+	_npc_office.flip_h = false 
+	
+	var target_x = _npc_office.position.x - 1000 
+	
+	var tween = create_tween()
+	tween.tween_property(_npc_office, "position:x", target_x, 1.5) 
+	tween.finished.connect(_on_office_npc_gone)
+
+func _on_office_npc_gone() -> void:
+	_npc_office.visible = false
+
 func _on_pc_zone_entered(body: Node2D) -> void:
 	if body.name == "Player":
-		_ui_usb_btn.visible = true
+		if _office_dialogue_done:
+			_ui_usb_btn.visible = true
 
 func _on_pc_zone_exited(body: Node2D) -> void:
 	if body.name == "Player":
 		_ui_usb_btn.visible = false
+		_ui_dialogue_box.visible = false
 
 func _on_usb_btn_pressed() -> void:
 	_ui_usb_btn.visible = false
@@ -285,28 +324,46 @@ func _on_confident_pressed() -> void:
 
 func _on_dialog_choice_1_pressed() -> void:
 	match _dialogue_step:
-		11, 21: 
+		11, 21, 31: 
 			_dialogue_step += 1
 			_update_dialogue_ui()
 		12, 22: 
 			_ui_dialogue_box.visible = false
 			_barrier_shape.disabled = true 
-		10, 20: 
+		32:
+			_ui_dialogue_box.visible = false
+			_office_dialogue_done = true
+			
+			_start_office_npc_run_away() 
+			_world_office.get_node("Player").set_physics_process(true)
+			
+		10, 20, 30: 
 			_ui_dialogue_box.visible = false
 			_ui_failure_popup.visible = true
 
 func _on_dialog_choice_2_pressed() -> void:
 	match _dialogue_step:
-		10, 20: 
+		10, 20, 30: 
 			_dialogue_step += 1
 			_update_dialogue_ui()
-		11, 21: 
+		11, 21, 31: 
 			_ui_dialogue_box.visible = false
 			_ui_failure_popup.visible = true
 
 func _on_failure_ok_pressed() -> void:
 	_ui_failure_popup.visible = false
 	_dialogue_step = 0
+	
+	_tailgate_event_triggered = false
+	_office_npc_triggered = false
+	_office_dialogue_done = false
+	
+	_npc_office.position = _office_npc_start_pos
+	_npc_office.flip_h = false
+	_npc_office.visible = false 
+	
+	_world_office.get_node("Player").set_physics_process(true)
+	
 	_world_front.get_node("Player").position = _front_door_pos
 	_change_substate(SubState.FRONT)
 
@@ -325,11 +382,11 @@ func _advance() -> void:
 		SubState.FRONT:
 			_change_substate(SubState.INSIDE)
 		SubState.INSIDE:
-			_change_substate(SubState.CORRIDOR) # UPDATED
+			_change_substate(SubState.CORRIDOR) 
 		SubState.CORRIDOR:
-			_change_substate(SubState.TAILGATE) # UPDATED
+			_change_substate(SubState.TAILGATE) 
 		SubState.TAILGATE:
-			_change_substate(SubState.OFFICE)   # UPDATED
+			_change_substate(SubState.OFFICE)   
 		SubState.OFFICE:
 			_change_substate(SubState.RESOLVE)
 		SubState.RESOLVE:
@@ -371,6 +428,7 @@ func _change_substate(new_state: SubState) -> void:
 				_world_office.visible = false
 				_world_office.process_mode = Node.PROCESS_MODE_DISABLED
 				_ui_usb_btn.visible = false 
+				_ui_dialogue_box.visible = false 
 			SubState.RESOLVE:
 				_ui_resolve.visible = false
 
@@ -401,6 +459,12 @@ func _change_substate(new_state: SubState) -> void:
 			_world_office.visible = true
 			_world_office.process_mode = Node.PROCESS_MODE_INHERIT
 			_world_office.get_node("Player/Camera2D").make_current()
+			
+			if not _office_npc_triggered:
+				_office_npc_triggered = true
+				_npc_office.visible = true 
+				_start_office_npc_approach()
+				
 		SubState.RESOLVE:
 			_ui_resolve.visible = true
 			_start_resolve_story() 
@@ -450,6 +514,20 @@ func _update_dialogue_ui() -> void:
 		22: 
 			_lbl_npc_text.text = "Oh... warten Sie, das ist nicht nötig! Ich erinnere mich dunkel an die Mail. Es ist alles in Ordnung, gehen Sie ruhig durch!"
 			_btn_choice1.text = "Vielen Dank. Achten Sie künftig besser auf interne Mitteilungen."
+			_btn_choice2.visible = false
+
+		# --- SUSPICIOUS IT OFFICE NPC ---
+		30:
+			_lbl_npc_text.text = "Moment mal... Sie sind doch vorhin mit mir im Aufzug gefahren. Arbeiten Sie nicht in der HR-Abteilung? Was machen Sie hier im IT-Büro?"
+			_btn_choice1.text = "Ich bin versetzt worden, das ist mein neuer Arbeitsplatz."
+			_btn_choice2.text = "Ich habe ein wichtiges Meeting mit der IT-Leitung!"
+		31:
+			_lbl_npc_text.text = "Mit der IT-Leitung... Was muss die HR mit der IT-Leitung besprechen."
+			_btn_choice1.text = "Das darf ich Ihnen leider nicht sagen. Wenn Sie mich nun entschuldigen würden."
+			_btn_choice2.text = "Was geht Sie das an?"
+		32:
+			_lbl_npc_text.text = "Oh nein ich komme noch zu spät. Schönen Tag."
+			_btn_choice1.text = "Vielen Dank, Ihnen auch!"
 			_btn_choice2.visible = false
 
 func _start_resolve_story() -> void:

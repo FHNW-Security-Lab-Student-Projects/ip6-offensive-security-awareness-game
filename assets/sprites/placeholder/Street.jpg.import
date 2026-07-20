@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bm5ceg8c0aohf"
-path="res://.godot/imported/Tree_SpriteSheet_Outlined-export_front.png-0cc7d60d86b32fa94ee1fc088ddfbb2a.ctex"
+uid="uid://0s25mfviny2n"
+path="res://.godot/imported/Street.jpg-059f4405f496340ec315a88cff4be230.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/Aseprite/Environment/Tree_SpriteSheet_Outlined-export_front.png"
-dest_files=["res://.godot/imported/Tree_SpriteSheet_Outlined-export_front.png-0cc7d60d86b32fa94ee1fc088ddfbb2a.ctex"]
+source_file="res://assets/sprites/placeholder/Street.jpg"
+dest_files=["res://.godot/imported/Street.jpg-059f4405f496340ec315a88cff4be230.ctex"]
 
 [params]
 

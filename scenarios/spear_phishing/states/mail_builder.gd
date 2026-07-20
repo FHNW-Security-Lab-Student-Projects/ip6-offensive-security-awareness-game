@@ -67,7 +67,6 @@ func _build() -> void:
 	_boss.say("MAIL_BOSS_INTRO")
 
 
-# --- layout ------------------------------------------------------------------
 
 func _build_layout() -> void:
 	var content := VBoxContainer.new()
