@@ -25,6 +25,7 @@ var _slotted := false
 var _pulse_tween: Tween
 var _arrow: Control
 var _arrow_tween: Tween
+var _info_overlay: Control
 
 
 func setup(c: MailCard) -> void:
@@ -53,7 +54,49 @@ func setup(c: MailCard) -> void:
 	box.add_child(name_label)
 
 	_build_arrow()
+	_build_info_badge()
 	_restyle()
+
+
+# A small "[i]" hint in the top-right corner so players notice they can hover a
+# card for its full text. Purely an affordance; hovering anywhere on the card
+# shows the tooltip. On the armed payload it yields to the pulsing arrow (which
+# shares the corner) — see _update_pulse.
+func _build_info_badge() -> void:
+	_info_overlay = Control.new()
+	_info_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(_info_overlay)
+
+	var badge := Label.new()
+	badge.text = "[i]"
+	badge.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	DarkMailPalette.apply_mono_label(badge, DarkMailPalette.FONT_SIZE_MONO_SMALL, DarkMailPalette.GREEN)
+	_info_overlay.add_child(badge)
+	_info_overlay.resized.connect(func() -> void:
+		var s := badge.get_minimum_size()
+		badge.position = Vector2(_info_overlay.size.x - s.x - 4.0, 2.0))
+
+
+# Renders the hover tooltip in the DarkMail look (bordered dark panel + mono
+# text) instead of Godot's default grey box. Godot calls this with tooltip_text.
+func _make_custom_tooltip(for_text: String) -> Object:
+	var panel := PanelContainer.new()
+	var box := DarkMailPalette.flat_box(
+		DarkMailPalette.BG_PANEL, DarkMailPalette.GREEN, DarkMailPalette.BORDER_WIDTH)
+	box.content_margin_left = 16
+	box.content_margin_right = 16
+	box.content_margin_top = 12
+	box.content_margin_bottom = 12
+	panel.add_theme_stylebox_override("panel", box)
+
+	var label := Label.new()
+	label.text = for_text
+	label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	label.custom_minimum_size.x = 360
+	DarkMailPalette.apply_mono_label(
+		label, DarkMailPalette.FONT_SIZE_MONO, DarkMailPalette.TEXT_GREEN)
+	panel.add_child(label)
+	return panel
 
 
 # --- live state --------------------------------------------------------------
@@ -105,6 +148,8 @@ func _update_pulse() -> void:
 		_pulse_tween.tween_property(self, "modulate", PULSE_BRIGHT, PULSE_HALF_TIME)
 		_pulse_tween.tween_property(self, "modulate", Color(1, 1, 1, 1), PULSE_HALF_TIME)
 		_arrow.visible = true
+		if _info_overlay != null:
+			_info_overlay.visible = false  # arrow takes over the top-right corner
 		_arrow_tween = create_tween().set_loops()
 		_arrow_tween.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 		_arrow_tween.tween_property(_arrow, "position:y", ARROW_BOB, ARROW_BOB_TIME)
@@ -117,6 +162,8 @@ func _update_pulse() -> void:
 		_arrow_tween = null
 		_arrow.visible = false
 		_arrow.position.y = 0.0
+		if _info_overlay != null:
+			_info_overlay.visible = true
 		_apply_modulate()
 
 
