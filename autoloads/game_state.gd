@@ -85,6 +85,28 @@ var mail_result: Dictionary = {}
 func set_mail_result(result: Dictionary) -> void:
 	mail_result = result.duplicate(true)
 
+# ---- Replay navigation hint ----
+# Set by the scenario shell right before a "Nochmal spielen" reload; read once
+# by the shell's _on_start to jump straight into the gameplay (skip the intro
+# briefing) and cleared on read. A one-shot flag, deliberately NOT touched by
+# reset_scenario (it is navigation, not per-run state).
+var replay_skip_briefing: bool = false
+
+# ---- Replay: wipe the per-run handoff state ----
+# GameState is an autoload, so a scene reload does NOT clear these fields. The
+# Resolve "Nochmal spielen" path calls this before reloading the scenario so a
+# second run starts clean (no stale recon finds, mail result or probe flag) —
+# critical for the user study, where mixed runs would poison the data. The
+# mission HUD counters are re-seeded by begin_mission on the fresh scene load;
+# zeroing them here just avoids a one-frame stale read.
+func reset_scenario() -> void:
+	collected_find_ids = []
+	mail_result = {}
+	probe_signature_obtained = false
+	mission_phase = &""
+	mission_turn_budget = 0
+	mission_turns_left = 0
+
 # Sortable, debuggable id: YYYYMMDD_HHMMSS_xxxx (xxxx = 4 hex chars).
 # Not cryptographically unique — fine for ~30 study participants.
 func _generate_session_uuid() -> String:

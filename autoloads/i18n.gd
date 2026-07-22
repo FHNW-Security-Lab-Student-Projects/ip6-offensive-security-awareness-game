@@ -22,6 +22,7 @@ const STRINGS_CSV: String = "res://resources/i18n/strings.csv"
 const CONTENT_CSVS: Array[String] = [
 	"res://resources/i18n/recon_content.csv",
 	"res://resources/i18n/mail_content.csv",
+	"res://resources/i18n/resolve_content.csv",
 ]
 const DEFAULT_LOCALE: String = "de"
 

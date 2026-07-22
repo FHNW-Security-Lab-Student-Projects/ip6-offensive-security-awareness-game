@@ -50,34 +50,52 @@ func _process(_delta: float) -> bool:
 	_done = true
 
 	# --- 1. Draft -> send WIN, with recon consumption --------------------------
-	var mb = _build_mb([&"q4_presse", &"q2d_whiteboard", &"q2c_katze"], false, 5)
+	# q2a_sonntags supplies the senker: suspicion starts one over target, so the
+	# winning line is senken + druck in one mail, then the payload alone.
+	var mb = _build_mb([&"q2a_sonntags", &"q4_presse", &"q2d_whiteboard", &"q2c_katze"], false, 5)
 	print("hand built with widgets (expect true): ", mb._cards.size() > 0)
 	print("payload widget present (expect true): ", _card_widget(mb, &"zugang_bestaetigen") != null)
 	print("payload not enabled at start, gate closed (expect false): ", _card_widget(mb, &"zugang_bestaetigen")._enabled)
+	print("payload not pulsing while gate closed (expect false): ", _card_widget(mb, &"zugang_bestaetigen")._is_pulsing())
+	print("payload arrow hidden while gate closed (expect false): ", _card_widget(mb, &"zugang_bestaetigen")._arrow.visible)
+	print("hand scroll wired for the payload spotlight (expect true): ", mb._hand_scroll != null)
+	print("payload widget finder (expect true): ", mb._payload_widget() == _card_widget(mb, &"zugang_bestaetigen"))
 	print("recon trap disguised as EPIC (expect EPIC): ", _card_widget(mb, &"katzen_smalltalk")._type_tag_text())
 	print("generic trap disguised as STANDARD (expect STANDARD): ", _card_widget(mb, &"gratis_krypto")._type_tag_text())
 
+	_draft(mb, &"sonntags_hannes")
 	_draft(mb, &"migrations_aufhaenger")
 	_draft(mb, &"projekt_helvetia")
-	print("draft holds two cards (expect 2): ", mb._slots.size())
-	print("drafting leaves engine bars untouched (expect 5): ", mb._run.pressure)
+	print("draft holds three cards (expect 3): ", mb._slots.size())
+	print("drafting leaves engine bars untouched (expect 3): ", mb._run.pressure)
 	_send(mb)
 
 	print("one mail spent one turn (expect 4 left): ", mb._run.turns_left)
-	print("bundled pressure applied 5+2+2 (expect 9): ", mb._run.pressure)
+	print("bundled pressure applied 3+2+2 (expect 7): ", mb._run.pressure)
+	print("senker applied 4-2 (expect 2): ", mb._run.suspicion)
 	print("hannes replied in the thread (expect 1): ", mb._preview.replies)
 	print("recon card consumed after send (expect true): ", _card_widget(mb, &"migrations_aufhaenger") == null)
 	print("generic card still in hand (expect true): ", _card_widget(mb, &"konto_gesperrt") != null)
 	print("uninvolved trap still in hand (expect true): ", _card_widget(mb, &"katzen_smalltalk") != null)
 	print("draft cleared after send (expect 0): ", mb._slots.size())
 	print("payload enabled once gate open (expect true): ", _card_widget(mb, &"zugang_bestaetigen")._enabled)
+	print("payload pulses once gate open (expect true): ", _card_widget(mb, &"zugang_bestaetigen")._is_pulsing())
+	print("payload arrow shown once gate open (expect true): ", _card_widget(mb, &"zugang_bestaetigen")._arrow.visible)
+	print("generic locked once gate open (expect false): ", _card_widget(mb, &"konto_gesperrt")._enabled)
+	print("trap locked once gate open (expect false): ", _card_widget(mb, &"katzen_smalltalk")._enabled)
 
+	_draft(mb, &"zugang_bestaetigen")
+	print("pulse stops while payload drafted (expect false): ", _card_widget(mb, &"zugang_bestaetigen")._is_pulsing())
+	print("arrow hidden while payload drafted (expect false): ", _card_widget(mb, &"zugang_bestaetigen")._arrow.visible)
+	_draft(mb, &"zugang_bestaetigen")  # toggle back out of the draft
+	print("pulse resumes after undraft (expect true): ", _card_widget(mb, &"zugang_bestaetigen")._is_pulsing())
 	_draft(mb, &"zugang_bestaetigen")
 	_send(mb)
 	print("payload mail wins (expect WIN): ", ["NONE","WIN","SPAM","KOLLEGEN_RUECKFRAGE","IGNORIERT"][mb._run.outcome])
 	var result := (root.get_node("GameState").mail_result as Dictionary)
 	print("mail_result handed to GameState (expect WIN): ", result.get("outcome", ""))
-	print("final reply appended before overlay (expect 2): ", mb._preview.replies)
+	print("mail_result carries per-mail history (expect 2): ", (result.get("history", []) as Array).size())
+	print("final reply appended before advance (expect 2): ", mb._preview.replies)
 	mb.queue_free()
 
 	# --- 2. Generics are inexhaustible; pass runs the budget down --------------
@@ -102,6 +120,33 @@ func _process(_delta: float) -> bool:
 	print("q8 card swapped into the hand (expect true): ", _card_widget(mb3, &"abwesenheits_fenster") != null)
 	print("probe card consumed after it ran (expect true): ", _card_widget(mb3, &"probe_ooo") == null)
 	mb3.queue_free()
+
+	# --- 4. Pulse stops when a sent mail ends the run without the payload ------
+	var mb4 = _build_mb([], false, 2)
+	_draft(mb4, &"konto_gesperrt")
+	_draft(mb4, &"frist_heute")
+	_send(mb4)
+	print("gate open, payload pulsing before the final send (expect true): ", _card_widget(mb4, &"zugang_bestaetigen")._is_pulsing())
+	# Deliberately bypasses the UI lock (direct _toggle_slot, engine stays
+	# tolerant): the point is _finish_reveal's defensive is_over refresh.
+	_draft(mb4, &"gratis_krypto")
+	_send(mb4)
+	print("run over via send (expect SPAM): ", ["NONE","WIN","SPAM","KOLLEGEN_RUECKFRAGE","IGNORIERT"][mb4._run.outcome])
+	print("payload disabled after run-over send (expect false): ", _card_widget(mb4, &"zugang_bestaetigen")._enabled)
+	print("pulse stopped after run-over send (expect false): ", _card_widget(mb4, &"zugang_bestaetigen")._is_pulsing())
+	print("arrow hidden after run-over send (expect false): ", _card_widget(mb4, &"zugang_bestaetigen")._arrow.visible)
+	mb4.queue_free()
+
+	# --- 5. Passing discards the draft (no ghost slots, no false pulse) --------
+	var mb5 = _build_mb([], false, 5)
+	_draft(mb5, &"konto_gesperrt")
+	_draft(mb5, &"frist_heute")
+	_send(mb5)  # gate opens
+	_draft(mb5, &"zugang_bestaetigen")
+	mb5._on_pass()
+	print("pass clears the draft (expect 0): ", mb5._slots.size())
+	print("rebuilt payload pulses again after pass (expect true): ", _card_widget(mb5, &"zugang_bestaetigen")._is_pulsing())
+	mb5.queue_free()
 
 	print("TEST DONE")
 	return true
