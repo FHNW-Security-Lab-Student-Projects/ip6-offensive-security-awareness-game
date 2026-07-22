@@ -487,7 +487,7 @@ theme_override_styles/panel = SubResource("StyleBoxFlat_g4v7s")
 
 [node name="MissingBadgeUI" type="Label" parent="BadUSBScenario/BeforeElevator/MissingBadgeUI" unique_id=1732334645]
 layout_mode = 2
-text = "Zugriff verweigert: Ausweis erforderlich"
+text = "BADUSB_UI_ACCESS_DENIED"
 label_settings = SubResource("LabelSettings_g4v7s")
 
 [node name="NPCSpeechUI" type="PanelContainer" parent="BadUSBScenario/BeforeElevator" unique_id=1467541438]
@@ -499,8 +499,7 @@ theme_override_styles/panel = SubResource("StyleBoxFlat_yf5fn")
 
 [node name="NPCSpeechUI" type="Label" parent="BadUSBScenario/BeforeElevator/NPCSpeechUI" unique_id=855405787]
 layout_mode = 2
-text = "Oh, bei der Kleidung bist du bestimmt 
-vom HR... Wir halten dir die Tür auf!"
+text = "BADUSB_UI_NPC_TAILGATE"
 label_settings = SubResource("LabelSettings_57qmd")
 horizontal_alignment = 1
 vertical_alignment = 1
@@ -510,7 +509,7 @@ offset_left = 8993.0
 offset_top = 394.0
 offset_right = 9175.0
 offset_bottom = 448.0
-text = "Aufzug benutzen"
+text = "BADUSB_BTN_ELEVATOR"
 
 [node name="TailgateDoor" type="Node2D" parent="BadUSBScenario" unique_id=11092029]
 position = Vector2(14795, 0)
@@ -610,7 +609,7 @@ theme_override_styles/panel = SubResource("StyleBoxFlat_g4v7s")
 
 [node name="MissingBadgeUI" type="Label" parent="BadUSBScenario/TailgateDoor/MissingBadgeUI" unique_id=758678718]
 layout_mode = 2
-text = "Zugriff verweigert: Ausweis erforderlich"
+text = "BADUSB_UI_ACCESS_DENIED"
 label_settings = SubResource("LabelSettings_g4v7s")
 
 [node name="EnterTailgateDoorBtn" type="Button" parent="BadUSBScenario/TailgateDoor" unique_id=220375146]
@@ -618,14 +617,14 @@ offset_left = 5452.0
 offset_top = 210.0
 offset_right = 5634.0
 offset_bottom = 264.0
-text = "Durch schleichen"
+text = "BADUSB_BTN_SNEAK"
 
 [node name="TriggerTailgateBtn" type="Button" parent="BadUSBScenario/TailgateDoor" unique_id=1295436609]
 offset_left = 5452.0
 offset_top = 210.0
 offset_right = 5634.0
 offset_bottom = 264.0
-text = "Tür Öffnen"
+text = "BADUSB_BTN_OPEN_DOOR"
 
 [node name="BigOffice" type="Node2D" parent="BadUSBScenario" unique_id=1432598072]
 position = Vector2(10082, 2301)
@@ -750,18 +749,16 @@ layout_mode = 2
 
 [node name="TitleLabel" type="Label" parent="BadUSBScenario/CanvasLayer/Briefing/MarginContainer/VBoxContainer" unique_id=314970210]
 layout_mode = 2
-text = "Mission Infiltration"
+text = "BADUSB_BRIEF_TITLE"
 
 [node name="StoryLabel" type="RichTextLabel" parent="BadUSBScenario/CanvasLayer/Briefing/MarginContainer/VBoxContainer" unique_id=2101026088]
 layout_mode = 2
-text = "Weil der Versuch das Unternemen mit einem Spear Phishing angriff zu besiegen fehlschlug ist nun die mission das Unternehmen physisch zu infiltrieren. 
-Deine Mission ist es den USB Stick bis zu einem Arbeitsplatz an einen Rechner zu bringen und ein zu stecken.
-Los Gehts"
+text = "BADUSB_BRIEF_TEXT"
 fit_content = true
 
 [node name="Button" type="Button" parent="BadUSBScenario/CanvasLayer/Briefing/MarginContainer/VBoxContainer" unique_id=75179224]
 layout_mode = 2
-text = "Infiltration Starten"
+text = "BADUSB_BRIEF_START"
 
 [node name="Resolve" type="Control" parent="BadUSBScenario/CanvasLayer" unique_id=725475514]
 layout_mode = 3
@@ -786,7 +783,7 @@ offset_bottom = 886.0
 
 [node name="TitleLabel" type="Label" parent="BadUSBScenario/CanvasLayer/Resolve/VBoxContainer" unique_id=479629939]
 layout_mode = 2
-text = "SIMULATION ABGESCHLOSSEN"
+text = "BADUSB_RESOLVE_TITLE"
 label_settings = SubResource("LabelSettings_yf5fn")
 horizontal_alignment = 1
 
@@ -804,11 +801,11 @@ stretch_mode = 5
 
 [node name="NextBtn" type="Button" parent="BadUSBScenario/CanvasLayer/Resolve/VBoxContainer" unique_id=913652576]
 layout_mode = 2
-text = "Weiter"
+text = "BADUSB_BTN_NEXT"
 
 [node name="FinishBtn" type="Button" parent="BadUSBScenario/CanvasLayer/Resolve/VBoxContainer" unique_id=885307975]
 layout_mode = 2
-text = "Szenario Beenden"
+text = "BADUSB_BTN_FINISH"
 
 [node name="EnterBuildingBtn" type="Button" parent="BadUSBScenario/CanvasLayer" unique_id=1459003390]
 anchors_preset = 8
@@ -822,7 +819,7 @@ offset_right = 75.0
 offset_bottom = 261.0
 grow_horizontal = 2
 grow_vertical = 2
-text = "Gebäude Betreten"
+text = "BADUSB_BTN_ENTER_BUILDING"
 
 [node name="ReceptionMenu" type="VBoxContainer" parent="BadUSBScenario/CanvasLayer" unique_id=703915566]
 anchors_preset = -1
@@ -839,11 +836,11 @@ grow_vertical = 2
 
 [node name="StressedBtn" type="Button" parent="BadUSBScenario/CanvasLayer/ReceptionMenu" unique_id=1672045493]
 layout_mode = 2
-text = "Rezeptionist gestresst ansprechen"
+text = "BADUSB_BTN_RECEPTION_STRESSED"
 
 [node name="ConfidentBtn" type="Button" parent="BadUSBScenario/CanvasLayer/ReceptionMenu" unique_id=923708045]
 layout_mode = 2
-text = "Rezeptionist überzeugt ansprechen"
+text = "BADUSB_BTN_RECEPTION_CONFIDENT"
 
 [node name="DialogueBox" type="Panel" parent="BadUSBScenario/CanvasLayer" unique_id=1043063849]
 anchors_preset = 7
@@ -904,8 +901,7 @@ offset_left = 4.0
 offset_top = 2.0
 offset_right = 740.0
 offset_bottom = 427.0
-text = "Gescheitert:
-Deine Antworten haben aufsehen erregt und du wurdest zurückgewiesen."
+text = "BADUSB_FAILURE_TEXT"
 label_settings = SubResource("LabelSettings_3r2ah")
 horizontal_alignment = 1
 vertical_alignment = 1
@@ -916,28 +912,28 @@ offset_left = 296.0
 offset_top = 376.0
 offset_right = 442.0
 offset_bottom = 407.0
-text = "Erneut Versuchen"
+text = "BADUSB_BTN_RETRY"
 
 [node name="EnterCorridorBtn" type="Button" parent="BadUSBScenario/CanvasLayer" unique_id=37133511]
 offset_left = 949.0
 offset_top = 416.0
 offset_right = 1166.0
 offset_bottom = 476.0
-text = "Zum Aufzug gehen"
+text = "BADUSB_BTN_GO_ELEVATOR"
 
 [node name="InsertUSBBtn" type="Button" parent="BadUSBScenario/CanvasLayer" unique_id=469204451]
 offset_left = 1429.0
 offset_top = 389.0
 offset_right = 1618.0
 offset_bottom = 443.0
-text = "USB-Stick einstecken"
+text = "BADUSB_BTN_INSERT_USB"
 
 [node name="RestrictedElevatorBtn" type="Button" parent="BadUSBScenario/CanvasLayer" unique_id=667624930]
 offset_left = 966.0
 offset_top = 397.0
 offset_right = 1145.0
 offset_bottom = 448.0
-text = "Aufzug benutzen"
+text = "BADUSB_BTN_ELEVATOR"
 
 [connection signal="pressed" from="BadUSBScenario/CanvasLayer/Briefing/MarginContainer/VBoxContainer/Button" to="BadUSBScenario/CanvasLayer/Briefing" method="_on_button_pressed"]
 [connection signal="pressed" from="BadUSBScenario/CanvasLayer/DialogueBox/VBoxContainer/DialogChoice1" to="." method="_on_dialog_choice_1_pressed"]

@@ -9,6 +9,11 @@ signal advance_requested
 const BRIEFING_PATH: String = "res://resources/scenarios/spear_phishing/briefing.tres"
 const REC_BLINK_INTERVAL: float = 0.6
 
+# Which BriefingResource to show. Defaults to Scenario 1's; another scenario
+# (e.g. bad_usb) reuses this same screen by setting its own path before the node
+# enters the tree. The spear_phishing shell still reads the const above.
+@export var briefing_path: String = BRIEFING_PATH
+
 @onready var _dialog: DialogBox = $ChannelWindow/DialogBox as DialogBox
 @onready var _channel_title: Label = $ChannelWindow/ChannelTitleStrip/ChannelTitleLabel
 @onready var _rec_dot: ColorRect = $ChannelWindow/ChannelTitleStrip/RecDot
@@ -22,15 +27,19 @@ var _rec_blink_acc: float = 0.0
 var _rec_on: bool = true
 
 func _ready() -> void:
-	_briefing = load(BRIEFING_PATH) as BriefingResource
+	_briefing = load(briefing_path) as BriefingResource
 	if _briefing == null:
-		push_error("Briefing: failed to load %s" % BRIEFING_PATH)
+		push_error("Briefing: failed to load %s" % briefing_path)
 		return
 	_channel_title.text = tr("BRIEFING_CHANNEL_TITLE") % _briefing.speaker_name
 	_mission_label.text = tr("BRIEFING_MISSION_LINE") % _briefing.mission_text
-	_reward_label.text = tr("BRIEFING_REWARD_LINE") % [
-		_briefing.reward_text, _briefing.turn_budget,
-	]
+	# No reward/turn budget for scenarios that leave reward_text empty (bad_usb).
+	if _briefing.reward_text.is_empty():
+		_reward_label.visible = false
+	else:
+		_reward_label.text = tr("BRIEFING_REWARD_LINE") % [
+			_briefing.reward_text, _briefing.turn_budget,
+		]
 	_advance_button.visible = false
 	_dialog.lines_finished.connect(_on_lines_finished)
 	_started_at_ms = Time.get_ticks_msec()
