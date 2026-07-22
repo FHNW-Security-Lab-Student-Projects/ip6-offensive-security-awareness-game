@@ -89,7 +89,8 @@ func _on_complete() -> void:
 func _advance() -> void:
 	match _current:
 		SubState.BRIEFING:
-			_change_substate(SubState.RECON)
+			# Intro -> gameplay: a black fade acts as a "loading" beat.
+			SceneTransition.flash(_change_substate.bind(SubState.RECON))
 		SubState.RECON:
 			_change_substate(SubState.MAIL)
 		SubState.MAIL:
@@ -105,12 +106,12 @@ func _next_scenario() -> void:
 	if cfg == null:
 		push_error("%s: next scenario '%s' missing from Config" % [SCENARIO_ID, NEXT_SCENARIO_ID])
 		return
-	get_tree().change_scene_to_file(cfg.scene_path)
+	SceneTransition.change_scene(cfg.scene_path)
 
 # "Back to Home": close this run, then return to the start screen.
 func _go_home() -> void:
 	complete_scenario()
-	get_tree().change_scene_to_file(HOME_SCENE)
+	SceneTransition.change_scene(HOME_SCENE)
 
 # "Retry": wipe the per-run handoff state (GameState survives a scene reload),
 # then reload this scenario from the Config registry so every sub-state rebuilds
@@ -122,7 +123,7 @@ func _replay() -> void:
 	if cfg == null:
 		push_error("%s: cannot replay, scenario missing from Config" % SCENARIO_ID)
 		return
-	get_tree().change_scene_to_file(cfg.scene_path)
+	SceneTransition.change_scene(cfg.scene_path)
 
 func _change_substate(new_state: SubState) -> void:
 	var from_name: String = (

@@ -13,7 +13,7 @@ func _launch_scenario(id: StringName) -> void:
 	if cfg == null:
 		push_error("LevelAuswahl: scenario '%s' missing from Config registry" % id)
 		return
-	get_tree().change_scene_to_file(cfg.scene_path)
+	SceneTransition.change_scene(cfg.scene_path)
 
 
 

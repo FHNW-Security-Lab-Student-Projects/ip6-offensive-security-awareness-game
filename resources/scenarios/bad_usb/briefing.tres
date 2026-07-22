@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="BriefingResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://resources/scenarios/spear_phishing/briefing_resource.gd" id="1_brf"]
+
+[resource]
+script = ExtResource("1_brf")
+speaker_name = "Direktor"
+target_name = "FinTech AG · Vor Ort"
+intro_lines = PackedStringArray("Der Phishing-Versuch ist aufgeflogen. Hannes' IT ist jetzt wach. Also machen wir es auf die harte Tour.", "Du gehst rein. Physisch. Ins Gebäude der FinTech AG, mitten am Tag.", "Kein Ausweis, keine Einladung. Du kommst über die Menschen rein: Rezeption, Aufzug, eine offen gehaltene Tür. Freundlichkeit ist deine Waffe.", "Bring diesen USB-Stick an einen unbeaufsichtigten Rechner im Inneren. Steck ihn ein. Den Rest erledigt er selbst.")
+mission_text = "Infiltriere die FinTech AG vor Ort"
+reward_text = ""
+turn_budget = 0

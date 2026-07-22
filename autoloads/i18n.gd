@@ -23,6 +23,7 @@ const CONTENT_CSVS: Array[String] = [
 	"res://resources/i18n/recon_content.csv",
 	"res://resources/i18n/mail_content.csv",
 	"res://resources/i18n/resolve_content.csv",
+	"res://resources/i18n/bad_usb_content.csv",
 ]
 const DEFAULT_LOCALE: String = "de"
 
