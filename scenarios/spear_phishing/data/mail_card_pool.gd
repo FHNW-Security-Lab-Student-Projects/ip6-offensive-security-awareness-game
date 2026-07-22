@@ -142,6 +142,25 @@ static func find_in_hand(hand: Array, card_id: StringName) -> MailCard:
 	return null
 
 
+# Pure by-id lookup across every catalog (recon, generic, payload, probe, the
+# Q8 unlock and the legendaries). Used by the post-run review to resolve a
+# played card id back to its type/principle/name. Returns null on an unknown id.
+static func card_for_id(card_id: StringName) -> MailCard:
+	for def in RECON_CARDS.values():
+		if def[0] == card_id:
+			return _make(def)
+	for def in GENERIC_CARDS:
+		if def[0] == card_id:
+			return _make(def)
+	for leg in LEGENDARIES:
+		if leg["card"][0] == card_id:
+			return _make(leg["card"])
+	for def in [PAYLOAD_CARD, PROBE_CARD, ABWESENHEITS_FENSTER]:
+		if def[0] == card_id:
+			return _make(def)
+	return null
+
+
 # Generic cards are inexhaustible (always in hand, every turn); everything else
 # is consumed once played. The UI uses this to decide what to remove after send.
 static func is_generic(card_id: StringName) -> bool:

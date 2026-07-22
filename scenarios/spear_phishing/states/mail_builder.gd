@@ -47,6 +47,7 @@ var _revealing := false
 var _boss_fired: Dictionary = {}
 var _last_probe_done := false
 var _reply_rotation: Dictionary = {}  # Hannes state name -> times shown (rotation)
+var _history: Array = []        # one entry per SENT mail, for the post-run review
 
 
 func _ready() -> void:
@@ -286,9 +287,28 @@ func _on_send() -> void:
 # reveal (which is cosmetic) so the commit is synchronous and testable.
 func _commit_mail(cards: Array) -> void:
 	var turns_before: int = _run.turns_left
+	var suspicion_before: int = _run.suspicion
+	var pressure_before: int = _run.pressure
 	_run.play_mail(cards)
 	if _run.turns_left < turns_before:
 		GameState.consume_mission_turn()
+		_record_mail(cards, suspicion_before, pressure_before)
+
+
+# Records a SENT mail (a turn was spent) for the optional post-run review:
+# which cards went out and how the bars moved. Presentation data only — read
+# straight off the engine state the UI already shows, no logic of its own.
+func _record_mail(cards: Array, suspicion_before: int, pressure_before: int) -> void:
+	var ids: Array[StringName] = []
+	for card in cards:
+		ids.append(card.id)
+	_history.append({
+		"card_ids": ids,
+		"suspicion_before": suspicion_before,
+		"pressure_before": pressure_before,
+		"suspicion_after": _run.suspicion,
+		"pressure_after": _run.pressure,
+	})
 
 
 func _on_pass() -> void:
@@ -431,6 +451,7 @@ func _handle_outcome() -> void:
 		"pressure": _run.pressure,
 		"turns_used": _run.turns_used(),
 		"played": _run.played.duplicate(),
+		"history": _history.duplicate(true),
 	})
 	var tween := create_tween()
 	tween.tween_interval(REPLY_HOLD)

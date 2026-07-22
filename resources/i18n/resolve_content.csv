@@ -13,3 +13,17 @@ RESOLVE_STAT_SOURCE,"Lain, Kostiainen & Čapkun (2022), IEEE S&P"
 RESOLVE_NEXT,Nächstes Szenario
 RESOLVE_HOME,Zum Hauptmenü
 RESOLVE_RETRY,Nochmal spielen
+RESOLVE_REVIEW_BUTTON,Spielbewertung
+REVIEW_TITLE,Deine Entscheidungen
+REVIEW_TURN,Zug %d
+REVIEW_BACK,Zurück
+REVIEW_VERDICT_EPIC,Gezielte Recon-Info.
+REVIEW_VERDICT_STANDARD,"Billiger Druck. Erhöht das Misstrauen, ohne Recon-Deckung riskant."
+REVIEW_VERDICT_SCHROTT,Falle.
+REVIEW_VERDICT_PAYLOAD,Der eigentliche Angriff.
+REVIEW_MISSED_TITLE,Verpasste Chancen
+REVIEW_MISSED_PERFEKTER_ABSENDER,"Du hattest ‚Frische IT' und ‚Bit & Bürli bestätigt' gesammelt. Zusammen wären sie ‚Perfekter Absender' gewesen, ein glaubwürdiger Vendor-Spoof, der das Misstrauen stark senkt."
+REVIEW_MISSED_ECHTER_VORWAND,"Du hattest ‚Migrations-Aufhänger' und ‚Projekt Helvetia' gesammelt. Zusammen wären sie ‚Echter Vorwand' gewesen, ein konkretes Projekt als Grund, das Druck aufbaut ohne Misstrauen."
+REVIEW_MISSED_VERIFIZIERT,"Du hattest das Vereinsfoto und den Namensvetter gesammelt. Zusammen hätten sie ‚Verifiziert' ergeben und die Namensvetter-Falle entschärft."
+REVIEW_MISSED_IDENTITAET,"Du hattest das Mail-Schema und den Archiv-Fund gesammelt. Zusammen wären sie ‚Identität gesichert' gewesen, exakte Adresse plus Bestätigung."
+REVIEW_NO_MISSED,"Du hast deine gesammelten Infos gut ausgereizt. Keine ungenutzten Kombinationen."

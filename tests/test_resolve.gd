@@ -124,16 +124,25 @@ func _process(_delta: float) -> bool:
 	print("reveal_all shows the buttons (expect 1.0): ", rb._button_row.modulate.a)
 	print("reveal_all is marked revealed (expect true): ", rb._revealed)
 
-	# The three exit buttons and their intent signals are present.
+	# The three exit buttons, the review button, and the intent signals.
 	var btns: Array = []
 	_button_texts(rb, btns)
-	print("three exit buttons present (expect 3): ", btns.size())
+	print("four buttons present incl. review (expect 4): ", btns.size())
+	print("review button labelled (expect true): ", btns.has(tr("RESOLVE_REVIEW_BUTTON")))
 	print("next-scenario button labelled (expect true): ", btns.has(tr("RESOLVE_NEXT")))
 	print("home button labelled (expect true): ", btns.has(tr("RESOLVE_HOME")))
 	print("retry button labelled (expect true): ", btns.has(tr("RESOLVE_RETRY")))
 	print("next_requested signal present (expect true): ", rb.has_signal("next_requested"))
 	print("home_requested signal present (expect true): ", rb.has_signal("home_requested"))
 	print("replay_requested signal present (expect true): ", rb.has_signal("replay_requested"))
+
+	# Review button opens the overlay as a child of Resolve (no flow change).
+	var before: int = rb.get_child_count()
+	rb._open_review()
+	print("review overlay added on open (expect true): ", rb.get_child_count() > before)
+	var overlay = rb.get_child(rb.get_child_count() - 1)
+	print("review overlay exposes a turn count (expect 0, no history here): ", overlay._turn_count)
+	print("review overlay can close back (expect true): ", overlay.has_signal("close_requested"))
 	rb.queue_free()
 
 	# --- 5. reset_scenario() wipes the per-run handoff (clean replay) ---------

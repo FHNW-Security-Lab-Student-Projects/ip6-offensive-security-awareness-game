@@ -18,6 +18,8 @@ signal next_requested      # "Next Scenario": shell completes + loads the next
 signal home_requested      # "Back to Home": shell completes + returns to start
 signal replay_requested    # "Retry": shell resets + reloads this scenario fresh
 
+const MailReview := preload("res://scenarios/spear_phishing/components/mail_review.gd")
+
 const SCENARIO_ID := "spear_phishing"
 const REVEAL_STEP_TIME := 1.1   # pause between the three blocks
 const FADE_TIME := 0.5
@@ -114,6 +116,11 @@ func _build_layout() -> void:
 		block.modulate.a = 0.0   # hidden until its reveal step
 		col.add_child(block)
 
+	# Extra breathing room between the statistic and the action buttons.
+	var spacer := Control.new()
+	spacer.custom_minimum_size.y = 28
+	col.add_child(spacer)
+
 	_button_row = _build_buttons()
 	_button_row.modulate.a = 0.0
 	col.add_child(_button_row)
@@ -168,13 +175,40 @@ func _build_stat_block() -> Control:
 
 
 func _build_buttons() -> Control:
+	# A centered wrapper shrinks the block to the width of the exit row; the
+	# review button then FILLS that width, so it spans exactly the three buttons
+	# combined and lines up with them.
+	var wrap := HBoxContainer.new()
+	wrap.alignment = BoxContainer.ALIGNMENT_CENTER
+
+	var block := VBoxContainer.new()
+	block.add_theme_constant_override("separation", 14)
+	wrap.add_child(block)
+
+	var review := Button.new()
+	review.text = tr("RESOLVE_REVIEW_BUTTON")
+	review.size_flags_horizontal = Control.SIZE_FILL
+	_style_button(review)
+	review.pressed.connect(_open_review)
+	block.add_child(review)
+
 	var row := HBoxContainer.new()
-	row.alignment = BoxContainer.ALIGNMENT_CENTER
 	row.add_theme_constant_override("separation", 20)
 	_add_button(row, "RESOLVE_NEXT", func() -> void: next_requested.emit())
 	_add_button(row, "RESOLVE_HOME", func() -> void: home_requested.emit())
 	_add_button(row, "RESOLVE_RETRY", func() -> void: replay_requested.emit())
-	return row
+	block.add_child(row)
+	return wrap
+
+
+# Opens the optional turn-by-turn review as a full-screen overlay on top of the
+# debrief; its Back button frees it and returns here. Read-only, no flow change.
+func _open_review() -> void:
+	var review := MailReview.new()
+	review.close_requested.connect(review.queue_free)
+	add_child(review)
+	review.configure(
+		GameState.mail_result, GameState.collected_find_ids, GameState.probe_signature_obtained)
 
 
 func _add_button(row: HBoxContainer, key: String, on_press: Callable) -> void:
