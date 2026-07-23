@@ -23,6 +23,7 @@ const BossChat := preload("res://scenarios/spear_phishing/components/mail_boss_c
 const HandCard := preload("res://scenarios/spear_phishing/components/mail_hand_card.gd")
 
 const MAX_SLOTS := 3
+const PAYLOAD_SCROLL_TIME := 0.45
 const REVEAL_STEP_TIME := 0.5
 const TOAST_HOLD := 2.6
 const REPLY_VARIANTS := 3     # HANNES_REPLY_<STATE>_1..N per state, rotated
@@ -36,6 +37,7 @@ var _bars
 var _preview
 var _boss
 var _hand_row: HBoxContainer
+var _hand_scroll: ScrollContainer
 var _turn_label: Label
 var _count_label: Label
 var _send_button: Button
@@ -45,6 +47,7 @@ var _revealing := false
 var _boss_fired: Dictionary = {}
 var _last_probe_done := false
 var _reply_rotation: Dictionary = {}  # Hannes state name -> times shown (rotation)
+var _history: Array = []        # one entry per SENT mail, for the post-run review
 
 
 func _ready() -> void:
@@ -121,15 +124,15 @@ func _build_hand_bar() -> Control:
 	row.add_theme_constant_override("separation", 16)
 	bar.add_child(row)
 
-	var scroll := ScrollContainer.new()
-	scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	row.add_child(scroll)
+	_hand_scroll = ScrollContainer.new()
+	_hand_scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	_hand_scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_hand_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	row.add_child(_hand_scroll)
 
 	_hand_row = HBoxContainer.new()
 	_hand_row.add_theme_constant_override("separation", 12)
-	scroll.add_child(_hand_row)
+	_hand_scroll.add_child(_hand_row)
 
 	var controls := VBoxContainer.new()
 	controls.alignment = BoxContainer.ALIGNMENT_CENTER
@@ -199,6 +202,38 @@ func _rebuild_hand() -> void:
 			_add_card_widget(card)
 	for widget in _cards:
 		widget.refresh(_run)
+	_scroll_to_payload_if_ready()
+
+
+# Once the gate is open the (pulsing) payload must not hide off-screen: after
+# the rebuilt hand has laid out, glide the scroll until the card is fully in
+# view. Cosmetic only; it never touches slots or the run.
+func _scroll_to_payload_if_ready() -> void:
+	if _run == null or _run.is_over() or not _run.payload_gate_open():
+		return
+	var widget = _payload_widget()
+	if widget == null:
+		return
+	await get_tree().process_frame  # fresh widgets: wait for the HBox layout pass
+	if not is_instance_valid(widget) or not is_instance_valid(_hand_scroll):
+		return
+	var view_left := float(_hand_scroll.scroll_horizontal)
+	var view_right := view_left + _hand_scroll.size.x
+	if widget.position.x >= view_left and widget.position.x + widget.size.x <= view_right:
+		return  # already fully visible, do not fight the player's scroll
+	var target := clampf(
+		widget.position.x + widget.size.x * 0.5 - _hand_scroll.size.x * 0.5,
+		0.0, maxf(0.0, _hand_row.size.x - _hand_scroll.size.x))
+	var tween := create_tween()
+	tween.tween_property(_hand_scroll, "scroll_horizontal", int(target), PAYLOAD_SCROLL_TIME) \
+		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+
+
+func _payload_widget():
+	for widget in _cards:
+		if widget.card.type == MailCard.Type.PAYLOAD:
+			return widget
+	return null
 
 
 func _add_card_widget(card) -> void:
@@ -251,9 +286,28 @@ func _on_send() -> void:
 # reveal (which is cosmetic) so the commit is synchronous and testable.
 func _commit_mail(cards: Array) -> void:
 	var turns_before: int = _run.turns_left
+	var suspicion_before: int = _run.suspicion
+	var pressure_before: int = _run.pressure
 	_run.play_mail(cards)
 	if _run.turns_left < turns_before:
 		GameState.consume_mission_turn()
+		_record_mail(cards, suspicion_before, pressure_before)
+
+
+# Records a SENT mail (a turn was spent) for the optional post-run review:
+# which cards went out and how the bars moved. Presentation data only — read
+# straight off the engine state the UI already shows, no logic of its own.
+func _record_mail(cards: Array, suspicion_before: int, pressure_before: int) -> void:
+	var ids: Array[StringName] = []
+	for card in cards:
+		ids.append(card.id)
+	_history.append({
+		"card_ids": ids,
+		"suspicion_before": suspicion_before,
+		"pressure_before": pressure_before,
+		"suspicion_after": _run.suspicion,
+		"pressure_after": _run.pressure,
+	})
 
 
 func _on_pass() -> void:
@@ -263,6 +317,11 @@ func _on_pass() -> void:
 	_run.pass_turn()
 	if _run.turns_left < turns_before:
 		GameState.consume_mission_turn()
+	# Passing discards the unsent draft: the rebuilt widgets start unslotted, so
+	# stale _slots entries would ghost (identity check) and mis-pulse the payload.
+	if not _slots.is_empty():
+		_slots.clear()
+		_preview.rebuild_draft(_slots)
 	_rebuild_hand()
 	_refresh_committed()
 	if _run.is_over():
@@ -305,8 +364,12 @@ func _finish_reveal(cards: Array) -> void:
 	_check_probe_flip()
 	_boss_react(cards)
 	if _run.is_over():
+		# No hand rebuild on this path: refresh the surviving widgets so the
+		# payload pulse/arrow stop and every card disables with the dead run.
+		for widget in _cards:
+			widget.refresh(_run)
 		_refresh_committed()
-		_handle_outcome()  # sets the result now; the overlay follows the reply
+		_handle_outcome()  # records the result now; the advance follows the reply
 	else:
 		_preview.begin_new_draft()
 		_rebuild_hand()
@@ -374,73 +437,24 @@ func _refresh_controls() -> void:
 	_pass_button.disabled = _revealing or _run.is_over()
 
 
-# --- outcome: hand off the run to Resolve, show a simple transition ----------
+# --- outcome: hand the run to Resolve ----------------------------------------
 
+# Records the finished run for Resolve, lets Hannes' final reply read for a
+# beat, then advances. Resolve now owns the whole outcome presentation, so
+# there is no result popup here anymore — this just hands off.
 func _handle_outcome() -> void:
 	var name: String = MailRun.Outcome.keys()[_run.outcome]
-	# The handoff is state and happens now; the overlay is cosmetic and waits so
-	# Hannes' final reply can be read first.
 	GameState.set_mail_result({
 		"outcome": name,
 		"suspicion": _run.suspicion,
 		"pressure": _run.pressure,
 		"turns_used": _run.turns_used(),
 		"played": _run.played.duplicate(),
+		"history": _history.duplicate(true),
 	})
 	var tween := create_tween()
 	tween.tween_interval(REPLY_HOLD)
-	tween.tween_callback(_show_outcome_overlay.bind(name))
-
-
-func _show_outcome_overlay(name: String) -> void:
-	var overlay := ColorRect.new()
-	overlay.color = Color(0, 0, 0, 0.72)
-	overlay.anchor_right = 1.0
-	overlay.anchor_bottom = 1.0
-	add_child(overlay)
-
-	var panel := PanelContainer.new()
-	panel.anchor_left = 0.5
-	panel.anchor_top = 0.5
-	panel.anchor_right = 0.5
-	panel.anchor_bottom = 0.5
-	panel.offset_left = -320
-	panel.offset_top = -140
-	panel.offset_right = 320
-	panel.offset_bottom = 140
-	var accent := DarkMailPalette.GREEN_BRIGHT if name == "WIN" else DarkMailPalette.ALERT_RED
-	var box := DarkMailPalette.flat_box(DarkMailPalette.BG_PANEL, accent, DarkMailPalette.BORDER_WIDTH)
-	box.content_margin_left = 40
-	box.content_margin_right = 40
-	box.content_margin_top = 32
-	box.content_margin_bottom = 32
-	panel.add_theme_stylebox_override("panel", box)
-	overlay.add_child(panel)
-
-	var col := VBoxContainer.new()
-	col.alignment = BoxContainer.ALIGNMENT_CENTER
-	col.add_theme_constant_override("separation", 20)
-	panel.add_child(col)
-
-	var title := Label.new()
-	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	DarkMailPalette.apply_mono_label(title, DarkMailPalette.FONT_SIZE_MONO_LARGE, accent)
-	title.text = tr("MAIL_OUTCOME_%s_TITLE" % name)
-	col.add_child(title)
-
-	var text := Label.new()
-	text.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	text.custom_minimum_size.x = 560
-	DarkMailPalette.apply_mono_label(text, DarkMailPalette.FONT_SIZE_MONO, DarkMailPalette.TEXT_GREEN)
-	text.text = tr("MAIL_OUTCOME_%s_TEXT" % name)
-	col.add_child(text)
-
-	var button := Button.new()
-	button.text = tr("MAIL_OUTCOME_CONTINUE")
-	_style_button(button)
-	button.pressed.connect(func() -> void: advance_requested.emit())
-	col.add_child(button)
+	tween.tween_callback(func() -> void: advance_requested.emit())
 
 
 # --- probe toast: a brief note that floats in and fades out -------------------

@@ -4,7 +4,7 @@ const SCENARIO_ID: String = "bad_usb"
 
 enum SubState { BRIEFING, STREET, FRONT, INSIDE, TAILGATE, CORRIDOR, OFFICE, RESOLVE }
 
-@onready var _ui_briefing = $BadUSBScenario/CanvasLayer/Briefing
+var _ui_briefing  # the shared DarkMail briefing, instanced in _setup
 @onready var _ui_resolve = $BadUSBScenario/CanvasLayer/Resolve
 @onready var _ui_enter_btn = $BadUSBScenario/CanvasLayer/EnterBuildingBtn
 
@@ -70,8 +70,10 @@ func _ready() -> void:
 	start_scenario(SCENARIO_ID)
 
 func _setup() -> void:
-	_barrier_shape.disabled = false 
-	
+	_barrier_shape.disabled = false
+
+	_swap_in_briefing()
+
 	_ui_briefing.visible = false
 	_ui_resolve.visible = false
 	_ui_enter_btn.visible = false
@@ -188,8 +190,25 @@ func _setup() -> void:
 	_npc_office.flip_h = false 
 	_npc_office.play("idle")
 
+# Replaces the placeholder intro with the shared DarkMail briefing screen,
+# pointed at this scenario's own resource (no turn budget). Instanced in code so
+# the colleague's scene tree is left untouched.
+func _swap_in_briefing() -> void:
+	var canvas = $BadUSBScenario/CanvasLayer
+	var placeholder = canvas.get_node_or_null("Briefing")
+	if placeholder != null:
+		placeholder.name = "BriefingPlaceholder"
+		placeholder.queue_free()
+	_ui_briefing = load("res://scenarios/spear_phishing/states/briefing.tscn").instantiate()
+	_ui_briefing.briefing_path = "res://resources/scenarios/bad_usb/briefing.tres"
+	canvas.add_child(_ui_briefing)
+
 func _on_start() -> void:
+<<<<<<< HEAD
 	_change_substate(SubState.INSIDE) 
+=======
+	_change_substate(SubState.BRIEFING)
+>>>>>>> 45e3dd349acbe6105df000e88cc563d669ff4bd1
 
 func _on_door_entered(body: Node2D) -> void:
 	if body.name == "Player":
@@ -433,7 +452,8 @@ func _on_complete() -> void:
 func _advance() -> void:
 	match _current:
 		SubState.BRIEFING:
-			_change_substate(SubState.STREET)
+			# Intro -> gameplay: black fade as a loading beat.
+			SceneTransition.flash(_change_substate.bind(SubState.STREET))
 		SubState.STREET:
 			_change_substate(SubState.FRONT)
 		SubState.FRONT:
@@ -546,45 +566,45 @@ func _update_dialogue_ui() -> void:
 	
 	match _dialogue_step:
 		# --- STRESSED PATH ---
-		10: 
-			_lbl_npc_text.text = "Guten Tag, kann ich Ihnen helfen? Sie wirken völlig außer Atem!"
-			_btn_choice1.text = "Lassen Sie mich durch, sonst werde ich zusehen, wie Sie gefeuert werden!"
-			_btn_choice2.text = "Ich bin von der externen Security und bin zu spät für mein Meeting!"
-		11: 
-			_lbl_npc_text.text = "Oh je, beruhigen Sie sich. Mit wem haben Sie das Meeting denn?"
-			_btn_choice1.text = "Herrn Müller... Dritter Stock, richtig?"
-			_btn_choice2.text = "Das geht Sie nichts an!"
-		12: 
-			_lbl_npc_text.text = "Genau, dritter Stock! Beeilen Sie sich."
-			_btn_choice1.text = "Vielen Dank!"
+		10:
+			_lbl_npc_text.text = tr("BADUSB_DLG_10_NPC")
+			_btn_choice1.text = tr("BADUSB_DLG_10_C1")
+			_btn_choice2.text = tr("BADUSB_DLG_10_C2")
+		11:
+			_lbl_npc_text.text = tr("BADUSB_DLG_11_NPC")
+			_btn_choice1.text = tr("BADUSB_DLG_11_C1")
+			_btn_choice2.text = tr("BADUSB_DLG_11_C2")
+		12:
+			_lbl_npc_text.text = tr("BADUSB_DLG_12_NPC")
+			_btn_choice1.text = tr("BADUSB_DLG_12_C1")
 			_btn_choice2.visible = false
-			
+
 		# --- CONFIDENT PATH ---
-		20: 
-			_lbl_npc_text.text = "Guten Tag. Haben Sie einen Termin? Sie tragen keinen Besucherausweis."
-			_btn_choice1.text = "Ich bin der neue Chef. Hat man Sie nicht informiert?"
-			_btn_choice2.text = "Ich wurde angestellt, um die Sicherheit in diesem Unternehmen zu überprüfen."
-		21: 
-			_lbl_npc_text.text = "Ein Audit? Davon weiß ich absolut nichts."
-			_btn_choice1.text = "Wie ich sehe, lesen Sie Ihre Mails nicht. Das ist ein Sicherheitsrisiko. Dann bräuchte ich einmal Ihren Namen und den Ihres Vorgesetzten."
-			_btn_choice2.text = "Oh, bitte rufen Sie niemanden an, ich muss unangekündigt bleiben!"
-		22: 
-			_lbl_npc_text.text = "Oh... warten Sie, das ist nicht nötig! Ich erinnere mich dunkel an die Mail. Es ist alles in Ordnung, gehen Sie ruhig durch!"
-			_btn_choice1.text = "Vielen Dank. Achten Sie künftig besser auf interne Mitteilungen."
+		20:
+			_lbl_npc_text.text = tr("BADUSB_DLG_20_NPC")
+			_btn_choice1.text = tr("BADUSB_DLG_20_C1")
+			_btn_choice2.text = tr("BADUSB_DLG_20_C2")
+		21:
+			_lbl_npc_text.text = tr("BADUSB_DLG_21_NPC")
+			_btn_choice1.text = tr("BADUSB_DLG_21_C1")
+			_btn_choice2.text = tr("BADUSB_DLG_21_C2")
+		22:
+			_lbl_npc_text.text = tr("BADUSB_DLG_22_NPC")
+			_btn_choice1.text = tr("BADUSB_DLG_22_C1")
 			_btn_choice2.visible = false
 
 		# --- SUSPICIOUS IT OFFICE NPC ---
 		30:
-			_lbl_npc_text.text = "Moment mal... Sie sind doch vorhin mit mir im Aufzug gefahren. Arbeiten Sie nicht in der HR-Abteilung? Was machen Sie hier im IT-Büro?"
-			_btn_choice1.text = "Ich bin versetzt worden, das ist mein neuer Arbeitsplatz."
-			_btn_choice2.text = "Ich habe ein wichtiges Meeting mit der IT-Leitung!"
+			_lbl_npc_text.text = tr("BADUSB_DLG_30_NPC")
+			_btn_choice1.text = tr("BADUSB_DLG_30_C1")
+			_btn_choice2.text = tr("BADUSB_DLG_30_C2")
 		31:
-			_lbl_npc_text.text = "Mit der IT-Leitung... Was muss die HR mit der IT-Leitung besprechen."
-			_btn_choice1.text = "Das darf ich Ihnen leider nicht sagen. Wenn Sie mich nun entschuldigen würden."
-			_btn_choice2.text = "Was geht Sie das an?"
+			_lbl_npc_text.text = tr("BADUSB_DLG_31_NPC")
+			_btn_choice1.text = tr("BADUSB_DLG_31_C1")
+			_btn_choice2.text = tr("BADUSB_DLG_31_C2")
 		32:
-			_lbl_npc_text.text = "Oh nein ich komme noch zu spät. Schönen Tag."
-			_btn_choice1.text = "Vielen Dank, Ihnen auch!"
+			_lbl_npc_text.text = tr("BADUSB_DLG_32_NPC")
+			_btn_choice1.text = tr("BADUSB_DLG_32_C1")
 			_btn_choice2.visible = false
 
 func _start_resolve_story() -> void:
@@ -599,28 +619,28 @@ func _play_story_step() -> void:
 	var target_text = ""
 	
 	if _story_step == 0:
-		_lbl_title.text = "Schritt 1: Die Rezeption"
-		target_text = "Du hast die Empfangsperson unter Druck gesetzt oder mit falscher Autorität getäuscht. Selbst geschultes Personal kann in Stresssituationen Sicherheitsrichtlinien vergessen. Ausweise müssen immer und ohne Ausnahme kontrolliert werden, egal wer vor einem steht."
+		_lbl_title.text = tr("BADUSB_STORY_0_TITLE")
+		target_text = tr("BADUSB_STORY_0_TEXT")
 		_img_story.texture = preload("res://assets/sprites/placeholder/storyImages/lobby_img.png")
-		
+
 	elif _story_step == 1:
-		_lbl_title.text = "Schritt 2: Der Aufzug (Mitläufer-Effekt)"
-		target_text = "Du konntest den eingeschränkten Bereich betreten, weil die Mitarbeiter am Aufzug dachten: 'Wenn die Person schon hier drin ist, wird sie wohl hier arbeiten.' Wachsamkeit endet nicht an der Eingangstür. Unbekannte ohne sichtbaren Ausweis müssen freundlich angesprochen werden."
+		_lbl_title.text = tr("BADUSB_STORY_1_TITLE")
+		target_text = tr("BADUSB_STORY_1_TEXT")
 		_img_story.texture = preload("res://assets/sprites/placeholder/storyImages/elevator_img.png")
-		
+
 	elif _story_step == 2:
-		_lbl_title.text = "Schritt 3: Tailgating an der Tür"
-		target_text = "Jemand hat dir aus reiner Freundlichkeit oder aus Unachtsamkeit die gesicherte Tür aufgelassen. In der realen Welt ist dies eine der häufigsten Schwachstellen. Höflichkeit darf Sicherheit nicht überschreiben. Jeder muss seinen eigenen Ausweis scannen, um Zutritt zu erhalten."
+		_lbl_title.text = tr("BADUSB_STORY_2_TITLE")
+		target_text = tr("BADUSB_STORY_2_TEXT")
 		_img_story.texture = preload("res://assets/sprites/placeholder/storyImages/door_img.png")
-		
+
 	elif _story_step == 3:
-		_lbl_title.text = "Schritt 4: Der ungesperrte Arbeitsplatz"
-		target_text = "Ein kurzer Moment der Unachtsamkeit – ein nicht gesperrter Computer. Dies ermöglichte es dir erst, den präparierten USB-Stick anzuschließen. Der Bildschirm muss beim Verlassen des Platzes immer und sofort gesperrt werden auch wenn man nur kurz weggeht."
+		_lbl_title.text = tr("BADUSB_STORY_3_TITLE")
+		target_text = tr("BADUSB_STORY_3_TEXT")
 		_img_story.texture = preload("res://assets/sprites/placeholder/storyImages/pc_img.png")
-		
+
 	elif _story_step == 4:
-		_lbl_title.text = "Fazit: Hätten die anderen ihren Job gemacht"
-		target_text = "Das Unternehmen hatte eigentlich gute Sicherheits-Vorkehrungen. Doch weil sich jeder auf den anderen verließ, funktionierte deine Infiltration. Physische Sicherheit ist eine Teamaufgabe – sie funktioniert nur, wenn jeder die Verantwortung übernimmt und Sicherheit nicht als 'die Aufgabe der Anderen' ansieht."
+		_lbl_title.text = tr("BADUSB_STORY_4_TITLE")
+		target_text = tr("BADUSB_STORY_4_TEXT")
 		
 	_lbl_story.text = target_text
 	_lbl_story.visible_characters = 0
@@ -648,4 +668,4 @@ func _on_next_pressed() -> void:
 
 func _on_finish_pressed() -> void:
 	complete_scenario()
-	get_tree().change_scene_to_file("res://scenes/levelAuswahl.tscn")
+	SceneTransition.change_scene("res://scenes/levelAuswahl.tscn")

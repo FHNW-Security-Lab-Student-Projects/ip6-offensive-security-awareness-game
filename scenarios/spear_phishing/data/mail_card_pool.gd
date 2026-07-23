@@ -11,11 +11,11 @@ const MailCard := preload("res://scenarios/spear_phishing/data/mail_card.gd")
 
 # --- central tuning: the design's explicit difficulty knobs, one place -------
 const TURN_BUDGET := 5            # mails the player may send before the run ends
-const SUSPICION_START := 3
+const SUSPICION_START := 4        # one above target: lowering suspicion is real work
 const SUSPICION_TARGET := 3       # win requires suspicion <= this
 const SUSPICION_MIN := 0          # bar floor: no banking negative suspicion
 const SPAM_THRESHOLD := 7         # suspicion > this => SPAM outcome
-const PRESSURE_START := 5
+const PRESSURE_START := 3         # 4 below target: one +2 card no longer opens the gate
 const PRESSURE_TARGET := 7        # win requires pressure >= this
 const PRESSURE_MIN := 0
 const KOLLEGEN_MIN := 4           # suspicion in [MIN,MAX] at payload => KOLLEGEN
@@ -139,6 +139,25 @@ static func find_in_hand(hand: Array, card_id: StringName) -> MailCard:
 	for card in hand:
 		if card.id == card_id:
 			return card
+	return null
+
+
+# Pure by-id lookup across every catalog (recon, generic, payload, probe, the
+# Q8 unlock and the legendaries). Used by the post-run review to resolve a
+# played card id back to its type/principle/name. Returns null on an unknown id.
+static func card_for_id(card_id: StringName) -> MailCard:
+	for def in RECON_CARDS.values():
+		if def[0] == card_id:
+			return _make(def)
+	for def in GENERIC_CARDS:
+		if def[0] == card_id:
+			return _make(def)
+	for leg in LEGENDARIES:
+		if leg["card"][0] == card_id:
+			return _make(leg["card"])
+	for def in [PAYLOAD_CARD, PROBE_CARD, ABWESENHEITS_FENSTER]:
+		if def[0] == card_id:
+			return _make(def)
 	return null
 
 

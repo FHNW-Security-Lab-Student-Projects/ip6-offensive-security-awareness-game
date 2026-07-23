@@ -13,10 +13,19 @@ const Pool := preload("res://scenarios/spear_phishing/data/mail_card_pool.gd")
 signal clicked(card)
 
 const CARD_SIZE := Vector2(196, 132)
+const PULSE_BRIGHT := Color(1.7, 1.55, 1.15)  # amber-ish glow over the base style
+const PULSE_HALF_TIME := 0.4
+const ARROW_SIZE := Vector2(26, 14)
+const ARROW_BOB := 6.0        # vertical bob distance of the payload arrow
+const ARROW_BOB_TIME := 0.35
 
 var card: MailCard
 var _enabled := true
 var _slotted := false
+var _pulse_tween: Tween
+var _arrow: Control
+var _arrow_tween: Tween
+var _info_overlay: Control
 
 
 func setup(c: MailCard) -> void:
@@ -44,31 +53,147 @@ func setup(c: MailCard) -> void:
 	name_label.text = tr(card.name_key())
 	box.add_child(name_label)
 
+	_build_arrow()
+	_build_info_badge()
 	_restyle()
+
+
+# A small "[i]" hint in the top-right corner so players notice they can hover a
+# card for its full text. Purely an affordance; hovering anywhere on the card
+# shows the tooltip. On the armed payload it yields to the pulsing arrow (which
+# shares the corner) — see _update_pulse.
+func _build_info_badge() -> void:
+	_info_overlay = Control.new()
+	_info_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(_info_overlay)
+
+	var badge := Label.new()
+	badge.text = "[i]"
+	badge.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	DarkMailPalette.apply_mono_label(badge, DarkMailPalette.FONT_SIZE_MONO_SMALL, DarkMailPalette.GREEN)
+	_info_overlay.add_child(badge)
+	_info_overlay.resized.connect(func() -> void:
+		var s := badge.get_minimum_size()
+		badge.position = Vector2(_info_overlay.size.x - s.x - 4.0, 2.0))
+
+
+# Renders the hover tooltip in the DarkMail look (bordered dark panel + mono
+# text) instead of Godot's default grey box. Godot calls this with tooltip_text.
+func _make_custom_tooltip(for_text: String) -> Object:
+	var panel := PanelContainer.new()
+	var box := DarkMailPalette.flat_box(
+		DarkMailPalette.BG_PANEL, DarkMailPalette.GREEN, DarkMailPalette.BORDER_WIDTH)
+	box.content_margin_left = 16
+	box.content_margin_right = 16
+	box.content_margin_top = 12
+	box.content_margin_bottom = 12
+	panel.add_theme_stylebox_override("panel", box)
+
+	var label := Label.new()
+	label.text = for_text
+	label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	label.custom_minimum_size.x = 360
+	DarkMailPalette.apply_mono_label(
+		label, DarkMailPalette.FONT_SIZE_MONO, DarkMailPalette.TEXT_GREEN)
+	panel.add_child(label)
+	return panel
 
 
 # --- live state --------------------------------------------------------------
 
-# The payload is clickable only when its gate is open (a visible bar fact, not an
-# effect preview); every other card is clickable while the run is live.
+# Playability is a run fact (card_playable): the payload only once its gate is
+# open, every other card only while the gate is still closed. The widget reads
+# the fact and owns no thresholds.
 func refresh(run) -> void:
-	if card.type == MailCard.Type.PAYLOAD:
-		_enabled = run.payload_gate_open() and not run.is_over() and run.turns_left > 0
-	else:
-		_enabled = not run.is_over() and run.turns_left > 0
+	_enabled = run.card_playable(card)
 	_restyle()
+	_update_pulse()
 
 
 func set_slotted(slotted: bool) -> void:
 	_slotted = slotted
 	_restyle()
+	_update_pulse()
 
 
 # A brief brightening used by the staggered reveal to point out the acting card.
 func flash() -> void:
+	if _is_pulsing():
+		return  # the pulse already owns modulate and draws more attention anyway
 	modulate = Color(1.4, 1.4, 1.4, 1.0)
 	var tween := create_tween()
 	tween.tween_property(self, "modulate", Color(1, 1, 1, 1), 0.35)
+
+
+# --- payload pulse -------------------------------------------------------------
+
+# The armed payload blinks: a looping brightness pulse plus a bobbing amber
+# arrow while it is playable and not yet drafted, so the open gate cannot be
+# overlooked. Slotting the card or closing conditions (run over, no turns) stop
+# both and restore the static style.
+func _is_pulsing() -> bool:
+	return _pulse_tween != null and _pulse_tween.is_valid()
+
+
+func _should_pulse() -> bool:
+	return card.type == MailCard.Type.PAYLOAD and _enabled and not _slotted
+
+
+func _update_pulse() -> void:
+	if _should_pulse():
+		if _is_pulsing():
+			return
+		_pulse_tween = create_tween().set_loops()
+		_pulse_tween.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+		_pulse_tween.tween_property(self, "modulate", PULSE_BRIGHT, PULSE_HALF_TIME)
+		_pulse_tween.tween_property(self, "modulate", Color(1, 1, 1, 1), PULSE_HALF_TIME)
+		_arrow.visible = true
+		if _info_overlay != null:
+			_info_overlay.visible = false  # arrow takes over the top-right corner
+		_arrow_tween = create_tween().set_loops()
+		_arrow_tween.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+		_arrow_tween.tween_property(_arrow, "position:y", ARROW_BOB, ARROW_BOB_TIME)
+		_arrow_tween.tween_property(_arrow, "position:y", 0.0, ARROW_BOB_TIME)
+	elif _is_pulsing():
+		_pulse_tween.kill()
+		_pulse_tween = null
+		if _arrow_tween != null and _arrow_tween.is_valid():
+			_arrow_tween.kill()
+		_arrow_tween = null
+		_arrow.visible = false
+		_arrow.position.y = 0.0
+		if _info_overlay != null:
+			_info_overlay.visible = true
+		_apply_modulate()
+
+
+# --- payload arrow: a bobbing pointer drawn over the armed payload -------------
+
+# Plain triangle in the card's top-right corner. The wrapper Control gets
+# fitted to the panel's content rect; the arrow inside it is free of any
+# container layout, so it can bob. Hidden by default; _update_pulse toggles it
+# together with the pulse.
+class ArrowMarker extends Control:
+	func _draw() -> void:
+		draw_colored_polygon(PackedVector2Array([
+			Vector2.ZERO,
+			Vector2(size.x, 0.0),
+			Vector2(size.x * 0.5, size.y),
+		]), DarkMailPalette.WARN_AMBER)
+
+
+func _build_arrow() -> void:
+	var overlay := Control.new()
+	overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(overlay)
+
+	_arrow = ArrowMarker.new()
+	_arrow.size = ARROW_SIZE
+	_arrow.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_arrow.visible = false
+	overlay.add_child(_arrow)
+	overlay.resized.connect(func() -> void:
+		_arrow.position.x = maxf(0.0, overlay.size.x - ARROW_SIZE.x - 6.0))
 
 
 func _gui_input(event: InputEvent) -> void:
@@ -89,6 +214,11 @@ func _restyle() -> void:
 	box.content_margin_top = 10
 	box.content_margin_bottom = 10
 	add_theme_stylebox_override("panel", box)
+	if not _is_pulsing():
+		_apply_modulate()
+
+
+func _apply_modulate() -> void:
 	modulate = Color(1, 1, 1, 1) if _enabled else Color(1, 1, 1, 0.45)
 
 
