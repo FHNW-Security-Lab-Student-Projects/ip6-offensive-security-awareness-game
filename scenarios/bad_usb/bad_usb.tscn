@@ -5,26 +5,33 @@
 [ext_resource type="Texture2D" uid="uid://0s25mfviny2n" path="res://assets/sprites/placeholder/Street.jpg" id="2_skyq6"]
 [ext_resource type="Script" uid="uid://dpibu0k7wghi0" path="res://scenarios/bad_usb/character_body_2d.gd" id="3_0c6e4"]
 [ext_resource type="Script" uid="uid://dvhdvboyrsv1x" path="res://scenarios/bad_usb/resolve.gd" id="3_usfo3"]
-[ext_resource type="Texture2D" uid="uid://1iy783vjyfw2" path="res://assets/sprites/placeholder/player/Walking1.png" id="4_kufmj"]
-[ext_resource type="Texture2D" uid="uid://bkx60ywgpudsu" path="res://assets/sprites/placeholder/player/Walking2.png" id="5_pn0t8"]
+[ext_resource type="Texture2D" uid="uid://ca6jtjc3p2368" path="res://assets/sprites/placeholder/player/Walking1.png" id="4_kufmj"]
+[ext_resource type="Texture2D" uid="uid://dnof0ait71y8q" path="res://assets/sprites/placeholder/player/Idle.png" id="4_rw5by"]
+[ext_resource type="Texture2D" uid="uid://dwmn1x4wru5u" path="res://assets/sprites/placeholder/player/Walking2.png" id="5_pn0t8"]
 [ext_resource type="Texture2D" uid="uid://r5wp31ojr8st" path="res://assets/sprites/placeholder/beforeOffice.jpg" id="6_rd061"]
-[ext_resource type="Texture2D" uid="uid://dqgfij1dx0bvy" path="res://assets/sprites/placeholder/player/Walking3.png" id="6_rw5by"]
+[ext_resource type="Texture2D" uid="uid://d7x5ytfio5tt" path="res://assets/sprites/placeholder/player/Walking3.png" id="6_rw5by"]
 [ext_resource type="Texture2D" uid="uid://bnx6rlw5imcqa" path="res://assets/sprites/placeholder/Car2.png" id="7_megvs"]
-[ext_resource type="Texture2D" uid="uid://b0xwtc8ng248i" path="res://assets/sprites/placeholder/player/Walking4.png" id="7_rty2g"]
+[ext_resource type="Texture2D" uid="uid://dpe67b2f0117c" path="res://assets/sprites/placeholder/player/Walking4.png" id="7_rty2g"]
 [ext_resource type="Texture2D" uid="uid://7vt5p0wqdhjo" path="res://assets/sprites/placeholder/Car1.png" id="8_ei0um"]
-[ext_resource type="Texture2D" uid="uid://y70aoj24ycph" path="res://assets/sprites/placeholder/player/Walking5.png" id="8_kjq3u"]
+[ext_resource type="Texture2D" uid="uid://b4de0qaf3j1dg" path="res://assets/sprites/placeholder/player/Walking5.png" id="8_kjq3u"]
 [ext_resource type="Texture2D" uid="uid://dsdhrkwdrpnkk" path="res://assets/sprites/placeholder/car4.png" id="8_skyq6"]
-[ext_resource type="Texture2D" uid="uid://gik7s1wh0f8f" path="res://assets/sprites/placeholder/Charakters.png" id="9_3cyhg"]
 [ext_resource type="Texture2D" uid="uid://dxl46ruo8as76" path="res://assets/sprites/placeholder/Car3.png" id="9_kufmj"]
-[ext_resource type="Texture2D" uid="uid://d2pl6ub3oalb6" path="res://assets/sprites/placeholder/player/Walking6.png" id="9_pn0t8"]
-[ext_resource type="Texture2D" uid="uid://cc8wolnoe67ls" path="res://assets/sprites/placeholder/LobbyPlant.jpg" id="10_a3ter"]
+[ext_resource type="Texture2D" uid="uid://ba2g1ufqr8xyj" path="res://assets/sprites/placeholder/player/Walking6.png" id="9_pn0t8"]
 [ext_resource type="Texture2D" uid="uid://cyhbgre8n7s0g" path="res://assets/sprites/placeholder/Inside.png" id="10_skyq6"]
-[ext_resource type="Texture2D" uid="uid://ppct87gxa0gr" path="res://assets/sprites/placeholder/elevator.webp" id="11_3cyhg"]
 [ext_resource type="Texture2D" uid="uid://b5a30w36wy557" path="res://assets/sprites/placeholder/officeInside.jpg" id="12_a3ter"]
-[ext_resource type="Texture2D" uid="uid://b0uooc04mw5ib" path="res://assets/sprites/placeholder/Charakters2.png" id="12_xyppa"]
-[ext_resource type="Texture2D" uid="uid://bgwjqnhylxb0c" path="res://assets/sprites/placeholder/tailing.webp" id="13_fbhfg"]
-[ext_resource type="Texture2D" uid="uid://nj4bk38iwxu1" path="res://assets/sprites/placeholder/Charakters2-export.png" id="14_ehnmy"]
-[ext_resource type="Texture2D" uid="uid://bkli7ttrn0j7a" path="res://assets/sprites/placeholder/tailingDoor.png" id="15_ehnmy"]
+[ext_resource type="Texture2D" uid="uid://b1scehbtb0ssn" path="res://assets/sprites/placeholder/NPC/NPCFupper.png" id="17_cw631"]
+[ext_resource type="Texture2D" path="res://assets/sprites/placeholder/Neuer Ordner/NPCF.png" id="19_b33ky"]
+[ext_resource type="Texture2D" uid="uid://cjmexs18xiptx" path="res://assets/sprites/placeholder/beforeElevator.png" id="19_rw5by"]
+[ext_resource type="Texture2D" path="res://assets/sprites/placeholder/Neuer Ordner/NPCidle1.png" id="20_bk084"]
+[ext_resource type="Texture2D" uid="uid://dosoh85t8c6gd" path="res://assets/sprites/placeholder/tailgating.png" id="20_l7dmb"]
+[ext_resource type="Texture2D" uid="uid://cwvxu7x1pqrxv" path="res://assets/sprites/placeholder/tailgatingOpen.png" id="22_cw631"]
+[ext_resource type="Texture2D" path="res://assets/sprites/placeholder/Neuer Ordner/NPCidle.png" id="23_b33ky"]
+[ext_resource type="Texture2D" path="res://assets/sprites/placeholder/Neuer Ordner/NPC.png" id="24_bk084"]
+[ext_resource type="Texture2D" path="res://assets/sprites/placeholder/Neuer Ordner/NPC1.png" id="25_j4rxb"]
+[ext_resource type="Texture2D" path="res://assets/sprites/placeholder/Neuer Ordner/NPC2.png" id="26_irv1t"]
+[ext_resource type="Texture2D" path="res://assets/sprites/placeholder/Neuer Ordner/NPC3.png" id="27_ibunq"]
+[ext_resource type="Texture2D" path="res://assets/sprites/placeholder/Neuer Ordner/NPC4.png" id="28_ml2va"]
+[ext_resource type="Texture2D" path="res://assets/sprites/placeholder/Neuer Ordner/NPCidle2.png" id="29_l7dmb"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_kp1x0"]
 size = Vector2(30, 1077)
@@ -36,7 +43,7 @@ radius = 8.264648
 animations = [{
 "frames": [{
 "duration": 1.0,
-"texture": null
+"texture": ExtResource("4_rw5by")
 }],
 "loop": 1,
 "name": &"idle",
@@ -116,6 +123,68 @@ corner_radius_bottom_left = 10
 font_size = 32
 font_color = Color(0, 0, 0, 1)
 
+[sub_resource type="SpriteFrames" id="SpriteFrames_d0u6y"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("23_b33ky")
+}],
+"loop": 1,
+"name": &"idle",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("24_bk084")
+}, {
+"duration": 1.0,
+"texture": ExtResource("25_j4rxb")
+}, {
+"duration": 1.0,
+"texture": ExtResource("26_irv1t")
+}, {
+"duration": 1.0,
+"texture": ExtResource("27_ibunq")
+}, {
+"duration": 1.0,
+"texture": ExtResource("28_ml2va")
+}],
+"loop": 1,
+"name": &"walk",
+"speed": 5.0
+}]
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_57qmd"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("29_l7dmb")
+}],
+"loop": 1,
+"name": &"idle",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("24_bk084")
+}, {
+"duration": 1.0,
+"texture": ExtResource("25_j4rxb")
+}, {
+"duration": 1.0,
+"texture": ExtResource("26_irv1t")
+}, {
+"duration": 1.0,
+"texture": ExtResource("27_ibunq")
+}, {
+"duration": 1.0,
+"texture": ExtResource("28_ml2va")
+}],
+"loop": 1,
+"name": &"walk",
+"speed": 5.0
+}]
+
 [sub_resource type="LabelSettings" id="LabelSettings_yf5fn"]
 font_size = 30
 font_color = Color(0, 0, 0, 1)
@@ -175,8 +244,8 @@ position = Vector2(-322, 0)
 shape = SubResource("CapsuleShape2D_5yldq")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="BadUSBScenario/GameWorld/Player" unique_id=1610478321]
-position = Vector2(-321.99997, 431)
-scale = Vector2(0.56, 0.56)
+position = Vector2(-321.99997, 409)
+scale = Vector2(0.705, 0.705)
 sprite_frames = SubResource("SpriteFrames_g4v7s")
 animation = &"walk"
 
@@ -248,11 +317,12 @@ limit_left = 2529
 limit_right = 6055
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="BadUSBScenario/InfrontOfBuilding/Player" unique_id=1978502604]
+position = Vector2(26.429932, 0)
 shape = SubResource("CapsuleShape2D_5yldq")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="BadUSBScenario/InfrontOfBuilding/Player" unique_id=839851035]
-position = Vector2(38.429928, 423.00006)
-scale = Vector2(0.775, 0.775)
+position = Vector2(39.429928, 405)
+scale = Vector2(0.88, 0.88)
 sprite_frames = SubResource("SpriteFrames_g4v7s")
 animation = &"walk"
 
@@ -299,13 +369,13 @@ scale = Vector2(3.915, 3.915)
 texture = ExtResource("10_skyq6")
 centered = false
 
+[node name="Sprite2D3" type="Sprite2D" parent="BadUSBScenario/InsideBuilding/Background/Background" unique_id=1024562891]
+position = Vector2(4302.4, 857.525)
+scale = Vector2(0.905, 0.909)
+texture = ExtResource("17_cw631")
+
 [node name="CloserBackground" type="ParallaxLayer" parent="BadUSBScenario/InsideBuilding/Background" unique_id=1681990461]
 position = Vector2(3000, -8)
-
-[node name="Sprite2D" type="Sprite2D" parent="BadUSBScenario/InsideBuilding/Background/CloserBackground" unique_id=583581022]
-position = Vector2(1377, 681)
-scale = Vector2(13.175, 13.175)
-texture = ExtResource("9_3cyhg")
 
 [node name="Environment" type="Node2D" parent="BadUSBScenario/InsideBuilding" unique_id=1671566777]
 
@@ -350,14 +420,10 @@ transform = Transform2D(1, 0, 0, 1, 3000, 0)
 [node name="CloseObjects" type="ParallaxLayer" parent="BadUSBScenario/InsideBuilding/Foreground" unique_id=1943696175]
 motion_scale = Vector2(1.5, 1.5)
 
-[node name="Sprite2D2" type="Sprite2D" parent="BadUSBScenario/InsideBuilding/Foreground/CloseObjects" unique_id=2013867831]
-position = Vector2(4014.0005, 1514)
-scale = Vector2(0.7, 0.7)
-texture = ExtResource("10_a3ter")
-
 [node name="ReceptionZone" type="Area2D" parent="BadUSBScenario/InsideBuilding" unique_id=2090746242]
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="BadUSBScenario/InsideBuilding/ReceptionZone" unique_id=1190446196]
+visible = false
 position = Vector2(4371, 506)
 shape = SubResource("RectangleShape2D_3r2ah")
 
@@ -384,34 +450,21 @@ transform = Transform2D(1, 0, 0, 1, 3000, 0)
 [node name="Background" type="ParallaxLayer" parent="BadUSBScenario/BeforeElevator/Background" unique_id=1695193701]
 position = Vector2(4221, -255)
 
-[node name="Sprite2D4" type="Sprite2D" parent="BadUSBScenario/BeforeElevator/Background/Background" unique_id=947425649]
-position = Vector2(7149, 165)
-scale = Vector2(4.5, 4.5)
-texture = ExtResource("11_3cyhg")
-centered = false
-
-[node name="Sprite2D" type="Sprite2D" parent="BadUSBScenario/BeforeElevator/Background/Background" unique_id=2109990186]
-position = Vector2(7929, 165)
-scale = Vector2(4.5, 4.5)
-texture = ExtResource("11_3cyhg")
-centered = false
-
 [node name="Sprite2D2" type="Sprite2D" parent="BadUSBScenario/BeforeElevator/Background/Background" unique_id=618870583]
-position = Vector2(4989, 165)
+position = Vector2(3740, -82)
 scale = Vector2(4.5, 4.5)
-texture = ExtResource("11_3cyhg")
-centered = false
-
-[node name="Sprite2D3" type="Sprite2D" parent="BadUSBScenario/BeforeElevator/Background/Background" unique_id=344608851]
-position = Vector2(2843, 167)
-scale = Vector2(4.5, 4.5)
-texture = ExtResource("11_3cyhg")
+texture = ExtResource("19_rw5by")
 centered = false
 
 [node name="Sprite2D5" type="Sprite2D" parent="BadUSBScenario/BeforeElevator/Background/Background" unique_id=1869682616]
-position = Vector2(9001, 977)
-scale = Vector2(16.022163, 13.862585)
-texture = ExtResource("12_xyppa")
+position = Vector2(9222.999, 994.00006)
+scale = Vector2(0.779, 0.776)
+texture = ExtResource("19_b33ky")
+
+[node name="Sprite2D" type="Sprite2D" parent="BadUSBScenario/BeforeElevator/Background/Background" unique_id=1388592238]
+position = Vector2(9262, 963)
+scale = Vector2(1.7882029, 1.7882029)
+texture = ExtResource("20_bk084")
 
 [node name="CloserBackground" type="ParallaxLayer" parent="BadUSBScenario/BeforeElevator/Background" unique_id=89479102]
 position = Vector2(11281, 18)
@@ -423,32 +476,33 @@ position = Vector2(11281, 18)
 [node name="StaticBody2D" type="StaticBody2D" parent="BadUSBScenario/BeforeElevator/Environment" unique_id=315656117]
 
 [node name="BorderRight" type="CollisionShape2D" parent="BadUSBScenario/BeforeElevator/Environment/StaticBody2D" unique_id=205460610]
-position = Vector2(10131, 516)
+position = Vector2(9844, 569)
 shape = SubResource("RectangleShape2D_kp1x0")
 
 [node name="BorderLeft" type="CollisionShape2D" parent="BadUSBScenario/BeforeElevator/Environment/StaticBody2D" unique_id=1740793232]
-position = Vector2(4557, 511)
+position = Vector2(4093, 538)
 shape = SubResource("RectangleShape2D_or8dj")
 
 [node name="Player" type="CharacterBody2D" parent="BadUSBScenario/BeforeElevator" unique_id=1659284460]
 z_index = 10
-position = Vector2(4686, 526)
+position = Vector2(4686, 278.455)
 script = ExtResource("3_0c6e4")
 SPEED = 600.0
 
 [node name="Camera2D" type="Camera2D" parent="BadUSBScenario/BeforeElevator/Player" unique_id=1124363581]
-limit_left = 11623
-limit_top = -10000057
-limit_right = 17292
-limit_bottom = 9999943
+position = Vector2(0, 278.455)
+limit_left = 10969
+limit_top = -10000097
+limit_right = 17603
+limit_bottom = 9999903
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="BadUSBScenario/BeforeElevator/Player" unique_id=478117845]
-position = Vector2(55, -32)
+position = Vector2(55, 278.455)
 shape = SubResource("CapsuleShape2D_5yldq")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="BadUSBScenario/BeforeElevator/Player" unique_id=13288261]
-position = Vector2(76.000175, 213)
-scale = Vector2(2.485, 2.485)
+position = Vector2(38.000175, 417.545)
+scale = Vector2(3, 3)
 sprite_frames = SubResource("SpriteFrames_g4v7s")
 animation = &"walk"
 
@@ -461,28 +515,24 @@ transform = Transform2D(1, 0, 0, 1, 3000, 0)
 position = Vector2(4138, 8)
 motion_scale = Vector2(1.5, 1.5)
 
-[node name="Sprite2D2" type="Sprite2D" parent="BadUSBScenario/BeforeElevator/Foreground/CloseObjects" unique_id=786902122]
-position = Vector2(8157, 1532)
-scale = Vector2(0.7, 0.7)
-texture = ExtResource("10_a3ter")
-
 [node name="RestrictedElevatorZone" type="Area2D" parent="BadUSBScenario/BeforeElevator" unique_id=252656384]
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="BadUSBScenario/BeforeElevator/RestrictedElevatorZone" unique_id=419137903]
-position = Vector2(6141, 525)
+position = Vector2(5397, 534)
 shape = SubResource("RectangleShape2D_3r2ah")
 
 [node name="NPCElevatorZone" type="Area2D" parent="BadUSBScenario/BeforeElevator" unique_id=1213672860]
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="BadUSBScenario/BeforeElevator/NPCElevatorZone" unique_id=1985127519]
-position = Vector2(9086, 507)
+visible = false
+position = Vector2(8888, 416)
 shape = SubResource("RectangleShape2D_3r2ah")
 
 [node name="MissingBadgeUI" type="PanelContainer" parent="BadUSBScenario/BeforeElevator" unique_id=1096730197]
-offset_left = 5827.0
-offset_top = 210.0
-offset_right = 6458.0
-offset_bottom = 265.0
+offset_left = 5083.0
+offset_top = 296.0
+offset_right = 5714.0
+offset_bottom = 351.0
 theme_override_styles/panel = SubResource("StyleBoxFlat_g4v7s")
 
 [node name="MissingBadgeUI" type="Label" parent="BadUSBScenario/BeforeElevator/MissingBadgeUI" unique_id=1732334645]
@@ -491,10 +541,10 @@ text = "Zugriff verweigert: Ausweis erforderlich"
 label_settings = SubResource("LabelSettings_g4v7s")
 
 [node name="NPCSpeechUI" type="PanelContainer" parent="BadUSBScenario/BeforeElevator" unique_id=1467541438]
-offset_left = 9059.0
-offset_top = 246.0
-offset_right = 9667.0
-offset_bottom = 384.0
+offset_left = 9061.0
+offset_top = 237.0
+offset_right = 9669.0
+offset_bottom = 375.0
 theme_override_styles/panel = SubResource("StyleBoxFlat_yf5fn")
 
 [node name="NPCSpeechUI" type="Label" parent="BadUSBScenario/BeforeElevator/NPCSpeechUI" unique_id=855405787]
@@ -506,10 +556,10 @@ horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="EnterOfficeBtn" type="Button" parent="BadUSBScenario/BeforeElevator" unique_id=995535868]
-offset_left = 8993.0
-offset_top = 394.0
-offset_right = 9175.0
-offset_bottom = 448.0
+offset_left = 8828.0
+offset_top = 416.0
+offset_right = 9010.0
+offset_bottom = 470.0
 text = "Aufzug benutzen"
 
 [node name="TailgateDoor" type="Node2D" parent="BadUSBScenario" unique_id=11092029]
@@ -524,21 +574,22 @@ transform = Transform2D(1, 0, 0, 1, 3000, 0)
 position = Vector2(11878, -263)
 
 [node name="Sprite2D2" type="Sprite2D" parent="BadUSBScenario/TailgateDoor/Background/Background" unique_id=1011247414]
-position = Vector2(3986, 175)
-scale = Vector2(4.3, 4.3)
-texture = ExtResource("13_fbhfg")
+position = Vector2(3324, -74)
+scale = Vector2(6.69, 6.69)
+texture = ExtResource("20_l7dmb")
 centered = false
-
-[node name="NPC" type="Sprite2D" parent="BadUSBScenario/TailgateDoor/Background/Background" unique_id=1930815277]
-position = Vector2(10527, 971)
-scale = Vector2(14.137, 13.508)
-texture = ExtResource("14_ehnmy")
 
 [node name="Door" type="Sprite2D" parent="BadUSBScenario/TailgateDoor/Background/Background" unique_id=562957840]
-position = Vector2(3986, 175)
-scale = Vector2(4.3, 4.3)
-texture = ExtResource("15_ehnmy")
+position = Vector2(3324, -74)
+scale = Vector2(6.685, 6.685)
+texture = ExtResource("22_cw631")
 centered = false
+
+[node name="NPC" type="AnimatedSprite2D" parent="BadUSBScenario/TailgateDoor/Background/Background" unique_id=88498077]
+position = Vector2(10374, 971)
+scale = Vector2(1.945, 1.945)
+sprite_frames = SubResource("SpriteFrames_d0u6y")
+animation = &"walk"
 
 [node name="CloserBackground" type="ParallaxLayer" parent="BadUSBScenario/TailgateDoor/Background" unique_id=198111590]
 position = Vector2(18938, 10)
@@ -550,36 +601,34 @@ position = Vector2(18938, 10)
 [node name="StaticBody2D" type="StaticBody2D" parent="BadUSBScenario/TailgateDoor/Environment" unique_id=928862554]
 
 [node name="BorderRight" type="CollisionShape2D" parent="BadUSBScenario/TailgateDoor/Environment/StaticBody2D" unique_id=601505133]
-position = Vector2(10131, 516)
+position = Vector2(9624, 611)
 shape = SubResource("RectangleShape2D_kp1x0")
 
 [node name="BorderLeft" type="CollisionShape2D" parent="BadUSBScenario/TailgateDoor/Environment/StaticBody2D" unique_id=117121063]
-position = Vector2(4557, 511)
+position = Vector2(4449, 553)
 shape = SubResource("RectangleShape2D_or8dj")
 
 [node name="Player" type="CharacterBody2D" parent="BadUSBScenario/TailgateDoor" unique_id=978554029]
 z_index = 10
-position = Vector2(9495, 515)
+position = Vector2(8569, 611)
 script = ExtResource("3_0c6e4")
 SPEED = 600.0
 
 [node name="Camera2D" type="Camera2D" parent="BadUSBScenario/TailgateDoor/Player" unique_id=1351797197]
-limit_left = 18868
-limit_top = -9999874
-limit_right = 25163
-limit_bottom = 10000126
+limit_left = 18257
+limit_top = -9999865
+limit_right = 25047
+limit_bottom = 10000135
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="BadUSBScenario/TailgateDoor/Player" unique_id=1177316942]
 position = Vector2(55, -32)
 shape = SubResource("CapsuleShape2D_5yldq")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="BadUSBScenario/TailgateDoor/Player" unique_id=1152631233]
-position = Vector2(45.735527, 188)
-scale = Vector2(2.9, 2.9)
+position = Vector2(54.9992, 163)
+scale = Vector2(3, 3)
 sprite_frames = SubResource("SpriteFrames_g4v7s")
-animation = &"walk"
-frame = 1
-frame_progress = 0.47511828
+animation = &"idle"
 
 [node name="Foreground" type="ParallaxBackground" parent="BadUSBScenario/TailgateDoor" unique_id=15812375]
 layer = 1
@@ -590,22 +639,17 @@ transform = Transform2D(1, 0, 0, 1, 3000, 0)
 position = Vector2(11795, 0)
 motion_scale = Vector2(1.5, 1.5)
 
-[node name="Sprite2D2" type="Sprite2D" parent="BadUSBScenario/TailgateDoor/Foreground/CloseObjects" unique_id=46994140]
-position = Vector2(8157, 1532)
-scale = Vector2(0.7, 0.7)
-texture = ExtResource("10_a3ter")
-
 [node name="LockedDoorZone" type="Area2D" parent="BadUSBScenario/TailgateDoor" unique_id=903478153]
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="BadUSBScenario/TailgateDoor/LockedDoorZone" unique_id=238743051]
-position = Vector2(5534, 488)
+position = Vector2(5377, 443)
 shape = SubResource("RectangleShape2D_3r2ah")
 
 [node name="MissingBadgeUI" type="PanelContainer" parent="BadUSBScenario/TailgateDoor" unique_id=748238395]
-offset_left = 5221.0
-offset_top = 135.0
-offset_right = 5852.0
-offset_bottom = 190.0
+offset_left = 5070.0
+offset_top = 187.0
+offset_right = 5701.0
+offset_bottom = 242.0
 theme_override_styles/panel = SubResource("StyleBoxFlat_g4v7s")
 
 [node name="MissingBadgeUI" type="Label" parent="BadUSBScenario/TailgateDoor/MissingBadgeUI" unique_id=758678718]
@@ -614,17 +658,17 @@ text = "Zugriff verweigert: Ausweis erforderlich"
 label_settings = SubResource("LabelSettings_g4v7s")
 
 [node name="EnterTailgateDoorBtn" type="Button" parent="BadUSBScenario/TailgateDoor" unique_id=220375146]
-offset_left = 5452.0
-offset_top = 210.0
-offset_right = 5634.0
-offset_bottom = 264.0
+offset_left = 5302.0
+offset_top = 264.0
+offset_right = 5484.0
+offset_bottom = 318.0
 text = "Durch schleichen"
 
 [node name="TriggerTailgateBtn" type="Button" parent="BadUSBScenario/TailgateDoor" unique_id=1295436609]
-offset_left = 5452.0
-offset_top = 210.0
-offset_right = 5634.0
-offset_bottom = 264.0
+offset_left = 5302.0
+offset_top = 264.0
+offset_right = 5484.0
+offset_bottom = 318.0
 text = "Tür Öffnen"
 
 [node name="BigOffice" type="Node2D" parent="BadUSBScenario" unique_id=1432598072]
@@ -636,10 +680,10 @@ offset = Vector2(3000, 0)
 transform = Transform2D(1, 0, 0, 1, 3000, 0)
 
 [node name="Background" type="ParallaxLayer" parent="BadUSBScenario/BigOffice/Background" unique_id=202673159]
-position = Vector2(11308, 2056)
+position = Vector2(23050, 2360)
 
 [node name="Sprite2D" type="Sprite2D" parent="BadUSBScenario/BigOffice/Background/Background" unique_id=2062593110]
-position = Vector2(11938, -1631.585)
+position = Vector2(141, -1906)
 scale = Vector2(3, 3)
 texture = ExtResource("12_a3ter")
 centered = false
@@ -663,7 +707,7 @@ shape = SubResource("RectangleShape2D_or8dj")
 
 [node name="Player" type="CharacterBody2D" parent="BadUSBScenario/BigOffice" unique_id=1107143998]
 z_index = 10
-position = Vector2(16329.999, 653)
+position = Vector2(16329.999, 680)
 script = ExtResource("3_0c6e4")
 SPEED = 500.0
 
@@ -674,16 +718,14 @@ limit_right = 29207
 limit_bottom = 9999974
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="BadUSBScenario/BigOffice/Player" unique_id=187389510]
-position = Vector2(378.00098, -30)
+position = Vector2(551.001, -125)
 shape = SubResource("CapsuleShape2D_5yldq")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="BadUSBScenario/BigOffice/Player" unique_id=436260516]
-position = Vector2(427.99918, 218)
+position = Vector2(546.99915, 205)
 scale = Vector2(2.56, 2.56)
 sprite_frames = SubResource("SpriteFrames_g4v7s")
-animation = &"walk"
-frame = 4
-frame_progress = 0.47082984
+animation = &"idle"
 
 [node name="Foreground" type="ParallaxBackground" parent="BadUSBScenario/BigOffice" unique_id=1695456100]
 layer = 1
@@ -694,21 +736,17 @@ transform = Transform2D(1, 0, 0, 1, 3000, 0)
 position = Vector2(7082, 2301)
 motion_scale = Vector2(1.5, 1.5)
 
-[node name="Sprite2D2" type="Sprite2D" parent="BadUSBScenario/BigOffice/Foreground/CloseObjects" unique_id=1651867163]
-position = Vector2(16982, 1581)
-scale = Vector2(0.7, 0.7)
-texture = ExtResource("10_a3ter")
-
 [node name="PCZone" type="Area2D" parent="BadUSBScenario/BigOffice" unique_id=464644010]
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="BadUSBScenario/BigOffice/PCZone" unique_id=193069968]
-position = Vector2(18632, 380)
+position = Vector2(18657, 416)
 shape = SubResource("RectangleShape2D_3r2ah")
 
-[node name="OfficeNPC" type="Sprite2D" parent="BadUSBScenario/BigOffice" unique_id=1816274340]
-position = Vector2(18686, 868)
-scale = Vector2(12.99, 12.99)
-texture = ExtResource("14_ehnmy")
+[node name="OfficeNPC" type="AnimatedSprite2D" parent="BadUSBScenario/BigOffice" unique_id=1232017907]
+position = Vector2(18350.002, 784)
+scale = Vector2(1.745, 1.745)
+sprite_frames = SubResource("SpriteFrames_57qmd")
+animation = &"idle"
 
 [node name="CanvasLayer" type="CanvasLayer" parent="BadUSBScenario" unique_id=1957432625]
 
@@ -816,9 +854,9 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -75.0
+offset_left = -30.525024
 offset_top = 230.0
-offset_right = 75.0
+offset_right = 119.475464
 offset_bottom = 261.0
 grow_horizontal = 2
 grow_vertical = 2

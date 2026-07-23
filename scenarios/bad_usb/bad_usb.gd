@@ -99,70 +99,97 @@ func _setup() -> void:
 	_world_office.visible = false
 	_world_office.process_mode = Node.PROCESS_MODE_DISABLED
 	
-	if _ui_briefing.has_signal("advance_requested"):
+	if _ui_briefing.has_signal("advance_requested") and not _ui_briefing.is_connected("advance_requested", _advance):
 		_ui_briefing.advance_requested.connect(_advance)
 	
 	var door = $BadUSBScenario/GameWorld/Area2D
-	door.body_entered.connect(_on_door_entered)
+	if not door.body_entered.is_connected(_on_door_entered):
+		door.body_entered.connect(_on_door_entered)
 	
 	var entrance_zone = $BadUSBScenario/InfrontOfBuilding/BuildingEntrance
-	entrance_zone.body_entered.connect(_on_entrance_entered)
-	entrance_zone.body_exited.connect(_on_entrance_exited)
+	if not entrance_zone.body_entered.is_connected(_on_entrance_entered):
+		entrance_zone.body_entered.connect(_on_entrance_entered)
+		entrance_zone.body_exited.connect(_on_entrance_exited)
 	
-	_ui_enter_btn.pressed.connect(_on_enter_button_pressed)
+	if not _ui_enter_btn.pressed.is_connected(_on_enter_button_pressed):
+		_ui_enter_btn.pressed.connect(_on_enter_button_pressed)
 	
 	var reception_zone = $BadUSBScenario/InsideBuilding/ReceptionZone
-	reception_zone.body_entered.connect(_on_reception_entered)
-	reception_zone.body_exited.connect(_on_reception_exited)
+	if not reception_zone.body_entered.is_connected(_on_reception_entered):
+		reception_zone.body_entered.connect(_on_reception_entered)
+		reception_zone.body_exited.connect(_on_reception_exited)
 	
-	_btn_stressed.pressed.connect(_on_stressed_pressed)
-	_btn_confident.pressed.connect(_on_confident_pressed)
+	if not _btn_stressed.pressed.is_connected(_on_stressed_pressed):
+		_btn_stressed.pressed.connect(_on_stressed_pressed)
+		_btn_confident.pressed.connect(_on_confident_pressed)
 	
 	_ui_dialogue_box.visible = false
-	_btn_choice1.pressed.connect(_on_dialog_choice_1_pressed)
-	_btn_choice2.pressed.connect(_on_dialog_choice_2_pressed)
+	
+	# FIXED: Check if signals are already connected by the editor to prevent crash errors!
+	if not _btn_choice1.pressed.is_connected(_on_dialog_choice_1_pressed):
+		_btn_choice1.pressed.connect(_on_dialog_choice_1_pressed)
+	if not _btn_choice2.pressed.is_connected(_on_dialog_choice_2_pressed):
+		_btn_choice2.pressed.connect(_on_dialog_choice_2_pressed)
 	
 	_ui_failure_popup.visible = false
-	_btn_failure_ok.pressed.connect(_on_failure_ok_pressed)
+	if not _btn_failure_ok.pressed.is_connected(_on_failure_ok_pressed):
+		_btn_failure_ok.pressed.connect(_on_failure_ok_pressed)
 	
 	var corridor_zone = $BadUSBScenario/InsideBuilding/CorridorZone
-	corridor_zone.body_entered.connect(_on_corridor_zone_entered)
-	corridor_zone.body_exited.connect(_on_corridor_zone_exited)
-	_ui_corridor_btn.pressed.connect(_on_corridor_btn_pressed)
+	if not corridor_zone.body_entered.is_connected(_on_corridor_zone_entered):
+		corridor_zone.body_entered.connect(_on_corridor_zone_entered)
+		corridor_zone.body_exited.connect(_on_corridor_zone_exited)
+	
+	if not _ui_corridor_btn.pressed.is_connected(_on_corridor_btn_pressed):
+		_ui_corridor_btn.pressed.connect(_on_corridor_btn_pressed)
 	
 	_ui_missing_badge.visible = false
 	_ui_npc_speech.visible = false
 	
 	var restricted_zone = $BadUSBScenario/BeforeElevator/RestrictedElevatorZone
-	restricted_zone.body_entered.connect(_on_restricted_entered)
-	restricted_zone.body_exited.connect(_on_restricted_exited)
-	_btn_restricted_elevator.pressed.connect(_on_restricted_btn_pressed) 
+	if not restricted_zone.body_entered.is_connected(_on_restricted_entered):
+		restricted_zone.body_entered.connect(_on_restricted_entered)
+		restricted_zone.body_exited.connect(_on_restricted_exited)
+	
+	if not _btn_restricted_elevator.pressed.is_connected(_on_restricted_btn_pressed):
+		_btn_restricted_elevator.pressed.connect(_on_restricted_btn_pressed) 
 	
 	var npc_zone = $BadUSBScenario/BeforeElevator/NPCElevatorZone
-	npc_zone.body_entered.connect(_on_npc_zone_entered)
-	npc_zone.body_exited.connect(_on_npc_zone_exited)
-	_ui_office_btn.pressed.connect(_on_office_btn_pressed)
+	if not npc_zone.body_entered.is_connected(_on_npc_zone_entered):
+		npc_zone.body_entered.connect(_on_npc_zone_entered)
+		npc_zone.body_exited.connect(_on_npc_zone_exited)
+	
+	if not _ui_office_btn.pressed.is_connected(_on_office_btn_pressed):
+		_ui_office_btn.pressed.connect(_on_office_btn_pressed)
 	
 	var pc_zone = $BadUSBScenario/BigOffice/PCZone
-	pc_zone.body_entered.connect(_on_pc_zone_entered)
-	pc_zone.body_exited.connect(_on_pc_zone_exited)
-	_ui_usb_btn.pressed.connect(_on_usb_btn_pressed)
+	if not pc_zone.body_entered.is_connected(_on_pc_zone_entered):
+		pc_zone.body_entered.connect(_on_pc_zone_entered)
+		pc_zone.body_exited.connect(_on_pc_zone_exited)
 	
-	_btn_next.pressed.connect(_on_next_pressed)
-	_btn_finish.pressed.connect(_on_finish_pressed)
+	if not _ui_usb_btn.pressed.is_connected(_on_usb_btn_pressed):
+		_ui_usb_btn.pressed.connect(_on_usb_btn_pressed)
+	
+	if not _btn_next.pressed.is_connected(_on_next_pressed):
+		_btn_next.pressed.connect(_on_next_pressed)
+		_btn_finish.pressed.connect(_on_finish_pressed)
 	
 	var tailgate_locked_zone = $BadUSBScenario/TailgateDoor/LockedDoorZone
-	tailgate_locked_zone.body_entered.connect(_on_locked_door_entered)
-	tailgate_locked_zone.body_exited.connect(_on_locked_door_exited)
-	_btn_tailgate_trigger.pressed.connect(_on_tailgate_trigger_pressed)
-	_btn_tailgate_enter.pressed.connect(_on_tailgate_enter_pressed)
+	if not tailgate_locked_zone.body_entered.is_connected(_on_locked_door_entered):
+		tailgate_locked_zone.body_entered.connect(_on_locked_door_entered)
+		tailgate_locked_zone.body_exited.connect(_on_locked_door_exited)
+	
+	if not _btn_tailgate_trigger.pressed.is_connected(_on_tailgate_trigger_pressed):
+		_btn_tailgate_trigger.pressed.connect(_on_tailgate_trigger_pressed)
+		_btn_tailgate_enter.pressed.connect(_on_tailgate_enter_pressed)
 	
 	_inside_start_pos = _world_inside.get_node("Player").position
 	_office_npc_start_pos = _npc_office.position 
 	_npc_office.flip_h = false 
+	_npc_office.play("idle")
 
 func _on_start() -> void:
-	_change_substate(SubState.OFFICE) 
+	_change_substate(SubState.INSIDE) 
 
 func _on_door_entered(body: Node2D) -> void:
 	if body.name == "Player":
@@ -215,15 +242,22 @@ func _on_tailgate_trigger_pressed() -> void:
 
 func _start_npc_walk_event() -> void:
 	var door_position = Vector2(5534, _npc_tailgate.position.y) 
+	
+	_npc_tailgate.flip_h = true
+	# Start walking animation
+	_npc_tailgate.play("walk")
+	
 	var tween = create_tween()
 	tween.tween_property(_npc_tailgate, "position", door_position, 6) 
 	tween.finished.connect(_on_npc_arrived_at_door)
 
 func _on_npc_arrived_at_door() -> void:
+	_npc_tailgate.play("idle")
+	
 	_ui_tailgate_locked.visible = false 
 	_sprite_open_door.visible = true 
 	_npc_tailgate.visible = false    
-	_btn_tailgate_enter.visible = true 
+	_btn_tailgate_enter.visible = true
 
 func _on_tailgate_enter_pressed() -> void:
 	_btn_tailgate_enter.visible = false
@@ -258,32 +292,54 @@ func _on_office_btn_pressed() -> void:
 	_change_substate(SubState.TAILGATE) 
 
 func _start_office_npc_approach() -> void:
-	var player_pos = _world_office.get_node("Player").position
-	var target_x = player_pos.x + 150 
+	var player = _world_office.get_node("Player")
+	var player_sprite = player.get_node("AnimatedSprite2D")
+	
+	_npc_office.global_position.y = player_sprite.global_position.y
+	_npc_office.global_position.x = player_sprite.global_position.x + 800
+	_npc_office.z_index = 10
+	_npc_office.visible = true
+	
+	# CHANGED: Now he runs 250 pixels past the player instead of 100
+	var target_x = player_sprite.global_position.x - 250 
+	
+	_npc_office.flip_h = true 
+	_npc_office.play("walk")
 	
 	var tween = create_tween()
-	tween.tween_property(_npc_office, "position:x", target_x, 2.5)
+	# CHANGED: Lowered the time from 2.5 to 1.5 seconds so he moves faster
+	tween.tween_property(_npc_office, "global_position:x", target_x, 1.5)
 	tween.finished.connect(_on_office_npc_arrived)
 
-func _on_office_npc_arrived() -> void:
+func _start_office_npc_run_away() -> void:
+	# Turn around to face LEFT again
 	_npc_office.flip_h = true 
+	_npc_office.play("walk")
 	
+	# Calculate a spot far to the left to exit the screen
+	var target_x = _npc_office.global_position.x - 1000 
+	
+	var tween = create_tween()
+	tween.tween_property(_npc_office, "global_position:x", target_x, 1.5) 
+	tween.finished.connect(_on_office_npc_gone)
+
+func _on_office_npc_arrived() -> void:
 	var player = _world_office.get_node("Player")
 	player.set_physics_process(false) 
-	player.get_node("AnimatedSprite2D").flip_h = true
 	
+	# 1. NPC turns around to face RIGHT (towards the player) and stops walking
+	_npc_office.flip_h = false 
+	_npc_office.play("idle")
+	
+	# 2. Player turns around to face LEFT (towards the NPC) and stops walking
+	var player_sprite = player.get_node("AnimatedSprite2D")
+	player_sprite.flip_h = true 
+	player_sprite.play("idle")
+	
+	# 3. Start the dialogue
 	_ui_dialogue_box.visible = true
 	_dialogue_step = 30
 	_update_dialogue_ui()
-	
-func _start_office_npc_run_away() -> void:
-	_npc_office.flip_h = false 
-	
-	var target_x = _npc_office.position.x - 1000 
-	
-	var tween = create_tween()
-	tween.tween_property(_npc_office, "position:x", target_x, 1.5) 
-	tween.finished.connect(_on_office_npc_gone)
 
 func _on_office_npc_gone() -> void:
 	_npc_office.visible = false
@@ -360,6 +416,7 @@ func _on_failure_ok_pressed() -> void:
 	
 	_npc_office.position = _office_npc_start_pos
 	_npc_office.flip_h = false
+	_npc_office.play("idle")
 	_npc_office.visible = false 
 	
 	_world_office.get_node("Player").set_physics_process(true)
@@ -403,7 +460,7 @@ func _change_substate(new_state: SubState) -> void:
 				_ui_briefing.visible = false
 			SubState.STREET:
 				_world_street.visible = false
-				_world_street.process_mode = Node.PROCESS_MODE_DISABLED
+				_world_street.set_deferred("process_mode", Node.PROCESS_MODE_DISABLED)
 			SubState.FRONT:
 				_world_front.visible = false
 				_world_front.process_mode = Node.PROCESS_MODE_DISABLED

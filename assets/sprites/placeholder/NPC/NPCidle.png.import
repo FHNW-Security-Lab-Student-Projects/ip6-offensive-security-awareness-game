@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dwmn1x4wru5u"
-path="res://.godot/imported/Walking2.png-8391f5b59614d067179809d5d916a5f2.ctex"
+uid="uid://lq210cye83vt"
+path="res://.godot/imported/NPCidle.png-b5957e85e379614128d42ce7d21c1321.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/placeholder/player/Walking2.png"
-dest_files=["res://.godot/imported/Walking2.png-8391f5b59614d067179809d5d916a5f2.ctex"]
+source_file="res://assets/sprites/placeholder/NPC/NPCidle.png"
+dest_files=["res://.godot/imported/NPCidle.png-b5957e85e379614128d42ce7d21c1321.ctex"]
 
 [params]
 
