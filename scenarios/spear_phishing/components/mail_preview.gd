@@ -172,6 +172,7 @@ func seal_draft() -> void:
 # --- Hannes reply (incoming) -------------------------------------------------
 
 func add_reply(text: String) -> void:
+	SfxPlayer.play_reply()  # the target just answered in the thread
 	var body := _make_bubble("MAIL_SENDER_HANNES", DarkMailPalette.WARN_AMBER)
 	var line := _body_line(text)
 	line.add_theme_color_override("font_color", DarkMailPalette.TEXT_GREEN)
@@ -186,6 +187,7 @@ func _typewriter(label: Label) -> void:
 	label.visible_ratio = 0.0
 	var duration := clampf(label.text.length() / TYPE_CPS, 0.15, 1.2)
 	_typing_label = label
+	SfxPlayer.start_typing()
 	_typing_tween = create_tween()
 	_typing_tween.tween_property(label, "visible_ratio", 1.0, duration)
 	_typing_tween.tween_callback(_clear_typing)
@@ -203,6 +205,7 @@ func finish_typing() -> void:
 func _clear_typing() -> void:
 	_typing_tween = null
 	_typing_label = null
+	SfxPlayer.stop_typing()
 
 
 func _scroll_to_bottom() -> void:

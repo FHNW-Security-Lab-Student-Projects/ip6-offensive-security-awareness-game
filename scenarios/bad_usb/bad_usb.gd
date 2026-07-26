@@ -540,7 +540,8 @@ func _change_substate(new_state: SubState) -> void:
 				
 		SubState.RESOLVE:
 			_ui_resolve.visible = true
-			_start_resolve_story() 
+			SfxPlayer.play_completion()  # scenario finished, the debrief comes up
+			_start_resolve_story()
 
 	_current = new_state
 	_initialised = true
@@ -642,12 +643,14 @@ func _play_story_step() -> void:
 	_lbl_story.visible_characters = 0
 	
 	var total_time = target_text.length() * _typewriter_speed
+	SfxPlayer.start_typing()
 	var tween = create_tween()
 	tween.tween_property(_lbl_story, "visible_characters", target_text.length(), total_time)
-	
+
 	tween.finished.connect(_on_typing_finished)
 
 func _on_typing_finished() -> void:
+	SfxPlayer.stop_typing()
 	if _story_step < 4:
 		_img_story.visible = true 
 	

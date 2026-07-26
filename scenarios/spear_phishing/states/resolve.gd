@@ -63,6 +63,11 @@ func _on_visibility_changed() -> void:
 
 func _build() -> void:
 	_built = true
+	# Only a WIN reached the goal; every other outcome is a failed run.
+	if _outcome_name() == "WIN":
+		SfxPlayer.play_completion()
+	else:
+		SfxPlayer.play_fail()
 	_emit_debrief()
 	_build_layout()
 	_start_reveal()
@@ -262,6 +267,7 @@ func _fade_in(node: CanvasItem) -> void:
 # A click before the buttons are up jumps straight to the end.
 func _on_catcher_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+		SfxPlayer.play_highlight()  # clicking ahead through the debrief text
 		reveal_all()
 
 

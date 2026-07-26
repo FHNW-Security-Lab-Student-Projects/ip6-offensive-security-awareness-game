@@ -13,14 +13,15 @@ func _process(delta: float) -> void:
 	pass
 
 
+# The select blip is wired automatically for every button by the SfxPlayer
+# autoload, so the handlers below only do navigation.
 func _on_btn_levels_pressed() -> void:
-	SfxPlayer.play_select()
 	get_tree().change_scene_to_file("res://scenes/LevelAuswahl.tscn")
 
 
 func _on_btn_einstellungen_pressed() -> void:
-	SfxPlayer.play_select()
+	pass
 
 
 func _on_btn_beenden_pressed() -> void:
-	SfxPlayer.play_select()
+	pass

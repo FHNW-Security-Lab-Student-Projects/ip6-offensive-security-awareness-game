@@ -478,6 +478,7 @@ func build_photo_card(find: ReconFind) -> Control:
 
 
 func _on_highlight_clicked(_meta: Variant, find: ReconFind) -> void:
+	SfxPlayer.play_highlight()
 	if is_collected(find):
 		uncollect(find)
 	else:

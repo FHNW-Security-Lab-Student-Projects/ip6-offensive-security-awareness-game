@@ -17,6 +17,10 @@ var _sus_cells: Array[Panel] = []
 var _pre_cells: Array[Panel] = []
 var _sus_value: Label
 var _pre_value: Label
+# Last painted values, so the notification blip fires only when a bar actually
+# moves (not on the initial paint or a repaint with unchanged numbers).
+var _last_suspicion := -1
+var _last_pressure := -1
 
 
 func _ready() -> void:
@@ -103,6 +107,20 @@ func show_values(suspicion: int, pressure: int) -> void:
 	_pre_value.add_theme_color_override(
 		"font_color",
 		DarkMailPalette.GREEN if pressure >= Pool.PRESSURE_TARGET else DarkMailPalette.WARN_AMBER)
+
+	# Rising suspicion means the card backfired: it gets its own warning sound
+	# INSTEAD of the neutral bar blip, never both.
+	var had_previous: bool = _last_suspicion != -1
+	var moved: bool = had_previous \
+		and (suspicion != _last_suspicion or pressure != _last_pressure)
+	var suspicion_rose: bool = had_previous and suspicion > _last_suspicion
+	_last_suspicion = suspicion
+	_last_pressure = pressure
+	if moved:
+		if suspicion_rose:
+			SfxPlayer.play_suspicion()
+		else:
+			SfxPlayer.play_notification()
 
 
 func _paint_suspicion(value: int) -> void:

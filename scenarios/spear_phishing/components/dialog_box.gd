@@ -56,6 +56,7 @@ func _process(delta: float) -> void:
 		if visible_chars >= target.length():
 			_body_label.text = target
 			_typing = false
+			SfxPlayer.stop_typing()
 			_hint_label.visible = true
 			_hint_label.modulate.a = 1.0
 			_caret_acc = 0.0
@@ -73,11 +74,13 @@ func _start_line() -> void:
 	_body_label.text = ""
 	_char_acc = 0.0
 	_typing = true
+	SfxPlayer.start_typing()
 	_hint_label.visible = false
 
 func _finish_line_now() -> void:
 	_body_label.text = _lines[_line_idx]
 	_typing = false
+	SfxPlayer.stop_typing()
 	_hint_label.visible = true
 	_hint_label.modulate.a = 1.0
 	_caret_acc = 0.0
@@ -92,6 +95,7 @@ func _advance() -> void:
 	_start_line()
 
 func _clear() -> void:
+	SfxPlayer.stop_typing()
 	_body_label.text = ""
 	_speaker_label.text = ""
 	_speaker_label.visible = false
@@ -101,6 +105,7 @@ func _on_panel_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton:
 		var mb: InputEventMouseButton = event
 		if mb.button_index == MOUSE_BUTTON_LEFT and mb.pressed:
+			SfxPlayer.play_highlight()  # clicking through the briefing text
 			if _typing:
 				_finish_line_now()
 			else:
