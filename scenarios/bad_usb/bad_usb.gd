@@ -204,11 +204,7 @@ func _swap_in_briefing() -> void:
 	canvas.add_child(_ui_briefing)
 
 func _on_start() -> void:
-<<<<<<< HEAD
-	_change_substate(SubState.INSIDE) 
-=======
 	_change_substate(SubState.BRIEFING)
->>>>>>> 45e3dd349acbe6105df000e88cc563d669ff4bd1
 
 func _on_door_entered(body: Node2D) -> void:
 	if body.name == "Player":

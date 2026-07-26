@@ -19,6 +19,11 @@ signal home_requested      # "Back to Home": shell completes + returns to start
 signal replay_requested    # "Retry": shell resets + reloads this scenario fresh
 
 const MailReview := preload("res://scenarios/spear_phishing/components/mail_review.gd")
+const ScreenMusic := preload("res://scenarios/base/components/screen_music.gd")
+
+# Debrief music: covers the whole post-run screen, including the Spielbewertung
+# overlay (a child of this screen, so this stays visible underneath it).
+const RESOLVE_MUSIC := preload("res://assets/audio/terminal_echo_drift.wav")
 
 const SCENARIO_ID := "spear_phishing"
 const REVEAL_STEP_TIME := 1.1   # pause between the three blocks
@@ -43,6 +48,9 @@ var _built := false
 
 
 func _ready() -> void:
+	var music := ScreenMusic.new()
+	music.track = RESOLVE_MUSIC
+	add_child(music)
 	visibility_changed.connect(_on_visibility_changed)
 	if visible:
 		_build()

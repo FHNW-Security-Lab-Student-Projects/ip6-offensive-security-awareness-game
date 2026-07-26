@@ -9,6 +9,13 @@ signal advance_requested
 const BRIEFING_PATH: String = "res://resources/scenarios/spear_phishing/briefing.tres"
 const REC_BLINK_INTERVAL: float = 0.6
 
+# Shared briefing-intro music (Scenario 1 and 2). Tied to this screen's
+# visibility, so it plays while the briefing is shown and stops on advance /
+# when a replay skips the intro.
+const BRIEFING_MUSIC := preload("res://assets/audio/cipher_briefing.wav")
+const BRIEFING_VOLUME_DB := -6.0
+const ScreenMusic := preload("res://scenarios/base/components/screen_music.gd")
+
 # Which BriefingResource to show. Defaults to Scenario 1's; another scenario
 # (e.g. bad_usb) reuses this same screen by setting its own path before the node
 # enters the tree. The spear_phishing shell still reads the const above.
@@ -27,6 +34,10 @@ var _rec_blink_acc: float = 0.0
 var _rec_on: bool = true
 
 func _ready() -> void:
+	var music := ScreenMusic.new()
+	music.track = BRIEFING_MUSIC
+	music.track_volume_db = BRIEFING_VOLUME_DB
+	add_child(music)
 	_briefing = load(briefing_path) as BriefingResource
 	if _briefing == null:
 		push_error("Briefing: failed to load %s" % briefing_path)

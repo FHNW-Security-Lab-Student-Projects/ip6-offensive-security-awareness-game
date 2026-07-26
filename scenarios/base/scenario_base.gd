@@ -19,6 +19,8 @@ var _started_at_ms: int = 0
 func start_scenario(id: String) -> void:
 	scenario_id = id
 	_started_at_ms = Time.get_ticks_msec()
+	# Menu music belongs to the menus only; silence it once gameplay begins.
+	MusicPlayer.stop_menu_music()
 	GameState.current_scenario_id = id
 	GameState.transition_to(GameState.State.IN_SCENARIO)
 	EventBus.generic_event.emit({
