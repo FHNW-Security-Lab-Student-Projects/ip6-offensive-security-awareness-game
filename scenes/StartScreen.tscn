@@ -2,12 +2,6 @@
 
 [ext_resource type="Script" uid="uid://buddnp8masrvg" path="res://scenes/user_interface.gd" id="1_q32f0"]
 [ext_resource type="Texture2D" uid="uid://d0vem3k3xrjmx" path="res://assets/sprites/Menue/PC_Setup.png" id="2_jevws"]
-[ext_resource type="Texture2D" uid="uid://ch5qa2kr65rxa" path="res://assets/sprites/Menue/Level.png" id="3_l8krj"]
-[ext_resource type="Texture2D" uid="uid://diw6jvv3k8ped" path="res://assets/sprites/Menue/LevelHover.png" id="4_qxr5m"]
-[ext_resource type="Texture2D" uid="uid://8ls8apt4tmln" path="res://assets/sprites/Menue/Einstellungenl.png" id="5_8ltf8"]
-[ext_resource type="Texture2D" uid="uid://dpf767ntcp215" path="res://assets/sprites/Menue/EinstellungenHover.png" id="6_424ft"]
-[ext_resource type="Texture2D" uid="uid://c8hskqu6552ga" path="res://assets/sprites/Menue/Beenden.png" id="7_kythq"]
-[ext_resource type="Texture2D" uid="uid://b51lpnkqdjmfv" path="res://assets/sprites/Menue/BeendenHover.png" id="8_dhbmj"]
 
 [node name="StartScreen" type="Control" unique_id=1042920689]
 layout_mode = 3
@@ -37,24 +31,19 @@ offset_bottom = 614.0
 [node name="ButtonListe" type="VBoxContainer" parent="Monitorbereich" unique_id=540357227]
 layout_mode = 2
 theme_override_constants/separation = 20
+alignment = 1
 
-[node name="BtnLevels" type="TextureButton" parent="Monitorbereich/ButtonListe" unique_id=1450869942]
+[node name="BtnLevels" type="Button" parent="Monitorbereich/ButtonListe" unique_id=1450869942]
 layout_mode = 2
-texture_normal = ExtResource("3_l8krj")
-texture_hover = ExtResource("4_qxr5m")
-stretch_mode = 3
+text = "MENU_LEVELS"
 
-[node name="BtnEinstellungen" type="TextureButton" parent="Monitorbereich/ButtonListe" unique_id=2014323437]
+[node name="BtnEinstellungen" type="Button" parent="Monitorbereich/ButtonListe" unique_id=2014323437]
 layout_mode = 2
-texture_normal = ExtResource("5_8ltf8")
-texture_hover = ExtResource("6_424ft")
-stretch_mode = 3
+text = "MENU_SETTINGS"
 
-[node name="BtnBeenden" type="TextureButton" parent="Monitorbereich/ButtonListe" unique_id=501233389]
+[node name="BtnBeenden" type="Button" parent="Monitorbereich/ButtonListe" unique_id=501233389]
 layout_mode = 2
-texture_normal = ExtResource("7_kythq")
-texture_hover = ExtResource("8_dhbmj")
-stretch_mode = 3
+text = "MENU_QUIT"
 
 [connection signal="pressed" from="Monitorbereich/ButtonListe/BtnLevels" to="." method="_on_btn_levels_pressed"]
 [connection signal="pressed" from="Monitorbereich/ButtonListe/BtnEinstellungen" to="." method="_on_btn_einstellungen_pressed"]
