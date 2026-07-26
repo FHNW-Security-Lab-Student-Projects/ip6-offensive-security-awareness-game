@@ -14,6 +14,10 @@ signal advance_requested
 # Max finds the player can carry into the mail builder. One place to tune.
 const DECK_LIMIT := 7
 
+# Recon-phase music (plays while this screen is visible, stops on advance).
+const RECON_MUSIC := preload("res://assets/audio/terminal_stalk.wav")
+const ScreenMusic := preload("res://scenarios/base/components/screen_music.gd")
+
 # Centred photo box (feed photos). Landscape-ish so the placeholder reads as a
 # normal photo, not a stretched strip; hotspot rects map onto this box.
 const PHOTO_W := 520
@@ -81,6 +85,9 @@ var _pages: Dictionary = {}  # source(String) -> SourcePage (cached)
 
 
 func _ready() -> void:
+	var music := ScreenMusic.new()
+	music.track = RECON_MUSIC
+	add_child(music)
 	_style_chrome()
 	_finds = ReconPool.get_finds()
 	var sources := _sources_in_order(_finds)

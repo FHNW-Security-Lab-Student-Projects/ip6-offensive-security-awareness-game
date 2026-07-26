@@ -21,6 +21,10 @@ const StatusBars := preload("res://scenarios/spear_phishing/components/mail_stat
 const Preview := preload("res://scenarios/spear_phishing/components/mail_preview.gd")
 const BossChat := preload("res://scenarios/spear_phishing/components/mail_boss_chat.gd")
 const HandCard := preload("res://scenarios/spear_phishing/components/mail_hand_card.gd")
+const ScreenMusic := preload("res://scenarios/base/components/screen_music.gd")
+
+# MailBuilder-phase music (plays while this screen is visible, stops on advance).
+const MAIL_MUSIC := preload("res://assets/audio/cursor_glow_loop.wav")
 
 const MAX_SLOTS := 3
 const PAYLOAD_SCROLL_TIME := 0.45
@@ -51,6 +55,9 @@ var _history: Array = []        # one entry per SENT mail, for the post-run revi
 
 
 func _ready() -> void:
+	var music := ScreenMusic.new()
+	music.track = MAIL_MUSIC
+	add_child(music)
 	visibility_changed.connect(_on_visibility_changed)
 	if visible:
 		_build()
