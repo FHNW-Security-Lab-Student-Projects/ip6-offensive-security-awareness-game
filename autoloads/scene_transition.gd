@@ -31,6 +31,9 @@ func change_scene(path: String) -> void:
 	if _busy:
 		return
 	_busy = true
+	# Safety net: a looping typewriter bed must never survive the screen that
+	# started it.
+	SfxPlayer.stop_typing()
 	await _fade(1.0)
 	get_tree().change_scene_to_file(path)
 	await get_tree().process_frame  # let the new scene enter the tree

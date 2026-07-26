@@ -200,6 +200,7 @@ func _gui_input(event: InputEvent) -> void:
 	if not _enabled:
 		return
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+		SfxPlayer.play_select()  # not a BaseButton, so the blip is not auto-wired
 		clicked.emit(card)
 
 

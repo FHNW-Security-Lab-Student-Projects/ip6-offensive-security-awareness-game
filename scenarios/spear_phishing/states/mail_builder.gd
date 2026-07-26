@@ -52,6 +52,13 @@ var _boss_fired: Dictionary = {}
 var _last_probe_done := false
 var _reply_rotation: Dictionary = {}  # Hannes state name -> times shown (rotation)
 var _history: Array = []        # one entry per SENT mail, for the post-run review
+# Unlock-blip bookkeeping: legendary ids already seen in hand, and whether the
+# payload gate was open last time we looked. Both start "unknown" so the very
+# first hand (built on entering the phase) stays silent — nothing unlocked yet,
+# it is just the starting hand.
+var _seen_legendaries: Dictionary = {}
+var _gate_was_open := false
+var _hand_built_once := false
 
 
 func _ready() -> void:
@@ -209,7 +216,32 @@ func _rebuild_hand() -> void:
 			_add_card_widget(card)
 	for widget in _cards:
 		widget.refresh(_run)
+	_check_unlocks()
 	_scroll_to_payload_if_ready()
+
+
+# Blips once when something NEW becomes playable: a legendary that just entered
+# the hand (e.g. unlocked by the probe) or the payload gate opening. The first
+# hand only records the baseline, so entering the phase is silent.
+func _check_unlocks() -> void:
+	var fresh_legendary := false
+	for widget in _cards:
+		var card = widget.card
+		if card.type != MailCard.Type.LEGENDARY:
+			continue
+		if not _seen_legendaries.has(card.id):
+			_seen_legendaries[card.id] = true
+			fresh_legendary = true
+
+	var gate_open: bool = _run.payload_gate_open() and not _run.is_over()
+	var gate_just_opened := gate_open and not _gate_was_open
+	_gate_was_open = gate_open
+
+	if not _hand_built_once:
+		_hand_built_once = true
+		return  # baseline only
+	if fresh_legendary or gate_just_opened:
+		SfxPlayer.play_unlock()
 
 
 # Once the gate is open the (pulsing) payload must not hide off-screen: after

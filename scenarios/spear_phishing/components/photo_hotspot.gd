@@ -31,6 +31,7 @@ func setup(p_hint: String, p_collected: bool) -> void:
 func _gui_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
 		accept_event()
+		SfxPlayer.play_highlight()  # marking a find, same as a text highlight
 		clicked.emit()
 
 
