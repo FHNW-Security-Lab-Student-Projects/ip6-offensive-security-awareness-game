@@ -51,6 +51,29 @@ static func flat_box(bg: Color, border: Color = Color(0, 0, 0, 0), border_w: int
 	return sb
 
 
+# The shared terminal button look: hard 2px green frame, dark fill, mono font.
+# Used by the menus so they read as the same system as the briefing and the
+# scenario screens.
+static func style_button(button: Button, padding_x: int = 20, padding_y: int = 10) -> void:
+	var normal := flat_box(BG_FIELD, GREEN, BORDER_WIDTH)
+	var hover := flat_box(Color(GREEN, 0.22), GREEN_BRIGHT, BORDER_WIDTH)
+	for sb in [normal, hover]:
+		sb.content_margin_left = padding_x
+		sb.content_margin_right = padding_x
+		sb.content_margin_top = padding_y
+		sb.content_margin_bottom = padding_y
+	button.add_theme_stylebox_override("normal", normal)
+	button.add_theme_stylebox_override("hover", hover)
+	button.add_theme_stylebox_override("pressed", hover)
+	button.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
+	button.add_theme_stylebox_override("disabled", flat_box(BG_FIELD, TEXT_DIM, BORDER_WIDTH))
+	button.add_theme_font_override("font", FONT_MONO)
+	button.add_theme_font_size_override("font_size", FONT_SIZE_MONO)
+	for state in ["font_color", "font_hover_color", "font_pressed_color", "font_focus_color"]:
+		button.add_theme_color_override(state, GREEN)
+	button.add_theme_color_override("font_disabled_color", TEXT_DIM)
+
+
 # Applies the mono font, a size and a colour to a Label in one call.
 static func apply_mono_label(label: Label, size: int, color: Color) -> void:
 	label.add_theme_font_override("font", FONT_MONO)

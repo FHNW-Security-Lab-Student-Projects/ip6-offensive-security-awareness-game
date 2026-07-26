@@ -20,6 +20,7 @@ func _ready() -> void:
 	if track != null:
 		stream = track
 	volume_db = track_volume_db
+	bus = &"Music"  # so the music slider in the settings controls it
 	if stream is AudioStreamWAV:
 		var wav := stream as AudioStreamWAV
 		wav.loop_begin = 0

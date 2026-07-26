@@ -26,6 +26,7 @@ FeedbackEngine="*res://autoloads/feedback_engine.gd"
 SceneTransition="*res://autoloads/scene_transition.gd"
 MusicPlayer="*res://autoloads/music_player.gd"
 SfxPlayer="*res://autoloads/sfx_player.gd"
+Settings="*res://autoloads/settings.gd"
 
 [display]
 
@@ -52,3 +53,7 @@ move_right={
 
 textures/canvas_textures/default_texture_filter=0
 renderer/rendering_method="gl_compatibility"
+
+[audio]
+
+buses/default_bus_layout="res://default_bus_layout.tres"

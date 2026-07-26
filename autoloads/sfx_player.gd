@@ -11,21 +11,21 @@ extends Node
 const SELECT_SFX := preload("res://assets/audio/menu_select.wav")
 const SELECT_VOLUME_DB := -4.0
 const HIGHLIGHT_SFX := preload("res://assets/audio/menu_highlight.wav")
-const HIGHLIGHT_VOLUME_DB := -6.0
+const HIGHLIGHT_VOLUME_DB := 0.0
 const NOTIFICATION_SFX := preload("res://assets/audio/notification.wav")
-const NOTIFICATION_VOLUME_DB := -6.0
+const NOTIFICATION_VOLUME_DB := -11.0
 const TYPING_SFX := preload("res://assets/audio/typing.wav")
 const TYPING_VOLUME_DB := -20.0   # a quiet bed under the text, never dominant
 const UNLOCK_SFX := preload("res://assets/audio/plim.wav")
-const UNLOCK_VOLUME_DB := -4.0
+const UNLOCK_VOLUME_DB := -6.0
 const REPLY_SFX := preload("res://assets/audio/hannes_reply.ogg")
-const REPLY_VOLUME_DB := -4.0
+const REPLY_VOLUME_DB := 4.0
 const COMPLETION_SFX := preload("res://assets/audio/completion.wav")
-const COMPLETION_VOLUME_DB := -4.0
+const COMPLETION_VOLUME_DB := 2.0
 const SUSPICION_SFX := preload("res://assets/audio/misstrauen.wav")
-const SUSPICION_VOLUME_DB := -4.0
+const SUSPICION_VOLUME_DB := -9.0
 const FAIL_SFX := preload("res://assets/audio/fail.mp3")
-const FAIL_VOLUME_DB := -4.0
+const FAIL_VOLUME_DB := -16.0
 
 var _select: AudioStreamPlayer
 var _highlight: AudioStreamPlayer
@@ -63,6 +63,7 @@ func _make_player(stream: AudioStream, volume_db: float) -> AudioStreamPlayer:
 	var player := AudioStreamPlayer.new()
 	player.stream = stream
 	player.volume_db = volume_db
+	player.bus = &"SFX"  # so the SFX slider in the settings controls it
 	add_child(player)
 	return player
 

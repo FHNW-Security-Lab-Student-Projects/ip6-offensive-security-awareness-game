@@ -19,6 +19,7 @@ func _ready() -> void:
 	_player = AudioStreamPlayer.new()
 	_player.stream = MENU_MUSIC
 	_player.volume_db = MENU_VOLUME_DB
+	_player.bus = &"Music"  # so the music slider in the settings controls it
 	# Loop the whole sample. Setting loop_mode alone leaves loop_end at 0 (a
 	# zero-length loop that instantly stops), so set the region explicitly.
 	if _player.stream is AudioStreamWAV:

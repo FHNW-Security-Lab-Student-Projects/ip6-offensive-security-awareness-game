@@ -1,10 +1,13 @@
 extends Control
 
+const MenuStyle := preload("res://resources/theme/menu_style.gd")
+
 
 func _ready() -> void:
 	# Keep the menu music going on the scenario selection (resume if a scenario
 	# stopped it before returning here).
 	MusicPlayer.play_menu_music()
+	MenuStyle.style_menu_button($MarginContainer2/VBoxContainer/ZurueckButton)
 
 
 func _on_zurueck_button_pressed() -> void:
