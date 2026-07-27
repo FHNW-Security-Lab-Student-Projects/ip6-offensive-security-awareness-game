@@ -6,10 +6,10 @@ uid="uid://gpd6s5u4qo4q"
 
 [deps]
 
-files=["res://resources/i18n/bad_usb_content.de.translation"]
+files=["res://resources/i18n/bad_usb_content.de.translation", "res://resources/i18n/bad_usb_content.en.translation"]
 
 source_file="res://resources/i18n/bad_usb_content.csv"
-dest_files=["res://resources/i18n/bad_usb_content.de.translation"]
+dest_files=["res://resources/i18n/bad_usb_content.de.translation", "res://resources/i18n/bad_usb_content.en.translation"]
 
 [params]
 

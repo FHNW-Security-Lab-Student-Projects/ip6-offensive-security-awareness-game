@@ -57,7 +57,10 @@ static func flat_box(bg: Color, border: Color = Color(0, 0, 0, 0), border_w: int
 static func style_button(button: Button, padding_x: int = 20, padding_y: int = 10) -> void:
 	var normal := flat_box(BG_FIELD, GREEN, BORDER_WIDTH)
 	var hover := flat_box(Color(GREEN, 0.22), GREEN_BRIGHT, BORDER_WIDTH)
-	for sb in [normal, hover]:
+	var disabled := flat_box(BG_FIELD, TEXT_DIM, BORDER_WIDTH)
+	# All three need the SAME padding, otherwise the button changes size the
+	# moment it is greyed out.
+	for sb in [normal, hover, disabled]:
 		sb.content_margin_left = padding_x
 		sb.content_margin_right = padding_x
 		sb.content_margin_top = padding_y
@@ -66,7 +69,7 @@ static func style_button(button: Button, padding_x: int = 20, padding_y: int = 1
 	button.add_theme_stylebox_override("hover", hover)
 	button.add_theme_stylebox_override("pressed", hover)
 	button.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
-	button.add_theme_stylebox_override("disabled", flat_box(BG_FIELD, TEXT_DIM, BORDER_WIDTH))
+	button.add_theme_stylebox_override("disabled", disabled)
 	button.add_theme_font_override("font", FONT_MONO)
 	button.add_theme_font_size_override("font_size", FONT_SIZE_MONO)
 	for state in ["font_color", "font_hover_color", "font_pressed_color", "font_focus_color"]:

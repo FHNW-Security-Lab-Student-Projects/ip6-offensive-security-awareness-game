@@ -4,9 +4,9 @@
 
 [resource]
 script = ExtResource("1_brf")
-speaker_name = "Direktor"
-target_name = "H. Zinsli · CEO"
-intro_lines = PackedStringArray("Setz dich, Agent. Die FinTech AG hat ein Netzwerk, an das wir ran müssen. Der einfachste Weg rein ist ein Mensch, der auf das Falsche klickt.", "Dein Ziel: Hannes Zinsli, CEO. Schreibt am Wochenende seine eigenen Mails. Wenn jemand klickt, dann er.", "Bevor du ihm schreibst, willst du wissen, wer er ist. LinkedIn, Stellenanzeigen. Die Firma postet mehr, als ihr lieb wäre. Sammle alles, was du findest. Jedes Detail wird zu Munition.", "Dann baust du die Mail zusammen. Zu viel Druck und er meldet dich. Zu wenig und er löscht dich. Fünf Versuche, bevor sich seine IT wundert. Mach den Job.")
-mission_text = "Phishe Hannes Zinsli, CEO der FinTech AG"
-reward_text = "Zugang zum internen Netzwerk"
+speaker_name = "BRIEF_SPEAKER_DIREKTOR"
+target_name = "SPEAR_BRIEF_TARGET"
+intro_lines = PackedStringArray("SPEAR_BRIEF_LINE_1", "SPEAR_BRIEF_LINE_2", "SPEAR_BRIEF_LINE_3", "SPEAR_BRIEF_LINE_4")
+mission_text = "SPEAR_BRIEF_MISSION"
+reward_text = "SPEAR_BRIEF_REWARD"
 turn_budget = 5

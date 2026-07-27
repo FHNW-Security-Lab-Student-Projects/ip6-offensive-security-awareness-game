@@ -58,6 +58,7 @@ func _build() -> void:
 	col.add_child(_slider_row("SETTINGS_MUSIC", Settings.music_volume, Settings.set_music_volume))
 	col.add_child(_slider_row("SETTINGS_SFX", Settings.sfx_volume, Settings.set_sfx_volume))
 	col.add_child(_checkbox_row("SETTINGS_FULLSCREEN", Settings.fullscreen))
+	col.add_child(_language_row())
 
 	var buttons := HBoxContainer.new()
 	buttons.alignment = BoxContainer.ALIGNMENT_CENTER
@@ -120,12 +121,40 @@ func _checkbox_row(key: String, pressed: bool) -> Control:
 	return row
 
 
-func _on_reset() -> void:
-	Settings.reset_to_defaults()
-	# Rebuild so every control shows the restored values.
+# One button per language, the active one highlighted like the primary menu
+# entry. Switching rebuilds this panel so its own labels flip immediately.
+func _language_row() -> Control:
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 16)
+
+	var name_label := Label.new()
+	MenuStyle.apply_label(name_label)
+	name_label.text = tr("SETTINGS_LANGUAGE")
+	name_label.custom_minimum_size.x = ROW_LABEL_WIDTH
+	row.add_child(name_label)
+
+	for entry in [["de", "Deutsch"], ["en", "English"]]:
+		var code: String = entry[0]
+		var button := Button.new()
+		button.text = entry[1]
+		MenuStyle.style_button(button, Settings.locale == code)
+		button.pressed.connect(func() -> void:
+			if Settings.locale != code:
+				Settings.set_locale(code)
+				_rebuild())
+		row.add_child(button)
+	return row
+
+
+func _rebuild() -> void:
 	for child in get_children():
 		child.queue_free()
 	_build()
+
+
+func _on_reset() -> void:
+	Settings.reset_to_defaults()
+	_rebuild()  # so every control shows the restored values
 
 
 # --- helpers ------------------------------------------------------------------

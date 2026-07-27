@@ -6,10 +6,10 @@ uid="uid://b7unhj83r6eot"
 
 [deps]
 
-files=["res://resources/i18n/resolve_content.de.translation"]
+files=["res://resources/i18n/resolve_content.de.translation", "res://resources/i18n/resolve_content.en.translation"]
 
 source_file="res://resources/i18n/resolve_content.csv"
-dest_files=["res://resources/i18n/resolve_content.de.translation"]
+dest_files=["res://resources/i18n/resolve_content.de.translation", "res://resources/i18n/resolve_content.en.translation"]
 
 [params]
 

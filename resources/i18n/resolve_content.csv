@@ -1,29 +1,29 @@
-keys,de
-RESOLVE_WIN_TITLE,Zugriff erhalten
-RESOLVE_WIN_BODY,"Hannes hat geklickt. Drei Sekunden nach dem die Mail ankam. Er war ja im Stress."
-RESOLVE_SPAM_TITLE,Abgeblockt
-RESOLVE_SPAM_BODY,"Zu dick aufgetragen. Der Druck kam zu platt und zu schnell. Hannes wurde stutzig und brach den Austausch ab, bevor es zum Link kam. Generischer Druck ohne Vertrauen fliegt auf."
-RESOLVE_KOLLEGEN_TITLE,Aufgeflogen
-RESOLVE_KOLLEGEN_BODY,"Hannes wurde misstrauisch und hat bei der echten Bit & Bürli angerufen. Druck alleine reicht nicht, wenn das Vertrauen fehlt."
-RESOLVE_IGNORIERT_TITLE,Kein Treffer
-RESOLVE_IGNORIERT_BODY,"Kein Treffer. Deine Mails blieben unbeantwortet, das Zeitfenster ist zu. Die IT von Hannes ist jetzt wach. Zu wenig Recon, kein gezielter Angriff."
-RESOLVE_TWIST,"Hannes Zinsli hat kaum je etwas online gestellt. Du bist trotzdem reingekommen. Nadja wollte nur nett sein. Kevin war stolz auf seinen ersten Tag. Der Verein wollte sein Protokoll teilen. Und Hannes' eigener Posteingang hat dir die Tür aufgehalten. So funktioniert echtes Spear Phishing. Nicht der Chef leakt. Sondern alle um ihn herum."
-RESOLVE_STAT,"In einer Studie mit über 14.000 Mitarbeitenden fiel fast jeder Dritte auf Phishing herein. Und das war ungezieltes Massen-Phishing. Du hast gerade gesehen, wie viel gefährlicher es wird, wenn es auf eine Person zugeschnitten ist."
-RESOLVE_STAT_SOURCE,"Lain, Kostiainen & Čapkun (2022), IEEE S&P"
-RESOLVE_NEXT,Nächstes Szenario
-RESOLVE_HOME,Zum Hauptmenü
-RESOLVE_RETRY,Nochmal spielen
-RESOLVE_REVIEW_BUTTON,Spielbewertung
-REVIEW_TITLE,Deine Entscheidungen
-REVIEW_TURN,Zug %d
-REVIEW_BACK,Zurück
-REVIEW_VERDICT_EPIC,Gezielte Recon-Info.
-REVIEW_VERDICT_STANDARD,"Billiger Druck. Erhöht das Misstrauen, ohne Recon-Deckung riskant."
-REVIEW_VERDICT_SCHROTT,Falle.
-REVIEW_VERDICT_PAYLOAD,Der eigentliche Angriff.
-REVIEW_MISSED_TITLE,Verpasste Chancen
-REVIEW_MISSED_PERFEKTER_ABSENDER,"Du hattest ‚Frische IT' und ‚Bit & Bürli bestätigt' gesammelt. Zusammen wären sie ‚Perfekter Absender' gewesen, ein glaubwürdiger Vendor-Spoof, der das Misstrauen stark senkt."
-REVIEW_MISSED_ECHTER_VORWAND,"Du hattest ‚Migrations-Aufhänger' und ‚Projekt Helvetia' gesammelt. Zusammen wären sie ‚Echter Vorwand' gewesen, ein konkretes Projekt als Grund, das Druck aufbaut ohne Misstrauen."
-REVIEW_MISSED_VERIFIZIERT,"Du hattest das Vereinsfoto und den Namensvetter gesammelt. Zusammen hätten sie ‚Verifiziert' ergeben und die Namensvetter-Falle entschärft."
-REVIEW_MISSED_IDENTITAET,"Du hattest das Mail-Schema und den Archiv-Fund gesammelt. Zusammen wären sie ‚Identität gesichert' gewesen, exakte Adresse plus Bestätigung."
-REVIEW_NO_MISSED,"Du hast deine gesammelten Infos gut ausgereizt. Keine ungenutzten Kombinationen."
+keys,de,en
+RESOLVE_WIN_TITLE,Zugriff erhalten,Access granted
+RESOLVE_WIN_BODY,Hannes hat geklickt. Drei Sekunden nach dem die Mail ankam. Er war ja im Stress.,"Hannes clicked. Three seconds after the mail landed. He was under pressure, after all."
+RESOLVE_SPAM_TITLE,Abgeblockt,Shut down
+RESOLVE_SPAM_BODY,"Zu dick aufgetragen. Der Druck kam zu platt und zu schnell. Hannes wurde stutzig und brach den Austausch ab, bevor es zum Link kam. Generischer Druck ohne Vertrauen fliegt auf.",Laid on too thick. The pressure came too blunt and too fast. Hannes got suspicious and broke off the exchange before it ever reached the link. Generic pressure without trust falls apart.
+RESOLVE_KOLLEGEN_TITLE,Aufgeflogen,Blown
+RESOLVE_KOLLEGEN_BODY,"Hannes wurde misstrauisch und hat bei der echten Bit & Bürli angerufen. Druck alleine reicht nicht, wenn das Vertrauen fehlt.",Hannes grew suspicious and called the real Bit & Bürli. Pressure alone is not enough when the trust is missing.
+RESOLVE_IGNORIERT_TITLE,Kein Treffer,No hit
+RESOLVE_IGNORIERT_BODY,"Kein Treffer. Deine Mails blieben unbeantwortet, das Zeitfenster ist zu. Die IT von Hannes ist jetzt wach. Zu wenig Recon, kein gezielter Angriff.","No hit. Your mails went unanswered and the window has closed. Hannes' IT team is awake now. Too little recon, no targeted attack."
+RESOLVE_TWIST,Hannes Zinsli hat kaum je etwas online gestellt. Du bist trotzdem reingekommen. Nadja wollte nur nett sein. Kevin war stolz auf seinen ersten Tag. Der Verein wollte sein Protokoll teilen. Und Hannes' eigener Posteingang hat dir die Tür aufgehalten. So funktioniert echtes Spear Phishing. Nicht der Chef leakt. Sondern alle um ihn herum.,Hannes Zinsli has barely ever posted anything online. You still got in. Nadja only wanted to be helpful. Kevin was proud of his first day. The club wanted to share its minutes. And Hannes' own inbox held the door open for you. That is how real spear phishing works. It is not the boss who leaks. It is everyone around him.
+RESOLVE_STAT,"In einer Studie mit über 14.000 Mitarbeitenden fiel fast jeder Dritte auf Phishing herein. Und das war ungezieltes Massen-Phishing. Du hast gerade gesehen, wie viel gefährlicher es wird, wenn es auf eine Person zugeschnitten ist.","In a study with more than 14,000 employees, almost one in three fell for phishing. And that was untargeted mass phishing. You have just seen how much more dangerous it gets when it is tailored to one person."
+RESOLVE_STAT_SOURCE,"Lain, Kostiainen & Čapkun (2022), IEEE S&P","Lain, Kostiainen & Čapkun (2022), IEEE S&P"
+RESOLVE_NEXT,Nächstes Szenario,Next scenario
+RESOLVE_HOME,Zum Hauptmenü,Main menu
+RESOLVE_RETRY,Nochmal spielen,Play again
+RESOLVE_REVIEW_BUTTON,Spielbewertung,Debrief
+REVIEW_TITLE,Deine Entscheidungen,Your decisions
+REVIEW_TURN,Zug %d,Turn %d
+REVIEW_BACK,Zurück,Back
+REVIEW_VERDICT_EPIC,Gezielte Recon-Info.,Targeted recon intel.
+REVIEW_VERDICT_STANDARD,"Billiger Druck. Erhöht das Misstrauen, ohne Recon-Deckung riskant.","Cheap pressure. Raises suspicion, risky without recon to back it up."
+REVIEW_VERDICT_SCHROTT,Falle.,Trap.
+REVIEW_VERDICT_PAYLOAD,Der eigentliche Angriff.,The actual attack.
+REVIEW_MISSED_TITLE,Verpasste Chancen,Missed opportunities
+REVIEW_MISSED_PERFEKTER_ABSENDER,"Du hattest ‚Frische IT' und ‚Bit & Bürli bestätigt' gesammelt. Zusammen wären sie ‚Perfekter Absender' gewesen, ein glaubwürdiger Vendor-Spoof, der das Misstrauen stark senkt.","You had collected 'Fresh IT' and 'Bit & Bürli confirmed'. Together they would have made 'Perfect sender', a credible vendor spoof that cuts suspicion sharply."
+REVIEW_MISSED_ECHTER_VORWAND,"Du hattest ‚Migrations-Aufhänger' und ‚Projekt Helvetia' gesammelt. Zusammen wären sie ‚Echter Vorwand' gewesen, ein konkretes Projekt als Grund, das Druck aufbaut ohne Misstrauen.","You had collected 'Migration hook' and 'Project Helvetia'. Together they would have made 'Real pretext', a concrete project as the reason, building pressure without suspicion."
+REVIEW_MISSED_VERIFIZIERT,Du hattest das Vereinsfoto und den Namensvetter gesammelt. Zusammen hätten sie ‚Verifiziert' ergeben und die Namensvetter-Falle entschärft.,You had collected the club photo and the namesake. Together they would have made 'Verified' and defused the namesake trap.
+REVIEW_MISSED_IDENTITAET,"Du hattest das Mail-Schema und den Archiv-Fund gesammelt. Zusammen wären sie ‚Identität gesichert' gewesen, exakte Adresse plus Bestätigung.","You had collected the mail schema and the archive find. Together they would have made 'Identity secured', the exact address plus confirmation."
+REVIEW_NO_MISSED,Du hast deine gesammelten Infos gut ausgereizt. Keine ungenutzten Kombinationen.,You made good use of what you gathered. No unused combinations.

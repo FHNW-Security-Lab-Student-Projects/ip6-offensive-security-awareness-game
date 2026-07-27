@@ -14,10 +14,14 @@ const SECTION := "settings"
 const MUSIC_BUS := &"Music"
 const SFX_BUS := &"SFX"
 
+const LOCALES: Array[String] = ["de", "en"]
+const DEFAULT_LOCALE := "de"
+
 var master_volume: float = 1.0
 var music_volume: float = 0.7
 var sfx_volume: float = 0.8
 var fullscreen: bool = false
+var locale: String = DEFAULT_LOCALE
 
 
 func _ready() -> void:
@@ -25,6 +29,7 @@ func _ready() -> void:
 	_apply_bus(&"Master", master_volume)
 	_apply_bus(MUSIC_BUS, music_volume)
 	_apply_bus(SFX_BUS, sfx_volume)
+	_apply_locale()
 	# The window mode is left alone at boot unless fullscreen was saved: forcing
 	# it here would fight the project's own default window mode, and touching the
 	# window this early errors out ("parent busy setting up children").
@@ -58,11 +63,24 @@ func set_fullscreen(value: bool) -> void:
 	_after_change()
 
 
+# Switching the language re-translates every node that keeps its key in `text`
+# (menus, scene labels) right away. Screens that resolved their strings through
+# tr() while building show the new language the next time they are built, so a
+# change mid-scenario lands from the next screen onwards.
+func set_locale(value: String) -> void:
+	if not LOCALES.has(value):
+		return
+	locale = value
+	_apply_locale()
+	_after_change()
+
+
 func reset_to_defaults() -> void:
 	master_volume = 1.0
 	music_volume = 0.7
 	sfx_volume = 0.8
 	fullscreen = false
+	locale = DEFAULT_LOCALE
 	apply_all()
 	save_settings()
 	settings_changed.emit()
@@ -75,6 +93,7 @@ func apply_all() -> void:
 	_apply_bus(MUSIC_BUS, music_volume)
 	_apply_bus(SFX_BUS, sfx_volume)
 	_apply_fullscreen()
+	_apply_locale()
 
 
 # A linear 0..1 slider mapped to dB; 0 mutes the bus outright (linear_to_db(0)
@@ -85,6 +104,10 @@ func _apply_bus(bus_name: StringName, linear: float) -> void:
 		return  # bus layout missing: leave the default routing alone
 	AudioServer.set_bus_mute(idx, linear <= 0.001)
 	AudioServer.set_bus_volume_db(idx, linear_to_db(maxf(linear, 0.001)))
+
+
+func _apply_locale() -> void:
+	TranslationServer.set_locale(locale)
 
 
 func _apply_fullscreen() -> void:
@@ -105,6 +128,7 @@ func save_settings() -> void:
 	cfg.set_value(SECTION, "music_volume", music_volume)
 	cfg.set_value(SECTION, "sfx_volume", sfx_volume)
 	cfg.set_value(SECTION, "fullscreen", fullscreen)
+	cfg.set_value(SECTION, "locale", locale)
 	var err := cfg.save(CONFIG_PATH)
 	if err != OK:
 		push_error("Settings: could not save %s (err=%d)" % [CONFIG_PATH, err])
@@ -118,3 +142,5 @@ func load_settings() -> void:
 	music_volume = clampf(float(cfg.get_value(SECTION, "music_volume", music_volume)), 0.0, 1.0)
 	sfx_volume = clampf(float(cfg.get_value(SECTION, "sfx_volume", sfx_volume)), 0.0, 1.0)
 	fullscreen = bool(cfg.get_value(SECTION, "fullscreen", fullscreen))
+	var saved := str(cfg.get_value(SECTION, "locale", locale))
+	locale = saved if LOCALES.has(saved) else DEFAULT_LOCALE

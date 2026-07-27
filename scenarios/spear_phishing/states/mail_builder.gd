@@ -27,6 +27,7 @@ const ScreenMusic := preload("res://scenarios/base/components/screen_music.gd")
 const MAIL_MUSIC := preload("res://assets/audio/cursor_glow_loop.wav")
 
 const MAX_SLOTS := 3
+const CONTROL_WIDTH := 260   # send / skip buttons, so they match in any language
 const PAYLOAD_SCROLL_TIME := 0.45
 const REVEAL_STEP_TIME := 0.5
 const TOAST_HOLD := 2.6
@@ -167,12 +168,16 @@ func _build_hand_bar() -> Control:
 	_send_button = Button.new()
 	_send_button.text = tr("MAIL_SEND")
 	_style_button(_send_button)
+	# Fixed width: without it the buttons only stretch to the widest sibling in
+	# this column, which differs per language and leaves the labels cramped.
+	_send_button.custom_minimum_size.x = CONTROL_WIDTH
 	_send_button.pressed.connect(_on_send)
 	controls.add_child(_send_button)
 
 	_pass_button = Button.new()
 	_pass_button.text = tr("MAIL_END_TURN")
 	_style_button(_pass_button)
+	_pass_button.custom_minimum_size.x = CONTROL_WIDTH
 	_pass_button.pressed.connect(_on_pass)
 	controls.add_child(_pass_button)
 
@@ -184,7 +189,11 @@ func _style_button(button: Button) -> void:
 		DarkMailPalette.BG_FIELD, DarkMailPalette.GREEN, DarkMailPalette.BORDER_WIDTH)
 	var hover := DarkMailPalette.flat_box(
 		Color(DarkMailPalette.GREEN, 0.22), DarkMailPalette.GREEN_BRIGHT, DarkMailPalette.BORDER_WIDTH)
-	for sb in [normal, hover]:
+	var disabled := DarkMailPalette.flat_box(
+		DarkMailPalette.BG_FIELD, DarkMailPalette.TEXT_DIM, DarkMailPalette.BORDER_WIDTH)
+	# The disabled box needs the SAME padding as the others, otherwise the button
+	# shrinks the moment it is greyed out (e.g. while no card is drafted).
+	for sb in [normal, hover, disabled]:
 		sb.content_margin_left = 16
 		sb.content_margin_right = 16
 		sb.content_margin_top = 8
@@ -192,8 +201,7 @@ func _style_button(button: Button) -> void:
 	button.add_theme_stylebox_override("normal", normal)
 	button.add_theme_stylebox_override("hover", hover)
 	button.add_theme_stylebox_override("pressed", hover)
-	button.add_theme_stylebox_override("disabled", DarkMailPalette.flat_box(
-		DarkMailPalette.BG_FIELD, DarkMailPalette.TEXT_DIM, DarkMailPalette.BORDER_WIDTH))
+	button.add_theme_stylebox_override("disabled", disabled)
 	button.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
 	button.add_theme_font_override("font", DarkMailPalette.FONT_MONO)
 	button.add_theme_font_size_override("font_size", DarkMailPalette.FONT_SIZE_MONO)
