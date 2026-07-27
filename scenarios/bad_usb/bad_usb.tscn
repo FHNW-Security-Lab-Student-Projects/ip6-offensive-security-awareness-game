@@ -406,7 +406,7 @@ limit_bottom = 9999997
 shape = SubResource("CapsuleShape2D_5yldq")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="BadUSBScenario/InsideBuilding/Player" unique_id=2004986567]
-position = Vector2(45.735527, 188)
+position = Vector2(48.735527, 209)
 scale = Vector2(1.77, 1.77)
 sprite_frames = SubResource("SpriteFrames_g4v7s")
 animation = &"walk"
