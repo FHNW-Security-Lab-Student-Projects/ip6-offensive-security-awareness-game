@@ -16,22 +16,21 @@
 [ext_resource type="Texture2D" uid="uid://b4de0qaf3j1dg" path="res://assets/sprites/placeholder/player/Walking5.png" id="8_kjq3u"]
 [ext_resource type="Texture2D" uid="uid://dsdhrkwdrpnkk" path="res://assets/sprites/placeholder/car4.png" id="8_skyq6"]
 [ext_resource type="Texture2D" uid="uid://dxl46ruo8as76" path="res://assets/sprites/placeholder/Car3.png" id="9_kufmj"]
-[ext_resource type="Texture2D" uid="uid://ba2g1ufqr8xyj" path="res://assets/sprites/placeholder/player/Walking6.png" id="9_pn0t8"]
 [ext_resource type="Texture2D" uid="uid://cyhbgre8n7s0g" path="res://assets/sprites/placeholder/Inside.png" id="10_skyq6"]
 [ext_resource type="Texture2D" uid="uid://b5a30w36wy557" path="res://assets/sprites/placeholder/officeInside.jpg" id="12_a3ter"]
 [ext_resource type="Texture2D" uid="uid://b1scehbtb0ssn" path="res://assets/sprites/placeholder/NPC/NPCFupper.png" id="17_cw631"]
-[ext_resource type="Texture2D" path="res://assets/sprites/placeholder/NPC/NPCF.png" id="19_b33ky"]
+[ext_resource type="Texture2D" uid="uid://c5rpehtw3o7u1" path="res://assets/sprites/placeholder/NPC/NPCF.png" id="19_b33ky"]
 [ext_resource type="Texture2D" uid="uid://cjmexs18xiptx" path="res://assets/sprites/placeholder/beforeElevator.png" id="19_rw5by"]
-[ext_resource type="Texture2D" path="res://assets/sprites/placeholder/NPC/NPCidle1.png" id="20_bk084"]
+[ext_resource type="Texture2D" uid="uid://b64i7c0st76od" path="res://assets/sprites/placeholder/NPC/NPCidle1.png" id="20_bk084"]
 [ext_resource type="Texture2D" uid="uid://dosoh85t8c6gd" path="res://assets/sprites/placeholder/tailgating.png" id="20_l7dmb"]
 [ext_resource type="Texture2D" uid="uid://cwvxu7x1pqrxv" path="res://assets/sprites/placeholder/tailgatingOpen.png" id="22_cw631"]
-[ext_resource type="Texture2D" path="res://assets/sprites/placeholder/NPC/NPCidle.png" id="23_b33ky"]
-[ext_resource type="Texture2D" path="res://assets/sprites/placeholder/NPC/NPC.png" id="24_bk084"]
-[ext_resource type="Texture2D" path="res://assets/sprites/placeholder/NPC/NPC1.png" id="25_j4rxb"]
-[ext_resource type="Texture2D" path="res://assets/sprites/placeholder/NPC/NPC2.png" id="26_irv1t"]
-[ext_resource type="Texture2D" path="res://assets/sprites/placeholder/NPC/NPC3.png" id="27_ibunq"]
-[ext_resource type="Texture2D" path="res://assets/sprites/placeholder/NPC/NPC4.png" id="28_ml2va"]
-[ext_resource type="Texture2D" path="res://assets/sprites/placeholder/NPC/NPCidle2.png" id="29_l7dmb"]
+[ext_resource type="Texture2D" uid="uid://lq210cye83vt" path="res://assets/sprites/placeholder/NPC/NPCidle.png" id="23_b33ky"]
+[ext_resource type="Texture2D" uid="uid://dclddu3vh758b" path="res://assets/sprites/placeholder/NPC/NPC.png" id="24_bk084"]
+[ext_resource type="Texture2D" uid="uid://dg3lu4mcov5ew" path="res://assets/sprites/placeholder/NPC/NPC1.png" id="25_j4rxb"]
+[ext_resource type="Texture2D" uid="uid://cywqc556q7jw1" path="res://assets/sprites/placeholder/NPC/NPC2.png" id="26_irv1t"]
+[ext_resource type="Texture2D" uid="uid://drlpgnh2tu8pn" path="res://assets/sprites/placeholder/NPC/NPC3.png" id="27_ibunq"]
+[ext_resource type="Texture2D" uid="uid://cq0cvaskq52ic" path="res://assets/sprites/placeholder/NPC/NPC4.png" id="28_ml2va"]
+[ext_resource type="Texture2D" uid="uid://d2nu6xip4n3q4" path="res://assets/sprites/placeholder/NPC/NPCidle2.png" id="29_l7dmb"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_kp1x0"]
 size = Vector2(30, 1077)
@@ -64,9 +63,6 @@ animations = [{
 }, {
 "duration": 1.0,
 "texture": ExtResource("8_kjq3u")
-}, {
-"duration": 1.0,
-"texture": ExtResource("9_pn0t8")
 }],
 "loop": 1,
 "name": &"walk",
@@ -120,7 +116,7 @@ corner_radius_bottom_right = 10
 corner_radius_bottom_left = 10
 
 [sub_resource type="LabelSettings" id="LabelSettings_57qmd"]
-font_size = 32
+font_size = 26
 font_color = Color(0, 0, 0, 1)
 
 [sub_resource type="SpriteFrames" id="SpriteFrames_d0u6y"]
@@ -193,6 +189,9 @@ font_color = Color(0, 0, 0, 1)
 font_size = 24
 font_color = Color(0, 0, 0, 1)
 
+[sub_resource type="LabelSettings" id="LabelSettings_l7dmb"]
+font_size = 20
+
 [sub_resource type="LabelSettings" id="LabelSettings_3r2ah"]
 font_color = Color(0, 0, 0, 1)
 
@@ -244,8 +243,8 @@ position = Vector2(-322, 0)
 shape = SubResource("CapsuleShape2D_5yldq")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="BadUSBScenario/GameWorld/Player" unique_id=1610478321]
-position = Vector2(-321.99997, 409)
-scale = Vector2(0.705, 0.705)
+position = Vector2(-321.99997, 417)
+scale = Vector2(0.435, 0.435)
 sprite_frames = SubResource("SpriteFrames_g4v7s")
 animation = &"walk"
 
@@ -322,7 +321,7 @@ shape = SubResource("CapsuleShape2D_5yldq")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="BadUSBScenario/InfrontOfBuilding/Player" unique_id=839851035]
 position = Vector2(39.429928, 405)
-scale = Vector2(0.88, 0.88)
+scale = Vector2(0.56, 0.56)
 sprite_frames = SubResource("SpriteFrames_g4v7s")
 animation = &"walk"
 
@@ -408,7 +407,7 @@ shape = SubResource("CapsuleShape2D_5yldq")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="BadUSBScenario/InsideBuilding/Player" unique_id=2004986567]
 position = Vector2(45.735527, 188)
-scale = Vector2(2.9, 2.9)
+scale = Vector2(1.77, 1.77)
 sprite_frames = SubResource("SpriteFrames_g4v7s")
 animation = &"walk"
 
@@ -501,8 +500,8 @@ position = Vector2(55, 278.455)
 shape = SubResource("CapsuleShape2D_5yldq")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="BadUSBScenario/BeforeElevator/Player" unique_id=13288261]
-position = Vector2(38.000175, 417.545)
-scale = Vector2(3, 3)
+position = Vector2(76.000175, 483.545)
+scale = Vector2(1.75, 1.75)
 sprite_frames = SubResource("SpriteFrames_g4v7s")
 animation = &"walk"
 
@@ -541,10 +540,10 @@ text = "BADUSB_UI_ACCESS_DENIED"
 label_settings = SubResource("LabelSettings_g4v7s")
 
 [node name="NPCSpeechUI" type="PanelContainer" parent="BadUSBScenario/BeforeElevator" unique_id=1467541438]
-offset_left = 9061.0
-offset_top = 237.0
-offset_right = 9669.0
-offset_bottom = 375.0
+offset_left = 9084.0
+offset_top = 278.0
+offset_right = 9628.0
+offset_bottom = 387.0
 theme_override_styles/panel = SubResource("StyleBoxFlat_yf5fn")
 
 [node name="NPCSpeechUI" type="Label" parent="BadUSBScenario/BeforeElevator/NPCSpeechUI" unique_id=855405787]
@@ -555,10 +554,10 @@ horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="EnterOfficeBtn" type="Button" parent="BadUSBScenario/BeforeElevator" unique_id=995535868]
-offset_left = 8828.0
-offset_top = 416.0
-offset_right = 9010.0
-offset_bottom = 470.0
+offset_left = 8811.0
+offset_top = 357.0
+offset_right = 9008.0
+offset_bottom = 411.0
 text = "BADUSB_BTN_ELEVATOR"
 
 [node name="TailgateDoor" type="Node2D" parent="BadUSBScenario" unique_id=11092029]
@@ -585,8 +584,8 @@ texture = ExtResource("22_cw631")
 centered = false
 
 [node name="NPC" type="AnimatedSprite2D" parent="BadUSBScenario/TailgateDoor/Background/Background" unique_id=88498077]
-position = Vector2(10374, 971)
-scale = Vector2(1.945, 1.945)
+position = Vector2(10397, 1033)
+scale = Vector2(1.685, 1.685)
 sprite_frames = SubResource("SpriteFrames_d0u6y")
 animation = &"walk"
 
@@ -624,8 +623,8 @@ position = Vector2(55, -32)
 shape = SubResource("CapsuleShape2D_5yldq")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="BadUSBScenario/TailgateDoor/Player" unique_id=1152631233]
-position = Vector2(54.9992, 163)
-scale = Vector2(3, 3)
+position = Vector2(54.9992, 187)
+scale = Vector2(1.74, 1.74)
 sprite_frames = SubResource("SpriteFrames_g4v7s")
 animation = &"idle"
 
@@ -682,7 +681,7 @@ transform = Transform2D(1, 0, 0, 1, 3000, 0)
 position = Vector2(23050, 2360)
 
 [node name="Sprite2D" type="Sprite2D" parent="BadUSBScenario/BigOffice/Background/Background" unique_id=2062593110]
-position = Vector2(141, -1906)
+position = Vector2(107, -347)
 scale = Vector2(3, 3)
 texture = ExtResource("12_a3ter")
 centered = false
@@ -706,23 +705,24 @@ shape = SubResource("RectangleShape2D_or8dj")
 
 [node name="Player" type="CharacterBody2D" parent="BadUSBScenario/BigOffice" unique_id=1107143998]
 z_index = 10
-position = Vector2(16329.999, 680)
+position = Vector2(16572, 861)
 script = ExtResource("3_0c6e4")
 SPEED = 500.0
 
 [node name="Camera2D" type="Camera2D" parent="BadUSBScenario/BigOffice/Player" unique_id=1560822566]
-limit_left = 26246
-limit_top = -10000026
-limit_right = 29207
-limit_bottom = 9999974
+position = Vector2(551, -117)
+limit_left = 26242
+limit_top = -9999938
+limit_right = 29203
+limit_bottom = 10000062
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="BadUSBScenario/BigOffice/Player" unique_id=187389510]
 position = Vector2(551.001, -125)
 shape = SubResource("CapsuleShape2D_5yldq")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="BadUSBScenario/BigOffice/Player" unique_id=436260516]
-position = Vector2(546.99915, 205)
-scale = Vector2(2.56, 2.56)
+position = Vector2(502.99915, 36)
+scale = Vector2(2.175, 2.175)
 sprite_frames = SubResource("SpriteFrames_g4v7s")
 animation = &"idle"
 
@@ -742,8 +742,8 @@ position = Vector2(18657, 416)
 shape = SubResource("RectangleShape2D_3r2ah")
 
 [node name="OfficeNPC" type="AnimatedSprite2D" parent="BadUSBScenario/BigOffice" unique_id=1232017907]
-position = Vector2(18350.002, 784)
-scale = Vector2(1.745, 1.745)
+position = Vector2(18310, 843)
+scale = Vector2(2.255, 2.255)
 sprite_frames = SubResource("SpriteFrames_57qmd")
 animation = &"idle"
 
@@ -886,9 +886,10 @@ anchor_left = 0.5
 anchor_top = 1.0
 anchor_right = 0.5
 anchor_bottom = 1.0
-offset_left = -966.0
-offset_top = -241.0
-offset_right = 964.0
+offset_left = -597.0
+offset_top = -257.0
+offset_right = 594.0
+offset_bottom = -16.0
 grow_horizontal = 2
 grow_vertical = 0
 
@@ -896,8 +897,12 @@ grow_vertical = 0
 layout_mode = 1
 anchors_preset = 10
 anchor_right = 1.0
+offset_left = 28.0
+offset_top = 20.0
+offset_right = -31.0
 offset_bottom = 168.0
 grow_horizontal = 2
+label_settings = SubResource("LabelSettings_l7dmb")
 horizontal_alignment = 1
 
 [node name="VBoxContainer" type="VBoxContainer" parent="BadUSBScenario/CanvasLayer/DialogueBox" unique_id=1157014421]
@@ -908,7 +913,7 @@ anchor_top = 1.0
 anchor_right = 0.5
 anchor_bottom = 1.0
 offset_left = -293.0
-offset_top = -56.0
+offset_top = -73.0
 offset_right = 294.0
 grow_horizontal = 2
 grow_vertical = 0
@@ -920,6 +925,7 @@ layout_mode = 2
 layout_mode = 2
 
 [node name="FailurePopup" type="ColorRect" parent="BadUSBScenario/CanvasLayer" unique_id=883347007]
+visible = false
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
@@ -953,10 +959,10 @@ offset_bottom = 407.0
 text = "BADUSB_BTN_RETRY"
 
 [node name="EnterCorridorBtn" type="Button" parent="BadUSBScenario/CanvasLayer" unique_id=37133511]
-offset_left = 949.0
-offset_top = 416.0
-offset_right = 1166.0
-offset_bottom = 476.0
+offset_left = 967.0
+offset_top = 414.0
+offset_right = 1195.0
+offset_bottom = 474.0
 text = "BADUSB_BTN_GO_ELEVATOR"
 
 [node name="InsertUSBBtn" type="Button" parent="BadUSBScenario/CanvasLayer" unique_id=469204451]
@@ -967,10 +973,10 @@ offset_bottom = 443.0
 text = "BADUSB_BTN_INSERT_USB"
 
 [node name="RestrictedElevatorBtn" type="Button" parent="BadUSBScenario/CanvasLayer" unique_id=667624930]
-offset_left = 966.0
-offset_top = 397.0
-offset_right = 1145.0
-offset_bottom = 448.0
+offset_left = 986.0
+offset_top = 400.0
+offset_right = 1183.0
+offset_bottom = 451.0
 text = "BADUSB_BTN_ELEVATOR"
 
 [connection signal="pressed" from="BadUSBScenario/CanvasLayer/Briefing/MarginContainer/VBoxContainer/Button" to="BadUSBScenario/CanvasLayer/Briefing" method="_on_button_pressed"]

@@ -4,7 +4,7 @@ const SCENARIO_ID: String = "bad_usb"
 
 enum SubState { BRIEFING, STREET, FRONT, INSIDE, TAILGATE, CORRIDOR, OFFICE, RESOLVE }
 
-var _ui_briefing  # the shared DarkMail briefing, instanced in _setup
+var _ui_briefing 
 @onready var _ui_resolve = $BadUSBScenario/CanvasLayer/Resolve
 @onready var _ui_enter_btn = $BadUSBScenario/CanvasLayer/EnterBuildingBtn
 
@@ -59,6 +59,10 @@ var _dialogue_step: int = 0
 var _inside_start_pos: Vector2 
 var _front_door_pos: Vector2 
 var _office_npc_start_pos: Vector2 
+
+var _corridor_start_pos: Vector2
+var _tailgate_start_pos: Vector2
+var _npc_tailgate_start_pos: Vector2
 
 var _current: SubState = SubState.BRIEFING
 var _initialised: bool = false
@@ -127,7 +131,6 @@ func _setup() -> void:
 	
 	_ui_dialogue_box.visible = false
 	
-	# FIXED: Check if signals are already connected by the editor to prevent crash errors!
 	if not _btn_choice1.pressed.is_connected(_on_dialog_choice_1_pressed):
 		_btn_choice1.pressed.connect(_on_dialog_choice_1_pressed)
 	if not _btn_choice2.pressed.is_connected(_on_dialog_choice_2_pressed):
@@ -189,10 +192,11 @@ func _setup() -> void:
 	_office_npc_start_pos = _npc_office.position 
 	_npc_office.flip_h = false 
 	_npc_office.play("idle")
+	
+	_corridor_start_pos = _world_corridor.get_node("Player").position
+	_tailgate_start_pos = _world_tailgate.get_node("Player").position
+	_npc_tailgate_start_pos = _npc_tailgate.position
 
-# Replaces the placeholder intro with the shared DarkMail briefing screen,
-# pointed at this scenario's own resource (no turn budget). Instanced in code so
-# the colleague's scene tree is left untouched.
 func _swap_in_briefing() -> void:
 	var canvas = $BadUSBScenario/CanvasLayer
 	var placeholder = canvas.get_node_or_null("Briefing")
@@ -204,7 +208,7 @@ func _swap_in_briefing() -> void:
 	canvas.add_child(_ui_briefing)
 
 func _on_start() -> void:
-	_change_substate(SubState.BRIEFING)
+	_change_substate(SubState.OFFICE)
 
 func _on_door_entered(body: Node2D) -> void:
 	if body.name == "Player":
@@ -315,23 +319,19 @@ func _start_office_npc_approach() -> void:
 	_npc_office.z_index = 10
 	_npc_office.visible = true
 	
-	# CHANGED: Now he runs 250 pixels past the player instead of 100
 	var target_x = player_sprite.global_position.x - 250 
 	
 	_npc_office.flip_h = true 
 	_npc_office.play("walk")
 	
 	var tween = create_tween()
-	# CHANGED: Lowered the time from 2.5 to 1.5 seconds so he moves faster
 	tween.tween_property(_npc_office, "global_position:x", target_x, 1.5)
 	tween.finished.connect(_on_office_npc_arrived)
 
 func _start_office_npc_run_away() -> void:
-	# Turn around to face LEFT again
 	_npc_office.flip_h = true 
 	_npc_office.play("walk")
 	
-	# Calculate a spot far to the left to exit the screen
 	var target_x = _npc_office.global_position.x - 1000 
 	
 	var tween = create_tween()
@@ -342,16 +342,13 @@ func _on_office_npc_arrived() -> void:
 	var player = _world_office.get_node("Player")
 	player.set_physics_process(false) 
 	
-	# 1. NPC turns around to face RIGHT (towards the player) and stops walking
 	_npc_office.flip_h = false 
 	_npc_office.play("idle")
 	
-	# 2. Player turns around to face LEFT (towards the NPC) and stops walking
 	var player_sprite = player.get_node("AnimatedSprite2D")
 	player_sprite.flip_h = true 
 	player_sprite.play("idle")
 	
-	# 3. Start the dialogue
 	_ui_dialogue_box.visible = true
 	_dialogue_step = 30
 	_update_dialogue_ui()
@@ -386,12 +383,20 @@ func _on_stressed_pressed() -> void:
 	_ui_dialogue_box.visible = true
 	_dialogue_step = 10
 	_update_dialogue_ui()
+	
+	var player = _world_inside.get_node("Player")
+	player.set_physics_process(false)
+	player.get_node("AnimatedSprite2D").play("idle")
 
 func _on_confident_pressed() -> void:
 	_ui_reception_menu.visible = false
 	_ui_dialogue_box.visible = true
 	_dialogue_step = 20
 	_update_dialogue_ui()
+	
+	var player = _world_inside.get_node("Player")
+	player.set_physics_process(false)
+	player.get_node("AnimatedSprite2D").play("idle")
 
 func _on_dialog_choice_1_pressed() -> void:
 	match _dialogue_step:
@@ -429,6 +434,7 @@ func _on_failure_ok_pressed() -> void:
 	_office_npc_triggered = false
 	_office_dialogue_done = false
 	
+	# --- Reset Office NPC ---
 	_npc_office.position = _office_npc_start_pos
 	_npc_office.flip_h = false
 	_npc_office.play("idle")
@@ -436,7 +442,19 @@ func _on_failure_ok_pressed() -> void:
 	
 	_world_office.get_node("Player").set_physics_process(true)
 	
+	# --- Reset Tailgate Scene ---
+	_sprite_open_door.visible = false
+	_npc_tailgate.position = _npc_tailgate_start_pos
+	_npc_tailgate.flip_h = false 
+	_npc_tailgate.play("idle")
+	_npc_tailgate.visible = true 
+	
+	# --- Reset Player Positions ---
 	_world_front.get_node("Player").position = _front_door_pos
+	_world_inside.get_node("Player").position = _inside_start_pos
+	_world_corridor.get_node("Player").position = _corridor_start_pos
+	_world_tailgate.get_node("Player").position = _tailgate_start_pos
+	
 	_change_substate(SubState.FRONT)
 
 func _on_action(_action_id: String) -> void:
