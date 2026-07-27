@@ -1,113 +1,113 @@
-keys,de
-MAIL_SONNTAGS_HANNES_NAME,Sonntags-Hannes
-MAIL_SONNTAGS_HANNES_TEXT,"Er antwortet noch spätabends zuverlässig. Eine Mail zur Unzeit wirkt bei ihm normal."
-MAIL_FRISCHE_IT_NAME,Frische IT
-MAIL_FRISCHE_IT_TEXT,"Die neue IT-Firma kennt niemand persönlich. Ideal, um sie vorzutäuschen."
-MAIL_KEINER_FRAGT_NACH_NAME,Keiner fragt nach
-MAIL_KEINER_FRAGT_NACH_TEXT,"Anweisungen von der IT werden ohne Rückfrage befolgt. Verstärkt deine Druckkarten."
-MAIL_MIGRATIONS_AUFHAENGER_NAME,Migrations-Aufhänger
-MAIL_MIGRATIONS_AUFHAENGER_TEXT,Die laufende Migration ist ein legitimer Vorwand für eine dringende IT-Mail.
-MAIL_PROJEKT_HELVETIA_NAME,Projekt Helvetia
-MAIL_PROJEKT_HELVETIA_TEXT,Der interne Projektname macht dich zum vermeintlichen Insider.
-MAIL_VEREINSKOLLEGE_NAME,Vereinskollege
-MAIL_VEREINSKOLLEGE_TEXT,"Allein kaum nützlich. Wertvoll erst kombiniert mit einem zweiten Fund."
-MAIL_VERTRAUTER_KONTAKT_NAME,Vertrauter Kontakt
-MAIL_VERTRAUTER_KONTAKT_TEXT,"Ein gemeinsamer Kontakt im Netzwerk. Kein Effekt allein, aber ein Baustein."
-MAIL_MAIL_SCHEMA_NAME,Mail-Schema
-MAIL_MAIL_SCHEMA_TEXT,"Das Adressformat der Firma. Technische Voraussetzung, allein ohne Wirkung."
-MAIL_BIT_BUERLI_NAME,Bit & Bürli bestätigt
-MAIL_BIT_BUERLI_TEXT,Bestätigt Bit & Bürli als IT-Partner und legt den Spoof-Absender fest.
-MAIL_SYSTEMWISSEN_NAME,Systemwissen
-MAIL_SYSTEMWISSEN_TEXT,Nennt das echte Kernsystem beim Namen und wirkt dadurch legitim.
-MAIL_ARCHIV_FUND_NAME,Archiv-Fund
-MAIL_ARCHIV_FUND_TEXT,Ein Archiv-Snapshot bestätigt das Adressschema ein zweites Mal.
-MAIL_BADGE_LECK_NAME,Badge-Leck
-MAIL_BADGE_LECK_TEXT,Interne Badge-Details beweisen Zugehörigkeit und senken Misstrauen.
-MAIL_KATZEN_SMALLTALK_NAME,Katzen-Smalltalk
-MAIL_KATZEN_SMALLTALK_TEXT,"Ein Katzenfoto in einer Phishing-Mail. Wirkt creepy und ahnungslos."
-MAIL_NAMENSVETTER_JODLER_NAME,Namensvetter: Jodler
-MAIL_NAMENSVETTER_JODLER_TEXT,"Der falsche Hannes Zinsli. Ein Hobby, das dein Ziel gar nicht hat."
-MAIL_NAMENSVETTER_MAKLER_NAME,Namensvetter: Makler
-MAIL_NAMENSVETTER_MAKLER_TEXT,"Wieder der falsche Hannes Zinsli, diesmal ein Immobilienmakler."
-MAIL_FALSCHE_FIRMA_NAME,Falsche Firma
-MAIL_FALSCHE_FIRMA_TEXT,Gehört zu einem anderen Unternehmen. Komplett am Ziel vorbei.
-MAIL_RUNDUM_LOB_NAME,Rundum-Lob
-MAIL_RUNDUM_LOB_TEXT,Nichtssagendes Lob ohne jeden verwertbaren Inhalt.
-MAIL_ALTER_BEITRAG_NAME,Alter Beitrag
-MAIL_ALTER_BEITRAG_TEXT,Ein längst beendetes Projekt. Veraltet und wertlos.
-MAIL_CAFE_STANDORT_NAME,Café-Standort
-MAIL_CAFE_STANDORT_TEXT,"Ein getaggter Café-Standort. Nett, aber keine Munition."
-MAIL_KONTO_GESPERRT_NAME,Konto gesperrt
-MAIL_KONTO_GESPERRT_TEXT,"Ihr Konto wurde gesperrt. Plumper Druck, der Misstrauen weckt."
-MAIL_RECHNUNG_UNBEZAHLT_NAME,Rechnung unbezahlt
-MAIL_RECHNUNG_UNBEZAHLT_TEXT,"Offene Rechnung, letzte Mahnung. Druck mit Beigeschmack."
-MAIL_FRIST_HEUTE_NAME,Frist heute
-MAIL_FRIST_HEUTE_TEXT,"Die Frist läuft heute ab. Zeitdruck, der auch Misstrauen hebt."
-MAIL_GRATIS_KRYPTO_NAME,Gratis Krypto
-MAIL_GRATIS_KRYPTO_TEXT,"Gratis Krypto für Sie. Viel zu offensichtlich, reiner Alarm."
-MAIL_ZUGANG_BESTAETIGEN_NAME,Zugang bestätigen
-MAIL_ZUGANG_BESTAETIGEN_TEXT,Der eigentliche Angriff: der Link zum Bestätigen des Zugangs.
-MAIL_PERFEKTER_ABSENDER_NAME,Perfekter Absender
-MAIL_PERFEKTER_ABSENDER_TEXT,"Frische IT plus bestätigter Partner. Ein Absender ganz ohne Baseline."
-MAIL_ECHTER_VORWAND_NAME,Echter Vorwand
-MAIL_ECHTER_VORWAND_TEXT,"Migration plus Projektname. Ein konkreter, zeitlich begrenzter Grund."
-MAIL_VERIFIZIERT_NAME,Verifiziert
-MAIL_VERIFIZIERT_TEXT,Das Vereinsfoto entschärft die Namensvetter-Falle und sichert das Ziel.
-MAIL_IDENTITAET_GESICHERT_NAME,Identität gesichert
-MAIL_IDENTITAET_GESICHERT_TEXT,"Schema plus Bestätigung. Exakte Adresse und Dringlichkeit zugleich."
-MAIL_ABWESENHEITS_FENSTER_NAME,Abwesenheits-Fenster
-MAIL_ABWESENHEITS_FENSTER_TEXT,"Er ist abwesend und im Stress. Eine Deadline wirkt jetzt völlig normal."
-MAIL_PROBE_OOO_NAME,Erreichbarkeit prüfen
-MAIL_PROBE_OOO_TEXT,"Eine harmlose Testmail. Löst womöglich eine automatische Abwesenheitsnotiz aus."
-MAIL_SONNTAGS_HANNES_FRAG,Entschuldigen Sie die Nachricht ausserhalb der üblichen Zeit.
-MAIL_FRISCHE_IT_FRAG,wir betreuen ab sofort die IT-Infrastruktur Ihres Hauses.
-MAIL_KEINER_FRAGT_NACH_FRAG,Bitte führen Sie die Schritte wie gewohnt direkt aus.
-MAIL_MIGRATIONS_AUFHAENGER_FRAG,Im Zuge der laufenden Systemmigration ist eine Bestätigung erforderlich.
-MAIL_PROJEKT_HELVETIA_FRAG,Es betrifft die Zugänge im Umfeld von Projekt Helvetia.
-MAIL_VEREINSKOLLEGE_FRAG,Wir kennen uns übrigens aus dem Verein.
-MAIL_VERTRAUTER_KONTAKT_FRAG,Ein gemeinsamer Kontakt hat mich an Sie verwiesen.
-MAIL_MAIL_SCHEMA_FRAG,Diese Nachricht folgt dem üblichen Format des Supports.
-MAIL_BIT_BUERLI_FRAG,Wir handeln im Auftrag Ihres IT-Partners Bit & Bürli.
-MAIL_SYSTEMWISSEN_FRAG,"Es geht um Ihr Kernsystem, mit dem Sie täglich arbeiten."
-MAIL_ARCHIV_FUND_FRAG,Ihre hinterlegten Angaben stimmen mit unseren Unterlagen überein.
-MAIL_BADGE_LECK_FRAG,Zur Verifizierung nennen wir Ihre bekannten Badge-Details.
-MAIL_KATZEN_SMALLTALK_FRAG,"PS: Anbei ein Foto meiner Katze, herzig oder?"
-MAIL_NAMENSVETTER_JODLER_FRAG,"Grüsse auch vom Jodlerklub, wie letztes Mal."
-MAIL_NAMENSVETTER_MAKLER_FRAG,Zur Immobilie melde ich mich separat noch.
-MAIL_FALSCHE_FIRMA_FRAG,Dies betrifft Ihr Konto bei der Muster GmbH.
-MAIL_RUNDUM_LOB_FRAG,Ganz generell machen Sie wirklich einen super Job!
-MAIL_ALTER_BEITRAG_FRAG,Bezugnehmend auf das längst abgeschlossene Altprojekt.
-MAIL_CAFE_STANDORT_FRAG,"Schöner Ort übrigens, das Café von neulich."
-MAIL_KONTO_GESPERRT_FRAG,Ihr Konto wurde vorübergehend gesperrt.
-MAIL_RECHNUNG_UNBEZAHLT_FRAG,Eine offene Rechnung ist noch nicht beglichen.
-MAIL_FRIST_HEUTE_FRAG,Die Frist zur Bestätigung läuft heute ab.
-MAIL_GRATIS_KRYPTO_FRAG,Sichern Sie sich jetzt Ihr kostenloses Krypto-Guthaben!
-MAIL_ZUGANG_BESTAETIGEN_FRAG,Bitte bestätigen Sie Ihren Zugang: bit-buerli-services.example/zugang
-MAIL_PERFEKTER_ABSENDER_FRAG,Als Ihr verifizierter IT-Partner schreiben wir Sie direkt an.
-MAIL_ECHTER_VORWAND_FRAG,Konkret geht es um die migrationsbedingte Freischaltung bis heute.
-MAIL_VERIFIZIERT_FRAG,Zur Sicherheit: die Anfrage ist intern bestätigt und legitim.
-MAIL_IDENTITAET_GESICHERT_FRAG,Absender und Vorgang sind eindeutig Ihrem Konto zugeordnet.
-MAIL_ABWESENHEITS_FENSTER_FRAG,"Da Sie gleich abwesend sind, erledigen wir das jetzt rasch."
-MAIL_PROBE_OOO_FRAG,Kurze Rückfrage: Sind Sie diese Woche im Haus erreichbar?
-MAIL_PREVIEW_FROM_VALUE,it-support@bit-buerli-services.example
-MAIL_PREVIEW_TO_VALUE,hannes.zinsli@fintech-ag.example
-MAIL_PREVIEW_SUBJECT_VALUE,Dringend: Zugang bestätigen
-MAIL_BOSS_INTRO,"Bau die Mail zusammen. Erst Druck aufbauen, dann den Link setzen. Und halt das Misstrauen unten."
-MAIL_BOSS_SUSPICION_HIGH,Vorsicht. Das wird ihm langsam suspekt.
-MAIL_BOSS_SUSPICION_CRITICAL,Noch eine falsche Karte und er meldet uns als Spam. Rudere zurück.
-MAIL_BOSS_PRESSURE_OK,Gut. Er steht unter Druck und die Mail ist sendebereit.
-MAIL_BOSS_PAYLOAD_READY,Sauber, kaum Misstrauen. Jetzt den Link, das sitzt.
-MAIL_BOSS_SCHROTT,Was soll das? Der Mist gehört nicht in die Mail.
-MAIL_TOAST_PROBE,Automatische Antwort erhalten. Er ist abwesend.
-HANNES_REPLY_NEUTRAL_1,Guten Tag. Worum geht es genau?
-HANNES_REPLY_NEUTRAL_2,Hallo. Ich schaue es mir bei Gelegenheit an.
-HANNES_REPLY_NEUTRAL_3,Danke für die Nachricht. Was steht an?
-HANNES_REPLY_MISSTRAUISCH_1,Wer sind Sie nochmal? Das kommt mir komisch vor.
-HANNES_REPLY_MISSTRAUISCH_2,Woher haben Sie meine Adresse? Ich kenne Sie nicht.
-HANNES_REPLY_MISSTRAUISCH_3,Das klingt nicht seriös. Ich frage besser intern nach.
-HANNES_REPLY_INTERESSIERT_1,Okay, das klingt dringend. Erzählen Sie mehr.
-HANNES_REPLY_INTERESSIERT_2,Verstehe. Was genau brauchen Sie von mir?
-HANNES_REPLY_INTERESSIERT_3,"Gut, ich höre zu. Wie geht es weiter?"
-HANNES_REPLY_ANGEBISSEN_1,"Alles klar, was muss ich tun? Sagen Sie mir wo ich klicke."
-HANNES_REPLY_ANGEBISSEN_2,"Verstanden, ich erledige das sofort. Wohin muss ich?"
-HANNES_REPLY_ANGEBISSEN_3,"Passt, machen wir. Schicken Sie mir den Link."
+keys,de,en
+MAIL_SONNTAGS_HANNES_NAME,Sonntags-Hannes,Sunday Hannes
+MAIL_SONNTAGS_HANNES_TEXT,Er antwortet noch spätabends zuverlässig. Eine Mail zur Unzeit wirkt bei ihm normal.,He still answers reliably late at night. A mail at an odd hour looks normal to him.
+MAIL_FRISCHE_IT_NAME,Frische IT,Fresh IT
+MAIL_FRISCHE_IT_TEXT,"Die neue IT-Firma kennt niemand persönlich. Ideal, um sie vorzutäuschen.",Nobody knows the new IT firm personally. Ideal to impersonate.
+MAIL_KEINER_FRAGT_NACH_NAME,Keiner fragt nach,Nobody asks
+MAIL_KEINER_FRAGT_NACH_TEXT,Anweisungen von der IT werden ohne Rückfrage befolgt. Verstärkt deine Druckkarten.,Instructions from IT are followed without question. Boosts your pressure cards.
+MAIL_MIGRATIONS_AUFHAENGER_NAME,Migrations-Aufhänger,Migration hook
+MAIL_MIGRATIONS_AUFHAENGER_TEXT,Die laufende Migration ist ein legitimer Vorwand für eine dringende IT-Mail.,The ongoing migration is a legitimate pretext for an urgent IT mail.
+MAIL_PROJEKT_HELVETIA_NAME,Projekt Helvetia,Project Helvetia
+MAIL_PROJEKT_HELVETIA_TEXT,Der interne Projektname macht dich zum vermeintlichen Insider.,The internal project name makes you look like an insider.
+MAIL_VEREINSKOLLEGE_NAME,Vereinskollege,Club mate
+MAIL_VEREINSKOLLEGE_TEXT,Allein kaum nützlich. Wertvoll erst kombiniert mit einem zweiten Fund.,Barely useful on its own. Valuable only combined with a second find.
+MAIL_VERTRAUTER_KONTAKT_NAME,Vertrauter Kontakt,Trusted contact
+MAIL_VERTRAUTER_KONTAKT_TEXT,"Ein gemeinsamer Kontakt im Netzwerk. Kein Effekt allein, aber ein Baustein.","A shared contact in the network. No effect alone, but a building block."
+MAIL_MAIL_SCHEMA_NAME,Mail-Schema,Mail schema
+MAIL_MAIL_SCHEMA_TEXT,"Das Adressformat der Firma. Technische Voraussetzung, allein ohne Wirkung.","The company's address format. A technical prerequisite, useless on its own."
+MAIL_BIT_BUERLI_NAME,Bit & Bürli bestätigt,Bit & Bürli confirmed
+MAIL_BIT_BUERLI_TEXT,Bestätigt Bit & Bürli als IT-Partner und legt den Spoof-Absender fest.,Confirms Bit & Bürli as the IT partner and fixes the spoofed sender.
+MAIL_SYSTEMWISSEN_NAME,Systemwissen,System knowledge
+MAIL_SYSTEMWISSEN_TEXT,Nennt das echte Kernsystem beim Namen und wirkt dadurch legitim.,"Names the real core system, which makes you sound legitimate."
+MAIL_ARCHIV_FUND_NAME,Archiv-Fund,Archive find
+MAIL_ARCHIV_FUND_TEXT,Ein Archiv-Snapshot bestätigt das Adressschema ein zweites Mal.,An archive snapshot confirms the address schema a second time.
+MAIL_BADGE_LECK_NAME,Badge-Leck,Badge leak
+MAIL_BADGE_LECK_TEXT,Interne Badge-Details beweisen Zugehörigkeit und senken Misstrauen.,Internal badge details prove belonging and lower suspicion.
+MAIL_KATZEN_SMALLTALK_NAME,Katzen-Smalltalk,Cat small talk
+MAIL_KATZEN_SMALLTALK_TEXT,Ein Katzenfoto in einer Phishing-Mail. Wirkt creepy und ahnungslos.,A cat photo in a phishing mail. Reads as creepy and clueless.
+MAIL_NAMENSVETTER_JODLER_NAME,Namensvetter: Jodler,Namesake: yodeller
+MAIL_NAMENSVETTER_JODLER_TEXT,"Der falsche Hannes Zinsli. Ein Hobby, das dein Ziel gar nicht hat.",The wrong Hannes Zinsli. A hobby your target does not even have.
+MAIL_NAMENSVETTER_MAKLER_NAME,Namensvetter: Makler,Namesake: estate agent
+MAIL_NAMENSVETTER_MAKLER_TEXT,"Wieder der falsche Hannes Zinsli, diesmal ein Immobilienmakler.","The wrong Hannes Zinsli again, an estate agent this time."
+MAIL_FALSCHE_FIRMA_NAME,Falsche Firma,Wrong company
+MAIL_FALSCHE_FIRMA_TEXT,Gehört zu einem anderen Unternehmen. Komplett am Ziel vorbei.,Belongs to a different company. Completely off target.
+MAIL_RUNDUM_LOB_NAME,Rundum-Lob,Blanket praise
+MAIL_RUNDUM_LOB_TEXT,Nichtssagendes Lob ohne jeden verwertbaren Inhalt.,Empty praise without a single usable detail.
+MAIL_ALTER_BEITRAG_NAME,Alter Beitrag,Old post
+MAIL_ALTER_BEITRAG_TEXT,Ein längst beendetes Projekt. Veraltet und wertlos.,A long finished project. Outdated and worthless.
+MAIL_CAFE_STANDORT_NAME,Café-Standort,Café location
+MAIL_CAFE_STANDORT_TEXT,"Ein getaggter Café-Standort. Nett, aber keine Munition.","A tagged café location. Nice, but no ammunition."
+MAIL_KONTO_GESPERRT_NAME,Konto gesperrt,Account locked
+MAIL_KONTO_GESPERRT_TEXT,"Ihr Konto wurde gesperrt. Plumper Druck, der Misstrauen weckt.",Your account has been locked. Blunt pressure that raises suspicion.
+MAIL_RECHNUNG_UNBEZAHLT_NAME,Rechnung unbezahlt,Unpaid invoice
+MAIL_RECHNUNG_UNBEZAHLT_TEXT,"Offene Rechnung, letzte Mahnung. Druck mit Beigeschmack.","Outstanding invoice, final notice. Pressure with a bad aftertaste."
+MAIL_FRIST_HEUTE_NAME,Frist heute,Deadline today
+MAIL_FRIST_HEUTE_TEXT,"Die Frist läuft heute ab. Zeitdruck, der auch Misstrauen hebt.",The deadline expires today. Time pressure that also raises suspicion.
+MAIL_GRATIS_KRYPTO_NAME,Gratis Krypto,Free crypto
+MAIL_GRATIS_KRYPTO_TEXT,"Gratis Krypto für Sie. Viel zu offensichtlich, reiner Alarm.","Free crypto for you. Far too obvious, pure alarm."
+MAIL_ZUGANG_BESTAETIGEN_NAME,Zugang bestätigen,Confirm access
+MAIL_ZUGANG_BESTAETIGEN_TEXT,Der eigentliche Angriff: der Link zum Bestätigen des Zugangs.,The actual attack: the link to confirm access.
+MAIL_PERFEKTER_ABSENDER_NAME,Perfekter Absender,Perfect sender
+MAIL_PERFEKTER_ABSENDER_TEXT,Frische IT plus bestätigter Partner. Ein Absender ganz ohne Baseline.,Fresh IT plus a confirmed partner. A sender with no baseline at all.
+MAIL_ECHTER_VORWAND_NAME,Echter Vorwand,Real pretext
+MAIL_ECHTER_VORWAND_TEXT,"Migration plus Projektname. Ein konkreter, zeitlich begrenzter Grund.","Migration plus project name. A concrete, time limited reason."
+MAIL_VERIFIZIERT_NAME,Verifiziert,Verified
+MAIL_VERIFIZIERT_TEXT,Das Vereinsfoto entschärft die Namensvetter-Falle und sichert das Ziel.,The club photo defuses the namesake trap and pins down the target.
+MAIL_IDENTITAET_GESICHERT_NAME,Identität gesichert,Identity secured
+MAIL_IDENTITAET_GESICHERT_TEXT,Schema plus Bestätigung. Exakte Adresse und Dringlichkeit zugleich.,Schema plus confirmation. Exact address and urgency at once.
+MAIL_ABWESENHEITS_FENSTER_NAME,Abwesenheits-Fenster,Absence window
+MAIL_ABWESENHEITS_FENSTER_TEXT,Er ist abwesend und im Stress. Eine Deadline wirkt jetzt völlig normal.,He is away and under stress. A deadline feels perfectly normal now.
+MAIL_PROBE_OOO_NAME,Erreichbarkeit prüfen,Check availability
+MAIL_PROBE_OOO_TEXT,Eine harmlose Testmail. Löst womöglich eine automatische Abwesenheitsnotiz aus.,A harmless test mail. May trigger an automatic out of office reply.
+MAIL_SONNTAGS_HANNES_FRAG,Entschuldigen Sie die Nachricht ausserhalb der üblichen Zeit.,Apologies for writing outside normal hours.
+MAIL_FRISCHE_IT_FRAG,wir betreuen ab sofort die IT-Infrastruktur Ihres Hauses.,we now look after your company's IT infrastructure.
+MAIL_KEINER_FRAGT_NACH_FRAG,Bitte führen Sie die Schritte wie gewohnt direkt aus.,"Please carry out the steps directly, as usual."
+MAIL_MIGRATIONS_AUFHAENGER_FRAG,Im Zuge der laufenden Systemmigration ist eine Bestätigung erforderlich.,As part of the ongoing system migration a confirmation is required.
+MAIL_PROJEKT_HELVETIA_FRAG,Es betrifft die Zugänge im Umfeld von Projekt Helvetia.,It concerns the access rights around Project Helvetia.
+MAIL_VEREINSKOLLEGE_FRAG,Wir kennen uns übrigens aus dem Verein.,"We know each other from the club, by the way."
+MAIL_VERTRAUTER_KONTAKT_FRAG,Ein gemeinsamer Kontakt hat mich an Sie verwiesen.,A mutual contact referred me to you.
+MAIL_MAIL_SCHEMA_FRAG,Diese Nachricht folgt dem üblichen Format des Supports.,This message follows the usual support format.
+MAIL_BIT_BUERLI_FRAG,Wir handeln im Auftrag Ihres IT-Partners Bit & Bürli.,We are acting on behalf of your IT partner Bit & Bürli.
+MAIL_SYSTEMWISSEN_FRAG,"Es geht um Ihr Kernsystem, mit dem Sie täglich arbeiten.","This concerns your core system, the one you work with daily."
+MAIL_ARCHIV_FUND_FRAG,Ihre hinterlegten Angaben stimmen mit unseren Unterlagen überein.,Your stored details match our records.
+MAIL_BADGE_LECK_FRAG,Zur Verifizierung nennen wir Ihre bekannten Badge-Details.,For verification we quote your known badge details.
+MAIL_KATZEN_SMALLTALK_FRAG,"PS: Anbei ein Foto meiner Katze, herzig oder?","PS: a photo of my cat, isn't she lovely?"
+MAIL_NAMENSVETTER_JODLER_FRAG,"Grüsse auch vom Jodlerklub, wie letztes Mal.","Greetings from the yodelling club as well, like last time."
+MAIL_NAMENSVETTER_MAKLER_FRAG,Zur Immobilie melde ich mich separat noch.,I will get back to you separately about the property.
+MAIL_FALSCHE_FIRMA_FRAG,Dies betrifft Ihr Konto bei der Muster GmbH.,This concerns your account at Muster GmbH.
+MAIL_RUNDUM_LOB_FRAG,Ganz generell machen Sie wirklich einen super Job!,Generally speaking you are doing a really great job!
+MAIL_ALTER_BEITRAG_FRAG,Bezugnehmend auf das längst abgeschlossene Altprojekt.,Referring to the long completed legacy project.
+MAIL_CAFE_STANDORT_FRAG,"Schöner Ort übrigens, das Café von neulich.","Lovely spot, that café the other day."
+MAIL_KONTO_GESPERRT_FRAG,Ihr Konto wurde vorübergehend gesperrt.,Your account has been temporarily locked.
+MAIL_RECHNUNG_UNBEZAHLT_FRAG,Eine offene Rechnung ist noch nicht beglichen.,An outstanding invoice has not yet been settled.
+MAIL_FRIST_HEUTE_FRAG,Die Frist zur Bestätigung läuft heute ab.,The deadline for confirmation expires today.
+MAIL_GRATIS_KRYPTO_FRAG,Sichern Sie sich jetzt Ihr kostenloses Krypto-Guthaben!,Claim your free crypto balance now!
+MAIL_ZUGANG_BESTAETIGEN_FRAG,Bitte bestätigen Sie Ihren Zugang: bit-buerli-services.example/zugang,Please confirm your access: bit-buerli-services.example/access
+MAIL_PERFEKTER_ABSENDER_FRAG,Als Ihr verifizierter IT-Partner schreiben wir Sie direkt an.,As your verified IT partner we are contacting you directly.
+MAIL_ECHTER_VORWAND_FRAG,Konkret geht es um die migrationsbedingte Freischaltung bis heute.,"Specifically this is about the migration related unlock, due today."
+MAIL_VERIFIZIERT_FRAG,Zur Sicherheit: die Anfrage ist intern bestätigt und legitim.,For your peace of mind: this request is internally confirmed and legitimate.
+MAIL_IDENTITAET_GESICHERT_FRAG,Absender und Vorgang sind eindeutig Ihrem Konto zugeordnet.,Sender and case are clearly assigned to your account.
+MAIL_ABWESENHEITS_FENSTER_FRAG,"Da Sie gleich abwesend sind, erledigen wir das jetzt rasch.","Since you are about to be away, let us settle this quickly now."
+MAIL_PROBE_OOO_FRAG,Kurze Rückfrage: Sind Sie diese Woche im Haus erreichbar?,Quick question: are you reachable in the office this week?
+MAIL_PREVIEW_FROM_VALUE,it-support@bit-buerli-services.example,it-support@bit-buerli-services.example
+MAIL_PREVIEW_TO_VALUE,hannes.zinsli@fintech-ag.example,hannes.zinsli@fintech-ag.example
+MAIL_PREVIEW_SUBJECT_VALUE,Dringend: Zugang bestätigen,Urgent: confirm access
+MAIL_BOSS_INTRO,"Bau die Mail zusammen. Erst Druck aufbauen, dann den Link setzen. Und halt das Misstrauen unten.","Put the mail together. Build pressure first, then place the link. And keep the suspicion down."
+MAIL_BOSS_SUSPICION_HIGH,Vorsicht. Das wird ihm langsam suspekt.,Careful. He is starting to find this odd.
+MAIL_BOSS_SUSPICION_CRITICAL,Noch eine falsche Karte und er meldet uns als Spam. Rudere zurück.,One more wrong card and he reports us as spam. Pull back.
+MAIL_BOSS_PRESSURE_OK,Gut. Er steht unter Druck und die Mail ist sendebereit.,Good. He is under pressure and the mail is ready to send.
+MAIL_BOSS_PAYLOAD_READY,Sauber,"Clean, barely any suspicion. Now the link, this one lands."
+MAIL_BOSS_SCHROTT,Was soll das? Der Mist gehört nicht in die Mail.,What is that? The junk does not belong in the mail.
+MAIL_TOAST_PROBE,Automatische Antwort erhalten. Er ist abwesend.,Automatic reply received. He is away.
+HANNES_REPLY_NEUTRAL_1,Guten Tag. Worum geht es genau?,Good day. What exactly is this about?
+HANNES_REPLY_NEUTRAL_2,Hallo. Ich schaue es mir bei Gelegenheit an.,Hello. I will look into it when I get a chance.
+HANNES_REPLY_NEUTRAL_3,Danke für die Nachricht. Was steht an?,Thanks for the message. What is pending?
+HANNES_REPLY_MISSTRAUISCH_1,Wer sind Sie nochmal? Das kommt mir komisch vor.,Who are you again? This seems odd to me.
+HANNES_REPLY_MISSTRAUISCH_2,Woher haben Sie meine Adresse? Ich kenne Sie nicht.,Where did you get my address? I do not know you.
+HANNES_REPLY_MISSTRAUISCH_3,Das klingt nicht seriös. Ich frage besser intern nach.,This does not sound legitimate. I had better ask internally.
+HANNES_REPLY_INTERESSIERT_1,Okay,"Okay, that sounds urgent. Tell me more."
+HANNES_REPLY_INTERESSIERT_2,Verstehe. Was genau brauchen Sie von mir?,I see. What exactly do you need from me?
+HANNES_REPLY_INTERESSIERT_3,"Gut, ich höre zu. Wie geht es weiter?","Alright, I am listening. What happens next?"
+HANNES_REPLY_ANGEBISSEN_1,"Alles klar, was muss ich tun? Sagen Sie mir wo ich klicke.","Understood, what do I need to do? Tell me where to click."
+HANNES_REPLY_ANGEBISSEN_2,"Verstanden, ich erledige das sofort. Wohin muss ich?","Got it, I will take care of it right away. Where do I go?"
+HANNES_REPLY_ANGEBISSEN_3,"Passt, machen wir. Schicken Sie mir den Link.","Fine, let's do it. Send me the link."

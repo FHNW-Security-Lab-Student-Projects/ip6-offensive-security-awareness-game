@@ -46,7 +46,7 @@ const TAB_LABELS := {
 	"kununu": "kmunu",
 	"Google": "Goggle",
 	"JobScout": "JobScoot",
-	"Firmenwebsite": "Firmenseite",
+	"Firmenwebsite": "RECON_TAB_COMPANY",
 }
 const TAB_DOMAINS := {
 	"LinkedIn": "linkbook.local/h-zinsli",
@@ -168,7 +168,7 @@ func _style_chrome() -> void:
 
 	var title := %WindowTitle as Label
 	Style.apply_mono_label(title, DarkMailPalette.FONT_SIZE_MONO_SMALL, DarkMailPalette.TEXT_DIM)
-	title.text = "LinkBook — Recherche"
+	title.text = tr("RECON_LINKBOOK_TITLE")
 	Style.apply_mono_label(%UrlLabel as Label, DarkMailPalette.FONT_SIZE_MONO, DarkMailPalette.TEXT_GREEN)
 	Style.apply_mono_label(%InterceptLabel as Label, DarkMailPalette.FONT_SIZE_MONO_SMALL, DarkMailPalette.GREEN)
 
@@ -221,7 +221,7 @@ func _build_tabs(sources: Array[String]) -> void:
 	_tab_bar.add_theme_constant_override("separation", 4)
 	for source in sources:
 		var tab := Button.new()
-		tab.text = TAB_LABELS.get(source, source)
+		tab.text = tr(TAB_LABELS.get(source, source))
 		tab.toggle_mode = true
 		# Identify the tab by its bound source, never by the visible label.
 		tab.set_meta("source", source)
@@ -513,16 +513,16 @@ func _on_hotspot_clicked(find: ReconFind) -> void:
 
 func _update_collected_label() -> void:
 	if collected.is_empty():
-		_collected_label.text = "Eingesammelt: (noch nichts)"
+		_collected_label.text = tr("RECON_COLLECTED_EMPTY")
 		return
 	var titles := PackedStringArray()
 	for entry in collected:
 		titles.append(tr(entry.title_key()))
-	_collected_label.text = "Eingesammelt (%d): %s" % [collected.size(), ", ".join(titles)]
+	_collected_label.text = tr("RECON_COLLECTED") % [collected.size(), ", ".join(titles)]
 
 
 func _update_deck_label() -> void:
-	_deck_label.text = "DECK %d/%d" % [collected.size(), DECK_LIMIT]
+	_deck_label.text = tr("RECON_DECK") % [collected.size(), DECK_LIMIT]
 
 
 func _on_advance_button_pressed() -> void:

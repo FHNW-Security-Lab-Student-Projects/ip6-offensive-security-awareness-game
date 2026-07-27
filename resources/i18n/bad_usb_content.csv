@@ -1,53 +1,53 @@
-keys,de
-BADUSB_DLG_10_NPC,"Guten Tag, kann ich Ihnen helfen? Sie wirken völlig außer Atem!"
-BADUSB_DLG_10_C1,"Lassen Sie mich durch, sonst werde ich zusehen, wie Sie gefeuert werden!"
-BADUSB_DLG_10_C2,Ich bin von der externen Security und bin zu spät für mein Meeting!
-BADUSB_DLG_11_NPC,"Oh je, beruhigen Sie sich. Mit wem haben Sie das Meeting denn?"
-BADUSB_DLG_11_C1,"Herrn Müller... Dritter Stock, richtig?"
-BADUSB_DLG_11_C2,Das geht Sie nichts an!
-BADUSB_DLG_12_NPC,"Genau, dritter Stock! Beeilen Sie sich."
-BADUSB_DLG_12_C1,Vielen Dank!
-BADUSB_DLG_20_NPC,"Guten Tag. Haben Sie einen Termin? Sie tragen keinen Besucherausweis."
-BADUSB_DLG_20_C1,Ich bin der neue Chef. Hat man Sie nicht informiert?
-BADUSB_DLG_20_C2,"Ich wurde angestellt, um die Sicherheit in diesem Unternehmen zu überprüfen."
-BADUSB_DLG_21_NPC,"Ein Audit? Davon weiß ich absolut nichts."
-BADUSB_DLG_21_C1,"Wie ich sehe, lesen Sie Ihre Mails nicht. Das ist ein Sicherheitsrisiko. Dann bräuchte ich einmal Ihren Namen und den Ihres Vorgesetzten."
-BADUSB_DLG_21_C2,"Oh, bitte rufen Sie niemanden an, ich muss unangekündigt bleiben!"
-BADUSB_DLG_22_NPC,"Oh... warten Sie, das ist nicht nötig! Ich erinnere mich dunkel an die Mail. Es ist alles in Ordnung, gehen Sie ruhig durch!"
-BADUSB_DLG_22_C1,Vielen Dank. Achten Sie künftig besser auf interne Mitteilungen.
-BADUSB_DLG_30_NPC,"Moment mal... Sie sind doch vorhin mit mir im Aufzug gefahren. Arbeiten Sie nicht in der HR-Abteilung? Was machen Sie hier im IT-Büro?"
-BADUSB_DLG_30_C1,"Ich bin versetzt worden, das ist mein neuer Arbeitsplatz."
-BADUSB_DLG_30_C2,Ich habe ein wichtiges Meeting mit der IT-Leitung!
-BADUSB_DLG_31_NPC,Mit der IT-Leitung... Was muss die HR mit der IT-Leitung besprechen.
-BADUSB_DLG_31_C1,Das darf ich Ihnen leider nicht sagen. Wenn Sie mich nun entschuldigen würden.
-BADUSB_DLG_31_C2,Was geht Sie das an?
-BADUSB_DLG_32_NPC,Oh nein ich komme noch zu spät. Schönen Tag.
-BADUSB_DLG_32_C1,"Vielen Dank, Ihnen auch!"
-BADUSB_STORY_0_TITLE,Schritt 1: Die Rezeption
-BADUSB_STORY_0_TEXT,"Du hast die Empfangsperson unter Druck gesetzt oder mit falscher Autorität getäuscht. Selbst geschultes Personal kann in Stresssituationen Sicherheitsrichtlinien vergessen. Ausweise müssen immer und ohne Ausnahme kontrolliert werden, egal wer vor einem steht."
-BADUSB_STORY_1_TITLE,Schritt 2: Der Aufzug (Mitläufer-Effekt)
-BADUSB_STORY_1_TEXT,"Du konntest den eingeschränkten Bereich betreten, weil die Mitarbeiter am Aufzug dachten: 'Wenn die Person schon hier drin ist, wird sie wohl hier arbeiten.' Wachsamkeit endet nicht an der Eingangstür. Unbekannte ohne sichtbaren Ausweis müssen freundlich angesprochen werden."
-BADUSB_STORY_2_TITLE,Schritt 3: Tailgating an der Tür
-BADUSB_STORY_2_TEXT,"Jemand hat dir aus reiner Freundlichkeit oder aus Unachtsamkeit die gesicherte Tür aufgelassen. In der realen Welt ist dies eine der häufigsten Schwachstellen. Höflichkeit darf Sicherheit nicht überschreiben. Jeder muss seinen eigenen Ausweis scannen, um Zutritt zu erhalten."
-BADUSB_STORY_3_TITLE,Schritt 4: Der ungesperrte Arbeitsplatz
-BADUSB_STORY_3_TEXT,"Ein kurzer Moment der Unachtsamkeit – ein nicht gesperrter Computer. Dies ermöglichte es dir erst, den präparierten USB-Stick anzuschließen. Der Bildschirm muss beim Verlassen des Platzes immer und sofort gesperrt werden auch wenn man nur kurz weggeht."
-BADUSB_STORY_4_TITLE,Fazit: Hätten die anderen ihren Job gemacht
-BADUSB_STORY_4_TEXT,"Das Unternehmen hatte eigentlich gute Sicherheits-Vorkehrungen. Doch weil sich jeder auf den anderen verließ, funktionierte deine Infiltration. Physische Sicherheit ist eine Teamaufgabe – sie funktioniert nur, wenn jeder die Verantwortung übernimmt und Sicherheit nicht als 'die Aufgabe der Anderen' ansieht."
-BADUSB_UI_ACCESS_DENIED,Zugriff verweigert: Ausweis erforderlich
-BADUSB_UI_NPC_TAILGATE,"Oh, bei der Kleidung bist du bestimmt vom HR... Wir halten dir die Tür auf!"
-BADUSB_BTN_ELEVATOR,Aufzug benutzen
-BADUSB_BTN_SNEAK,Durch schleichen
-BADUSB_BTN_OPEN_DOOR,Tür Öffnen
-BADUSB_BRIEF_TITLE,Mission Infiltration
-BADUSB_BRIEF_TEXT,"Weil der Versuch das Unternemen mit einem Spear Phishing angriff zu besiegen fehlschlug ist nun die mission das Unternehmen physisch zu infiltrieren. Deine Mission ist es den USB Stick bis zu einem Arbeitsplatz an einen Rechner zu bringen und ein zu stecken. Los Gehts"
-BADUSB_BRIEF_START,Infiltration Starten
-BADUSB_RESOLVE_TITLE,SIMULATION ABGESCHLOSSEN
-BADUSB_BTN_NEXT,Weiter
-BADUSB_BTN_FINISH,Szenario Beenden
-BADUSB_BTN_ENTER_BUILDING,Gebäude Betreten
-BADUSB_BTN_RECEPTION_STRESSED,Rezeptionist gestresst ansprechen
-BADUSB_BTN_RECEPTION_CONFIDENT,Rezeptionist überzeugt ansprechen
-BADUSB_FAILURE_TEXT,"Gescheitert: Deine Antworten haben aufsehen erregt und du wurdest zurückgewiesen."
-BADUSB_BTN_RETRY,Erneut Versuchen
-BADUSB_BTN_GO_ELEVATOR,Zum Aufzug gehen
-BADUSB_BTN_INSERT_USB,USB-Stick einstecken
+keys,de,en
+BADUSB_DLG_10_NPC,"Guten Tag, kann ich Ihnen helfen? Sie wirken völlig außer Atem!","Good day, can I help you? You look completely out of breath!"
+BADUSB_DLG_10_C1,"Lassen Sie mich durch, sonst werde ich zusehen, wie Sie gefeuert werden!","Let me through, or I will watch you get fired!"
+BADUSB_DLG_10_C2,Ich bin von der externen Security und bin zu spät für mein Meeting!,I am from external security and I am late for my meeting!
+BADUSB_DLG_11_NPC,"Oh je, beruhigen Sie sich. Mit wem haben Sie das Meeting denn?","Oh dear, calm down. Who is your meeting with?"
+BADUSB_DLG_11_C1,"Herrn Müller... Dritter Stock, richtig?","Mr Müller... third floor, right?"
+BADUSB_DLG_11_C2,Das geht Sie nichts an!,That is none of your business!
+BADUSB_DLG_12_NPC,"Genau, dritter Stock! Beeilen Sie sich.","Exactly, third floor! Do hurry."
+BADUSB_DLG_12_C1,Vielen Dank!,Thank you very much!
+BADUSB_DLG_20_NPC,Guten Tag. Haben Sie einen Termin? Sie tragen keinen Besucherausweis.,Good day. Do you have an appointment? You are not wearing a visitor badge.
+BADUSB_DLG_20_C1,Ich bin der neue Chef. Hat man Sie nicht informiert?,I am the new boss. Were you not informed?
+BADUSB_DLG_20_C2,"Ich wurde angestellt, um die Sicherheit in diesem Unternehmen zu überprüfen.",I was hired to audit the security of this company.
+BADUSB_DLG_21_NPC,Ein Audit? Davon weiß ich absolut nichts.,An audit? I know absolutely nothing about that.
+BADUSB_DLG_21_C1,"Wie ich sehe, lesen Sie Ihre Mails nicht. Das ist ein Sicherheitsrisiko. Dann bräuchte ich einmal Ihren Namen und den Ihres Vorgesetzten.",I see you do not read your mail. That is a security risk. In that case I will need your name and your supervisor's.
+BADUSB_DLG_21_C2,"Oh, bitte rufen Sie niemanden an, ich muss unangekündigt bleiben!","Oh, please do not call anyone, I have to stay unannounced!"
+BADUSB_DLG_22_NPC,"Oh... warten Sie, das ist nicht nötig! Ich erinnere mich dunkel an die Mail. Es ist alles in Ordnung, gehen Sie ruhig durch!","Oh... wait, that will not be necessary! I vaguely remember the mail. It is all fine, go right through!"
+BADUSB_DLG_22_C1,Vielen Dank. Achten Sie künftig besser auf interne Mitteilungen.,Thank you. Do pay closer attention to internal notices in future.
+BADUSB_DLG_30_NPC,Moment mal... Sie sind doch vorhin mit mir im Aufzug gefahren. Arbeiten Sie nicht in der HR-Abteilung? Was machen Sie hier im IT-Büro?,Hold on... you rode the lift with me earlier. Do you not work in HR? What are you doing here in the IT office?
+BADUSB_DLG_30_C1,"Ich bin versetzt worden, das ist mein neuer Arbeitsplatz.","I have been transferred, this is my new desk."
+BADUSB_DLG_30_C2,Ich habe ein wichtiges Meeting mit der IT-Leitung!,I have an important meeting with the head of IT!
+BADUSB_DLG_31_NPC,Mit der IT-Leitung... Was muss die HR mit der IT-Leitung besprechen.,With the head of IT... what would HR need to discuss with the head of IT.
+BADUSB_DLG_31_C1,Das darf ich Ihnen leider nicht sagen. Wenn Sie mich nun entschuldigen würden.,I am afraid I cannot tell you that. Now if you would excuse me.
+BADUSB_DLG_31_C2,Was geht Sie das an?,What business is that of yours?
+BADUSB_DLG_32_NPC,Oh nein ich komme noch zu spät. Schönen Tag.,"Oh no, I am going to be late. Have a good day."
+BADUSB_DLG_32_C1,"Vielen Dank, Ihnen auch!","Thank you, you too!"
+BADUSB_STORY_0_TITLE,Schritt 1: Die Rezeption,Step 1: Reception
+BADUSB_STORY_0_TEXT,"Du hast die Empfangsperson unter Druck gesetzt oder mit falscher Autorität getäuscht. Selbst geschultes Personal kann in Stresssituationen Sicherheitsrichtlinien vergessen. Ausweise müssen immer und ohne Ausnahme kontrolliert werden, egal wer vor einem steht.","You put the receptionist under pressure or fooled them with false authority. Even trained staff can forget security policy under stress. Badges must be checked always and without exception, no matter who is standing there."
+BADUSB_STORY_1_TITLE,Schritt 2: Der Aufzug (Mitläufer-Effekt),Step 2: The lift (bystander effect)
+BADUSB_STORY_1_TEXT,"Du konntest den eingeschränkten Bereich betreten, weil die Mitarbeiter am Aufzug dachten: 'Wenn die Person schon hier drin ist, wird sie wohl hier arbeiten.' Wachsamkeit endet nicht an der Eingangstür. Unbekannte ohne sichtbaren Ausweis müssen freundlich angesprochen werden.","You got into the restricted area because the staff at the lift thought: 'If that person is already in here, they must work here.' Vigilance does not end at the front door. Strangers without a visible badge should be approached politely."
+BADUSB_STORY_2_TITLE,Schritt 3: Tailgating an der Tür,Step 3: Tailgating at the door
+BADUSB_STORY_2_TEXT,"Jemand hat dir aus reiner Freundlichkeit oder aus Unachtsamkeit die gesicherte Tür aufgelassen. In der realen Welt ist dies eine der häufigsten Schwachstellen. Höflichkeit darf Sicherheit nicht überschreiben. Jeder muss seinen eigenen Ausweis scannen, um Zutritt zu erhalten.","Someone held the secured door open for you, out of pure friendliness or inattention. In the real world this is one of the most common weak points. Politeness must not override security. Everyone has to badge in themselves to gain access."
+BADUSB_STORY_3_TITLE,Schritt 4: Der ungesperrte Arbeitsplatz,Step 4: The unlocked workstation
+BADUSB_STORY_3_TEXT,"Ein kurzer Moment der Unachtsamkeit – ein nicht gesperrter Computer. Dies ermöglichte es dir erst, den präparierten USB-Stick anzuschließen. Der Bildschirm muss beim Verlassen des Platzes immer und sofort gesperrt werden auch wenn man nur kurz weggeht.","A brief moment of inattention, an unlocked computer. That is what let you plug in the prepared USB stick in the first place. The screen must be locked immediately whenever you leave your desk, even for a moment."
+BADUSB_STORY_4_TITLE,Fazit: Hätten die anderen ihren Job gemacht,Conclusion: If everyone had done their job
+BADUSB_STORY_4_TEXT,"Das Unternehmen hatte eigentlich gute Sicherheits-Vorkehrungen. Doch weil sich jeder auf den anderen verließ, funktionierte deine Infiltration. Physische Sicherheit ist eine Teamaufgabe – sie funktioniert nur, wenn jeder die Verantwortung übernimmt und Sicherheit nicht als 'die Aufgabe der Anderen' ansieht.","The company actually had good security measures in place. But because everyone relied on someone else, your infiltration worked. Physical security is a team effort. It only works when everyone takes responsibility and stops treating security as 'someone else's job'."
+BADUSB_UI_ACCESS_DENIED,Zugriff verweigert: Ausweis erforderlich,Access denied: badge required
+BADUSB_UI_NPC_TAILGATE,"Oh, bei der Kleidung bist du bestimmt vom HR... Wir halten dir die Tür auf!","Oh, dressed like that you must be from HR... we will hold the door for you!"
+BADUSB_BTN_ELEVATOR,Aufzug benutzen,Use the lift
+BADUSB_BTN_SNEAK,Durch schleichen,Slip through
+BADUSB_BTN_OPEN_DOOR,Tür Öffnen,Open door
+BADUSB_BRIEF_TITLE,Mission Infiltration,Mission Infiltration
+BADUSB_BRIEF_TEXT,Weil der Versuch das Unternemen mit einem Spear Phishing angriff zu besiegen fehlschlug ist nun die mission das Unternehmen physisch zu infiltrieren. Deine Mission ist es den USB Stick bis zu einem Arbeitsplatz an einen Rechner zu bringen und ein zu stecken. Los Gehts,"Since the attempt to beat the company with a spear phishing attack failed, the mission is now to infiltrate the company physically. Your mission is to carry the USB stick to a workstation and plug it in. Let's go."
+BADUSB_BRIEF_START,Infiltration Starten,Start infiltration
+BADUSB_RESOLVE_TITLE,SIMULATION ABGESCHLOSSEN,SIMULATION COMPLETE
+BADUSB_BTN_NEXT,Weiter,Next
+BADUSB_BTN_FINISH,Szenario Beenden,Finish scenario
+BADUSB_BTN_ENTER_BUILDING,Gebäude Betreten,Enter building
+BADUSB_BTN_RECEPTION_STRESSED,Rezeptionist gestresst ansprechen,Approach the receptionist stressed
+BADUSB_BTN_RECEPTION_CONFIDENT,Rezeptionist überzeugt ansprechen,Approach the receptionist confident
+BADUSB_FAILURE_TEXT,Gescheitert: Deine Antworten haben aufsehen erregt und du wurdest zurückgewiesen.,Failed: your answers drew attention and you were turned away.
+BADUSB_BTN_RETRY,Erneut Versuchen,Try again
+BADUSB_BTN_GO_ELEVATOR,Zum Aufzug gehen,Go to the lift
+BADUSB_BTN_INSERT_USB,USB-Stick einstecken,Insert USB stick

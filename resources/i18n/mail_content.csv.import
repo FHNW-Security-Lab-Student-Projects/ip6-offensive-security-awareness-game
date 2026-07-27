@@ -6,10 +6,10 @@ uid="uid://blbqb18iwicqm"
 
 [deps]
 
-files=["res://resources/i18n/mail_content.de.translation"]
+files=["res://resources/i18n/mail_content.de.translation", "res://resources/i18n/mail_content.en.translation"]
 
 source_file="res://resources/i18n/mail_content.csv"
-dest_files=["res://resources/i18n/mail_content.de.translation"]
+dest_files=["res://resources/i18n/mail_content.de.translation", "res://resources/i18n/mail_content.en.translation"]
 
 [params]
 

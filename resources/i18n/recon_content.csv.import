@@ -6,10 +6,10 @@ uid="uid://dq64q0g0htxl4"
 
 [deps]
 
-files=["res://resources/i18n/recon_content.de.translation"]
+files=["res://resources/i18n/recon_content.de.translation", "res://resources/i18n/recon_content.en.translation"]
 
 source_file="res://resources/i18n/recon_content.csv"
-dest_files=["res://resources/i18n/recon_content.de.translation"]
+dest_files=["res://resources/i18n/recon_content.de.translation", "res://resources/i18n/recon_content.en.translation"]
 
 [params]
 

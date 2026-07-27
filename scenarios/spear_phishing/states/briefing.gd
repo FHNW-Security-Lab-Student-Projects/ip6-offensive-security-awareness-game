@@ -42,19 +42,24 @@ func _ready() -> void:
 	if _briefing == null:
 		push_error("Briefing: failed to load %s" % briefing_path)
 		return
-	_channel_title.text = tr("BRIEFING_CHANNEL_TITLE") % _briefing.speaker_name
-	_mission_label.text = tr("BRIEFING_MISSION_LINE") % _briefing.mission_text
+	_channel_title.text = tr("BRIEFING_CHANNEL_TITLE") % tr(_briefing.speaker_name)
+	_mission_label.text = tr("BRIEFING_MISSION_LINE") % tr(_briefing.mission_text)
 	# No reward/turn budget for scenarios that leave reward_text empty (bad_usb).
 	if _briefing.reward_text.is_empty():
 		_reward_label.visible = false
 	else:
 		_reward_label.text = tr("BRIEFING_REWARD_LINE") % [
-			_briefing.reward_text, _briefing.turn_budget,
+			tr(_briefing.reward_text), _briefing.turn_budget,
 		]
 	_advance_button.visible = false
 	_dialog.lines_finished.connect(_on_lines_finished)
 	_started_at_ms = Time.get_ticks_msec()
-	_dialog.play(_briefing.intro_lines, _briefing.speaker_name)
+	# The resource stores translation keys, not sentences, so the intro follows
+	# the selected language like the rest of the UI.
+	var lines := PackedStringArray()
+	for key in _briefing.intro_lines:
+		lines.append(tr(key))
+	_dialog.play(lines, tr(_briefing.speaker_name))
 
 func _process(delta: float) -> void:
 	_rec_blink_acc += delta

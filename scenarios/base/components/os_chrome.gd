@@ -73,10 +73,10 @@ func configure(briefing: BriefingResource, steps: Array[Dictionary]) -> void:
 		return
 	_briefing = briefing
 	_steps = steps.duplicate()
-	_target_label.text = "" if briefing.target_name.is_empty() else "· %s" % briefing.target_name
-	_goal_label.text = briefing.mission_text
-	_dossier_mission.text = tr("BRIEFING_MISSION_LINE") % briefing.mission_text
-	_dossier_reward.text = tr("BRIEFING_REWARD_LINE") % [briefing.reward_text, briefing.turn_budget]
+	_target_label.text = "" if briefing.target_name.is_empty() else "· %s" % tr(briefing.target_name)
+	_goal_label.text = tr(briefing.mission_text)
+	_dossier_mission.text = tr("BRIEFING_MISSION_LINE") % tr(briefing.mission_text)
+	_dossier_reward.text = tr("BRIEFING_REWARD_LINE") % [tr(briefing.reward_text), briefing.turn_budget]
 	_build_stepper()
 	_refresh_from_state()
 
