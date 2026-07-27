@@ -208,7 +208,7 @@ func _swap_in_briefing() -> void:
 	canvas.add_child(_ui_briefing)
 
 func _on_start() -> void:
-	_change_substate(SubState.OFFICE)
+	_change_substate(SubState.BRIEFING)
 
 func _on_door_entered(body: Node2D) -> void:
 	if body.name == "Player":
@@ -406,6 +406,7 @@ func _on_dialog_choice_1_pressed() -> void:
 		12, 22: 
 			_ui_dialogue_box.visible = false
 			_barrier_shape.disabled = true 
+			_world_inside.get_node("Player").set_physics_process(true)
 		32:
 			_ui_dialogue_box.visible = false
 			_office_dialogue_done = true
@@ -441,6 +442,7 @@ func _on_failure_ok_pressed() -> void:
 	_npc_office.visible = false 
 	
 	_world_office.get_node("Player").set_physics_process(true)
+	_world_inside.get_node("Player").set_physics_process(true)
 	
 	# --- Reset Tailgate Scene ---
 	_sprite_open_door.visible = false
