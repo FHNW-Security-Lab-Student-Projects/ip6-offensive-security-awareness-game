@@ -82,12 +82,13 @@ MAIL_KONTO_GESPERRT_FRAG,Ihr Konto wurde vorübergehend gesperrt.
 MAIL_RECHNUNG_UNBEZAHLT_FRAG,Eine offene Rechnung ist noch nicht beglichen.
 MAIL_FRIST_HEUTE_FRAG,Die Frist zur Bestätigung läuft heute ab.
 MAIL_GRATIS_KRYPTO_FRAG,Sichern Sie sich jetzt Ihr kostenloses Krypto-Guthaben!
-MAIL_ZUGANG_BESTAETIGEN_FRAG,Bitte bestätigen Sie hier Ihren Zugang: [ zugang-bestaetigen.example ]
+MAIL_ZUGANG_BESTAETIGEN_FRAG,Bitte bestätigen Sie Ihren Zugang: bit-buerli-services.example/zugang
 MAIL_PERFEKTER_ABSENDER_FRAG,Als Ihr verifizierter IT-Partner schreiben wir Sie direkt an.
 MAIL_ECHTER_VORWAND_FRAG,Konkret geht es um die migrationsbedingte Freischaltung bis heute.
 MAIL_VERIFIZIERT_FRAG,Zur Sicherheit: die Anfrage ist intern bestätigt und legitim.
 MAIL_IDENTITAET_GESICHERT_FRAG,Absender und Vorgang sind eindeutig Ihrem Konto zugeordnet.
 MAIL_ABWESENHEITS_FENSTER_FRAG,"Da Sie gleich abwesend sind, erledigen wir das jetzt rasch."
+MAIL_PROBE_OOO_FRAG,Kurze Rückfrage: Sind Sie diese Woche im Haus erreichbar?
 MAIL_PREVIEW_FROM_VALUE,it-support@bit-buerli-services.example
 MAIL_PREVIEW_TO_VALUE,hannes.zinsli@fintech-ag.example
 MAIL_PREVIEW_SUBJECT_VALUE,Dringend: Zugang bestätigen

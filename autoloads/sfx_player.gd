@@ -39,6 +39,8 @@ var _fail: AudioStreamPlayer
 
 
 func _ready() -> void:
+	# UI sounds must still fire while the tree is paused (settings overlay).
+	process_mode = Node.PROCESS_MODE_ALWAYS
 	_select = _make_player(SELECT_SFX, SELECT_VOLUME_DB)
 	_highlight = _make_player(HIGHLIGHT_SFX, HIGHLIGHT_VOLUME_DB)
 	_notification = _make_player(NOTIFICATION_SFX, NOTIFICATION_VOLUME_DB)
@@ -57,6 +59,19 @@ func _ready() -> void:
 		wav.loop_mode = AudioStreamWAV.LOOP_FORWARD
 	get_tree().node_added.connect(_on_node_added)
 	_wire_existing(get_tree().root)
+
+
+# The typewriter bed is the one continuous sound, so it has to follow the pause
+# state: the text stops being written while the game is paused, and the sound
+# must stop with it. One-shots are short enough to just finish. Mirrored every
+# frame so ANY pause source works, not just the settings overlay.
+func _process(_delta: float) -> void:
+	# Not guarded on `playing`: a paused stream reports playing == false, so
+	# guarding on it would pause the bed and never let it resume.
+	if _typing != null:
+		var should_pause := get_tree().paused
+		if _typing.stream_paused != should_pause:
+			_typing.stream_paused = should_pause
 
 
 func _make_player(stream: AudioStream, volume_db: float) -> AudioStreamPlayer:
