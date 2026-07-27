@@ -16,6 +16,9 @@ var _fading_out := false
 
 
 func _ready() -> void:
+	# Keep playing while the tree is paused (settings overlay), so opening the
+	# menu does not cut the music.
+	process_mode = Node.PROCESS_MODE_ALWAYS
 	_player = AudioStreamPlayer.new()
 	_player.stream = MENU_MUSIC
 	_player.volume_db = MENU_VOLUME_DB

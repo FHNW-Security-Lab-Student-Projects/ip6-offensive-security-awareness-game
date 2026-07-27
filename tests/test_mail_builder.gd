@@ -104,11 +104,19 @@ func _process(_delta: float) -> bool:
 	var early_out := early.play_card(_pay())  # pressure 3 < 7
 	print("early payload rejected, run continues (expect NONE): ", _outcome_name(early_out))
 	print("rejected payload spent no turn (expect 8): ", early.turns_left)
-	early.play_card(_card(&"a", MailCard.Type.EPIC, 0, 4))  # pressure 7
+	early.play_card(_card(&"a", MailCard.Type.EPIC, 0, 4))  # pressure 7, suspicion 4
 	print("gate open once pressure hits 7 (expect true): ", early.payload_gate_open())
-	print("open gate locks non-payload cards (expect false): ",
-		early.card_playable(_card(&"x", MailCard.Type.EPIC, 0, 0)))
 	print("open gate leaves the payload playable (expect true): ", early.card_playable(_pay()))
+	# Gate open but suspicion still over target: the run is NOT yet winnable, so
+	# the other cards must stay available or the player would be stranded with
+	# only losing moves.
+	print("suspicion still too high, payload would not win (expect false): ", early.payload_would_win())
+	print("repair cards stay playable while not winnable (expect true): ",
+		early.card_playable(_card(&"x", MailCard.Type.EPIC, 0, 0)))
+	early.play_card(_card(&"fix", MailCard.Type.EPIC, -1, 0))  # suspicion 3 -> winnable
+	print("now the attack would win (expect true): ", early.payload_would_win())
+	print("only then do the other cards lock (expect false): ",
+		early.card_playable(_card(&"x", MailCard.Type.EPIC, 0, 0)))
 
 	# 7. "Keiner fragt nach" amplifier: +1 on later pressure cards only.
 	var amp := MailRun.new(8)

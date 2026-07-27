@@ -27,6 +27,7 @@ SceneTransition="*res://autoloads/scene_transition.gd"
 MusicPlayer="*res://autoloads/music_player.gd"
 SfxPlayer="*res://autoloads/sfx_player.gd"
 Settings="*res://autoloads/settings.gd"
+SettingsMenu="*res://autoloads/settings_menu.gd"
 
 [display]
 

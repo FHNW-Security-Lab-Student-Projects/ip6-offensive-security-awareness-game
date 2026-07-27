@@ -54,17 +54,20 @@ func payload_would_win() -> bool:
 	return payload_gate_open() and suspicion <= Pool.SUSPICION_TARGET
 
 
-# Which cards may go into the current mail: while the gate is closed every
-# non-payload card; once the gate is open ONLY the payload. Pumping the bars
-# past the open gate would just add noise, so the run funnels the player into
-# the send decision. The UI reads this fact per card; play_mail itself stays
-# tolerant of hand-built input (tests drive it directly).
+# Which cards may go into the current mail. The payload unlocks with its gate
+# (pressure alone). Everything else stays available until the attack would
+# actually WIN — only then does the run funnel the player into the send
+# decision. Locking on the open gate alone would strand a player whose pressure
+# is high but whose suspicion is still above target: they could neither repair
+# the suspicion nor win, and every remaining move would be a loss.
+# The UI reads this fact per card; play_mail itself stays tolerant of
+# hand-built input (tests drive it directly).
 func card_playable(card: MailCard) -> bool:
 	if is_over() or turns_left <= 0:
 		return false
 	if card.type == MailCard.Type.PAYLOAD:
 		return payload_gate_open()
-	return not payload_gate_open()
+	return not payload_would_win()
 
 
 # Hannes' reactive state, derived from the current bars (read-only, no effect on

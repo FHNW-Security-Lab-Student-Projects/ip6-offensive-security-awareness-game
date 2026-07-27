@@ -21,6 +21,8 @@ func _ready() -> void:
 		stream = track
 	volume_db = track_volume_db
 	bus = &"Music"  # so the music slider in the settings controls it
+	# Keep playing while the tree is paused (settings overlay).
+	process_mode = Node.PROCESS_MODE_ALWAYS
 	if stream is AudioStreamWAV:
 		var wav := stream as AudioStreamWAV
 		wav.loop_begin = 0
