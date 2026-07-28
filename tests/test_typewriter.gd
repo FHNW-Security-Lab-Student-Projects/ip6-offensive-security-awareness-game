@@ -32,6 +32,7 @@ func _process(_delta: float) -> bool:
 	_test_typewriter_unit()
 	_test_dialogue_gating()
 	_test_click_skips()
+	_test_box_is_clickable()
 
 	print("TEST DONE")
 	quit()
@@ -127,3 +128,41 @@ func _test_click_skips() -> void:
 	idle_click.pressed = true
 	_usb._unhandled_input(idle_click)
 	print("idle click leaves the state alone (expect false): ", _usb._dialogue_typer.is_typing())
+
+
+func _click_on(target: Control) -> void:
+	var event := InputEventMouseButton.new()
+	event.button_index = MOUSE_BUTTON_LEFT
+	event.pressed = true
+	target.gui_input.emit(event)
+
+
+# The boxes are Controls with mouse_filter STOP, so a click landing on the box
+# never reaches _unhandled_input. Without their own handler the hint in the
+# corner was the only thing that could be clicked, which is the opposite of what
+# it advertises.
+func _test_box_is_clickable() -> void:
+	_usb._dialogue_step = 30
+	_usb._update_dialogue_ui()
+	print("dialogue typing before the click (expect true): ", _usb._dialogue_typer.is_typing())
+	_click_on(_usb._ui_dialogue_box)
+	print("clicking the box finishes the line (expect false): ", _usb._dialogue_typer.is_typing())
+
+	_usb._story_step = 0
+	_usb._play_story_step()
+	print("debrief typing before the click (expect true): ", _usb._story_typer.is_typing())
+	_click_on(_usb._debrief_frame)
+	print("clicking the frame finishes it (expect false): ", _usb._story_typer.is_typing())
+
+	# Second click, with the text standing: turns the page like the intro does.
+	_click_on(_usb._debrief_frame)
+	print("a further click turns the page (expect 1): ", _usb._story_step)
+
+	# The closing page must not be dismissable by a stray click; ending the
+	# scenario stays on its explicit button.
+	_usb._story_step = 4
+	_usb._play_story_step()
+	_usb._story_typer.finish_now()
+	print("last page shows Beenden, not Weiter (expect false): ", _usb._btn_next.visible)
+	_click_on(_usb._debrief_frame)
+	print("clicking the last page does not end the run (expect 4): ", _usb._story_step)

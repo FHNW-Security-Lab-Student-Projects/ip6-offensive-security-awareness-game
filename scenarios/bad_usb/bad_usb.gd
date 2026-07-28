@@ -82,7 +82,12 @@ const FAIL_ON_CHOICE_2: Array[int] = [11, 21, 31]
 
 const PromptClock := preload("res://scenarios/base/prompt_clock.gd")
 const Typewriter := preload("res://scenarios/base/typewriter.gd")
+const SkipHint := preload("res://scenarios/base/skip_hint.gd")
 const Style := preload("res://scenarios/bad_usb/bad_usb_style.gd")
+
+# Gap between the debrief column and its frame. The column grows with its text,
+# so the frame is refitted around it rather than kept at the scene's fixed size.
+const DEBRIEF_PADDING: int = 44
 
 # _dialogue_step / 10 -> which social-engineering approach the player is on.
 const DIALOGUE_PATHS: Dictionary = {
@@ -108,6 +113,10 @@ var _reception_path: String = ""
 # handler.
 var _dialogue_typer := Typewriter.new()
 var _story_typer := Typewriter.new()
+# "▼ klicken für weiter", shown only while a line is still running.
+var _dialogue_hint: Label
+var _story_hint: Label
+var _debrief_frame: Panel
 # Whether the step currently on screen offers a second option, remembered while
 # both choices are hidden during typing.
 var _second_choice_offered: bool = true
@@ -255,18 +264,51 @@ func _process(delta: float) -> void:
 # on a button (a choice, Weiter) is consumed by that button first and never
 # swallowed here; the input is only marked handled while text is actually
 # running, so world interaction is untouched otherwise.
+#
+# This path only catches clicks OUTSIDE the boxes: the panels are Controls with
+# mouse_filter STOP, so a click on the box itself is consumed by the panel and
+# never reaches here. _on_box_clicked handles those.
 func _unhandled_input(event: InputEvent) -> void:
+	if not _is_left_click(event):
+		return
+	if _skip_running_text():
+		get_viewport().set_input_as_handled()
+
+
+func _is_left_click(event: InputEvent) -> bool:
 	if not (event is InputEventMouseButton):
-		return
+		return false
 	var button_event: InputEventMouseButton = event
-	if button_event.button_index != MOUSE_BUTTON_LEFT or not button_event.pressed:
-		return
+	return button_event.button_index == MOUSE_BUTTON_LEFT and button_event.pressed
+
+
+# True if a click actually had text to hurry along.
+func _skip_running_text() -> bool:
 	if _dialogue_typer.is_typing():
 		_dialogue_typer.finish_now()
-		get_viewport().set_input_as_handled()
-	elif _story_typer.is_typing():
+		return true
+	if _story_typer.is_typing():
 		_story_typer.finish_now()
-		get_viewport().set_input_as_handled()
+		return true
+	return false
+
+
+# The whole speech box is the click target, not just the hint in its corner.
+func _on_dialogue_box_clicked(event: InputEvent) -> void:
+	if _is_left_click(event):
+		_skip_running_text()
+
+
+# Same for the debrief, plus the intro's second half of the deal: once the text
+# stands, a click anywhere in the box turns the page. The last page is left to
+# its explicit button, so a stray click cannot end the scenario by accident.
+func _on_debrief_clicked(event: InputEvent) -> void:
+	if not _is_left_click(event):
+		return
+	if _skip_running_text():
+		return
+	if _btn_next.visible:
+		_on_next_pressed()
 
 
 # Puts the level into the DarkMail terminal look of scenario 1. Explicit lists
@@ -296,7 +338,27 @@ func _style_ui() -> void:
 	Style.style_panel(_ui_tailgate_locked)
 	Style.style_panel(_ui_failure_popup)
 
-	Style.replace_backdrop(_ui_resolve, _ui_resolve.get_node("ColorRect"))
+	_debrief_frame = Style.replace_backdrop(_ui_resolve, _ui_resolve.get_node("ColorRect"))
+	var debrief_column := _ui_resolve.get_node("VBoxContainer") as VBoxContainer
+	# Air between title, paragraph, image and button; the scene had them flush.
+	debrief_column.add_theme_constant_override("separation", 16)
+	if not debrief_column.resized.is_connected(_fit_debrief_frame):
+		debrief_column.resized.connect(_fit_debrief_frame)
+
+	_dialogue_hint = SkipHint.new()
+	Style.place_skip_hint(_dialogue_hint, _ui_dialogue_box)
+	_dialogue_hint.set_active(false)
+	_story_hint = SkipHint.new()
+	Style.place_skip_hint(_story_hint, _debrief_frame)
+	_story_hint.set_active(false)
+
+	# Make the boxes themselves clickable. The buttons sitting on top keep
+	# priority, so Weiter and the dialogue choices still win their own clicks.
+	if not _ui_dialogue_box.gui_input.is_connected(_on_dialogue_box_clicked):
+		_ui_dialogue_box.gui_input.connect(_on_dialogue_box_clicked)
+	_debrief_frame.mouse_filter = Control.MOUSE_FILTER_STOP
+	if not _debrief_frame.gui_input.is_connected(_on_debrief_clicked):
+		_debrief_frame.gui_input.connect(_on_debrief_clicked)
 
 	Style.style_body(_lbl_npc_text)
 	Style.style_body(_lbl_failure)
@@ -827,11 +889,13 @@ func _update_dialogue_ui() -> void:
 	_btn_choice1.visible = false
 	_btn_choice2.visible = false
 	SfxPlayer.start_typing()
+	_dialogue_hint.set_active(true)
 	_dialogue_typer.start(_lbl_npc_text, _lbl_npc_text.text)
 
 
 func _on_line_typed() -> void:
 	SfxPlayer.stop_typing()
+	_dialogue_hint.set_active(false)
 	_btn_choice1.visible = true
 	_btn_choice2.visible = _second_choice_offered
 	# Decision time starts when the options actually become clickable. Marking it
@@ -875,12 +939,33 @@ func _play_story_step() -> void:
 		target_text = tr("BADUSB_STORY_4_TEXT")
 		
 	SfxPlayer.start_typing()
+	_story_hint.set_active(true)
 	_story_typer.start(_lbl_story, target_text, 1.0 / _typewriter_speed)
+	_fit_debrief_frame()
+
+
+# The debrief column grows with its text and shrinks again on a step without an
+# image, so the frame cannot keep the fixed size the scene gave it: on a long
+# paragraph the Weiter button ended up outside it.
+#
+# Driven by the column's own resized signal rather than by waiting a frame after
+# each step: the column keeps growing as the text wraps and the image appears,
+# so any fixed number of frames to wait is a guess that is sometimes wrong.
+func _fit_debrief_frame() -> void:
+	if _debrief_frame == null or not is_instance_valid(_debrief_frame):
+		return
+	var column: Control = _ui_resolve.get_node("VBoxContainer")
+	var pad := Vector2(DEBRIEF_PADDING, DEBRIEF_PADDING)
+	_debrief_frame.position = column.position - pad
+	_debrief_frame.size = column.size + pad * 2.0
 
 func _on_typing_finished() -> void:
 	SfxPlayer.stop_typing()
+	_story_hint.set_active(false)
 	if _story_step < 4:
 		_img_story.visible = true
+	# The image appearing changes the column height, so refit once more.
+	_fit_debrief_frame()
 
 	if _story_step >= 4:
 		_btn_next.visible = false

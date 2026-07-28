@@ -82,11 +82,11 @@ static func style_choice(button: Button) -> void:
 # opaque white: terminal-green text is unreadable on it. Hide it and put the
 # same framed panel the speech boxes use in its place, so the debrief reads as
 # part of the same screen family.
-static func replace_backdrop(host: Control, rect: ColorRect) -> void:
+static func replace_backdrop(host: Control, rect: ColorRect) -> Panel:
 	if host == null or rect == null:
-		return
+		return null
 	if host.has_node("TerminalBackdrop"):
-		return
+		return host.get_node("TerminalBackdrop") as Panel
 	rect.visible = false
 	var panel := Panel.new()
 	panel.name = "TerminalBackdrop"
@@ -97,6 +97,33 @@ static func replace_backdrop(host: Control, rect: ColorRect) -> void:
 	panel.add_theme_stylebox_override("panel", _panel_box(0.97))
 	host.add_child(panel)
 	host.move_child(panel, 0)
+	return panel
+
+
+# Bottom-right corner of `host`, using the same insets the intro's dialog box
+# gives its hint (32 to the side, 24 from the bottom), so the affordance sits in
+# the same place in both scenarios.
+const HINT_MARGIN_X: int = 32
+const HINT_MARGIN_Y: int = 24
+const HINT_WIDTH: int = 300
+
+
+static func place_skip_hint(hint: Label, host: Control) -> void:
+	if hint == null or host == null:
+		return
+	host.add_child(hint)
+	hint.anchor_left = 1.0
+	hint.anchor_top = 1.0
+	hint.anchor_right = 1.0
+	hint.anchor_bottom = 1.0
+	hint.grow_horizontal = Control.GROW_DIRECTION_BEGIN
+	hint.grow_vertical = Control.GROW_DIRECTION_BEGIN
+	hint.offset_left = -(HINT_WIDTH + HINT_MARGIN_X)
+	hint.offset_top = -(DarkMailPalette.FONT_SIZE_MONO + HINT_MARGIN_Y)
+	hint.offset_right = -HINT_MARGIN_X
+	hint.offset_bottom = -HINT_MARGIN_Y
+	hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	hint.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 
 
 # Centres a choice column of CHOICE_WIDTH on its parent and pins it to the
