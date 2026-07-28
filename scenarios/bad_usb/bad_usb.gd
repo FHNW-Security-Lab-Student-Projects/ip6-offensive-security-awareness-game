@@ -1,6 +1,8 @@
 extends ScenarioBase
 
 const SCENARIO_ID: String = "bad_usb"
+const HOME_SCENE: String = "res://scenes/StartScreen.tscn"
+const LEVELS_SCENE: String = "res://scenes/levelAuswahl.tscn"
 
 enum SubState { BRIEFING, STREET, FRONT, INSIDE, TAILGATE, CORRIDOR, OFFICE, RESOLVE }
 
@@ -36,12 +38,6 @@ var _ui_briefing
 @onready var _world_office = $BadUSBScenario/BigOffice
 @onready var _ui_usb_btn = $BadUSBScenario/CanvasLayer/InsertUSBBtn
 
-@onready var _lbl_title = $BadUSBScenario/CanvasLayer/Resolve/VBoxContainer/TitleLabel
-@onready var _img_story = $BadUSBScenario/CanvasLayer/Resolve/VBoxContainer/StoryImage
-@onready var _lbl_story = $BadUSBScenario/CanvasLayer/Resolve/VBoxContainer/StoryLabel
-@onready var _btn_next = $BadUSBScenario/CanvasLayer/Resolve/VBoxContainer/NextBtn
-@onready var _btn_finish = $BadUSBScenario/CanvasLayer/Resolve/VBoxContainer/FinishBtn
-
 @onready var _world_tailgate = $BadUSBScenario/TailgateDoor
 @onready var _npc_tailgate = $BadUSBScenario/TailgateDoor/Background/Background/NPC
 @onready var _sprite_open_door = $BadUSBScenario/TailgateDoor/Background/Background/Door
@@ -68,9 +64,6 @@ var _npc_tailgate_start_pos: Vector2
 var _current: SubState = SubState.BRIEFING
 var _initialised: bool = false
 
-var _story_step: int = 0
-var _typewriter_speed: float = 0.04
-
 # --- telemetry ---------------------------------------------------------------
 # The study evaluates decisions, error rates and decision times. The dialogue
 # tree encodes correctness positionally: on the opening step of each path the
@@ -84,11 +77,7 @@ const PromptClock := preload("res://scenarios/base/prompt_clock.gd")
 const Typewriter := preload("res://scenarios/base/typewriter.gd")
 const SkipHint := preload("res://scenarios/base/skip_hint.gd")
 const Style := preload("res://scenarios/bad_usb/bad_usb_style.gd")
-
-# Gap between the debrief column and its frame. The column grows with its text,
-# so the frame is refitted around it rather than kept at the scene's fixed size.
-const DEBRIEF_PADDING: int = 44
-
+const Debrief := preload("res://scenarios/bad_usb/debrief.gd")
 # _dialogue_step / 10 -> which social-engineering approach the player is on.
 const DIALOGUE_PATHS: Dictionary = {
 	1: "stressed",
@@ -107,16 +96,11 @@ var _restricted_attempts: int = 0
 var _reception_path: String = ""
 
 # --- flowing text -------------------------------------------------------------
-# Two typewriters because the two screens differ in what happens when a line
-# lands: the dialogue reveals its choices, the debrief reveals its image and
-# Weiter button. One shared instance would have to disambiguate that in its
-# handler.
 var _dialogue_typer := Typewriter.new()
-var _story_typer := Typewriter.new()
-# "▼ klicken für weiter", shown only while a line is still running.
+# "▼ klicken für weiter", shown only while the question is still running.
 var _dialogue_hint: Label
-var _story_hint: Label
-var _debrief_frame: Panel
+# The closing screen, built on demand when the level reaches RESOLVE.
+var _debrief: Control
 # Whether the step currently on screen offers a second option, remembered while
 # both choices are hidden during typing.
 var _second_choice_offered: bool = true
@@ -226,10 +210,6 @@ func _setup() -> void:
 	if not _ui_usb_btn.pressed.is_connected(_on_usb_btn_pressed):
 		_ui_usb_btn.pressed.connect(_on_usb_btn_pressed)
 	
-	if not _btn_next.pressed.is_connected(_on_next_pressed):
-		_btn_next.pressed.connect(_on_next_pressed)
-		_btn_finish.pressed.connect(_on_finish_pressed)
-	
 	var tailgate_locked_zone = $BadUSBScenario/TailgateDoor/LockedDoorZone
 	if not tailgate_locked_zone.body_entered.is_connected(_on_locked_door_entered):
 		tailgate_locked_zone.body_entered.connect(_on_locked_door_entered)
@@ -251,12 +231,10 @@ func _setup() -> void:
 	_style_ui()
 
 	_dialogue_typer.finished.connect(_on_line_typed)
-	_story_typer.finished.connect(_on_typing_finished)
 
 
 func _process(delta: float) -> void:
 	_dialogue_typer.advance(delta)
-	_story_typer.advance(delta)
 
 
 # Click reveals the rest of the current line at once, the same affordance the
@@ -287,9 +265,6 @@ func _skip_running_text() -> bool:
 	if _dialogue_typer.is_typing():
 		_dialogue_typer.finish_now()
 		return true
-	if _story_typer.is_typing():
-		_story_typer.finish_now()
-		return true
 	return false
 
 
@@ -298,17 +273,6 @@ func _on_dialogue_box_clicked(event: InputEvent) -> void:
 	if _is_left_click(event):
 		_skip_running_text()
 
-
-# Same for the debrief, plus the intro's second half of the deal: once the text
-# stands, a click anywhere in the box turns the page. The last page is left to
-# its explicit button, so a stray click cannot end the scenario by accident.
-func _on_debrief_clicked(event: InputEvent) -> void:
-	if not _is_left_click(event):
-		return
-	if _skip_running_text():
-		return
-	if _btn_next.visible:
-		_on_next_pressed()
 
 
 # Puts the level into the DarkMail terminal look of scenario 1. Explicit lists
@@ -321,7 +285,6 @@ func _style_ui() -> void:
 		_btn_failure_ok,
 		_ui_corridor_btn, _ui_office_btn, _btn_restricted_elevator,
 		_ui_usb_btn,
-		_btn_next, _btn_finish,
 		_btn_tailgate_trigger, _btn_tailgate_enter,
 	]:
 		Style.style_button(button)
@@ -338,32 +301,17 @@ func _style_ui() -> void:
 	Style.style_panel(_ui_tailgate_locked)
 	Style.style_panel(_ui_failure_popup)
 
-	_debrief_frame = Style.replace_backdrop(_ui_resolve, _ui_resolve.get_node("ColorRect"))
-	var debrief_column := _ui_resolve.get_node("VBoxContainer") as VBoxContainer
-	# Air between title, paragraph, image and button; the scene had them flush.
-	debrief_column.add_theme_constant_override("separation", 16)
-	if not debrief_column.resized.is_connected(_fit_debrief_frame):
-		debrief_column.resized.connect(_fit_debrief_frame)
-
 	_dialogue_hint = SkipHint.new()
 	Style.place_skip_hint(_dialogue_hint, _ui_dialogue_box)
 	_dialogue_hint.set_active(false)
-	_story_hint = SkipHint.new()
-	Style.place_skip_hint(_story_hint, _debrief_frame)
-	_story_hint.set_active(false)
-
-	# Make the boxes themselves clickable. The buttons sitting on top keep
-	# priority, so Weiter and the dialogue choices still win their own clicks.
+	# The whole speech box is the click target, not just the hint in its corner.
+	# The panel has mouse_filter STOP, so the click never reaches
+	# _unhandled_input and has to be taken here.
 	if not _ui_dialogue_box.gui_input.is_connected(_on_dialogue_box_clicked):
 		_ui_dialogue_box.gui_input.connect(_on_dialogue_box_clicked)
-	_debrief_frame.mouse_filter = Control.MOUSE_FILTER_STOP
-	if not _debrief_frame.gui_input.is_connected(_on_debrief_clicked):
-		_debrief_frame.gui_input.connect(_on_debrief_clicked)
 
 	Style.style_body(_lbl_npc_text)
 	Style.style_body(_lbl_failure)
-	Style.style_body(_lbl_story)
-	Style.style_heading(_lbl_title)
 	Style.style_body(_ui_missing_badge.get_node("MissingBadgeUI"))
 	Style.style_body(_ui_tailgate_locked.get_node("MissingBadgeUI"))
 	Style.style_body(_ui_npc_speech.get_node("NPCSpeechUI"))
@@ -817,7 +765,10 @@ func _change_substate(new_state: SubState) -> void:
 				_start_office_npc_approach()
 				
 		SubState.RESOLVE:
-			_ui_resolve.visible = true
+			# The scene's own Resolve node stays hidden: the debrief is built by
+			# the Debrief component instead, which owns its own full-screen
+			# layout. The node is left in the scene so the level file keeps
+			# working in the editor.
 			SfxPlayer.play_completion()  # scenario finished, the debrief comes up
 			_start_resolve_story()
 
@@ -903,97 +854,70 @@ func _on_line_typed() -> void:
 	# recorded latency and make fast readers look slow.
 	_clock.mark()
 
+# --- debrief ------------------------------------------------------------------
+
+# The five closing stages, resolved to text at build time so the debrief
+# component stays a pure view. Image per stage; the last one closes with the
+# lesson and has none.
+const DEBRIEF_STAGES: Array[Dictionary] = [
+	{"key": "0", "image": "res://assets/sprites/placeholder/storyImages/lobby_img.png"},
+	{"key": "1", "image": "res://assets/sprites/placeholder/storyImages/elevator_img.png"},
+	{"key": "2", "image": "res://assets/sprites/placeholder/storyImages/door_img.png"},
+	{"key": "3", "image": "res://assets/sprites/placeholder/storyImages/pc_img.png"},
+	{"key": "4", "image": ""},
+]
+
+
 func _start_resolve_story() -> void:
-	_story_step = 0
-	_play_story_step()
-
-func _play_story_step() -> void:
-	_btn_next.visible = false
-	_btn_finish.visible = false
-	_img_story.visible = false 
-	
-	var target_text = ""
-	
-	if _story_step == 0:
-		_lbl_title.text = tr("BADUSB_STORY_0_TITLE")
-		target_text = tr("BADUSB_STORY_0_TEXT")
-		_img_story.texture = preload("res://assets/sprites/placeholder/storyImages/lobby_img.png")
-
-	elif _story_step == 1:
-		_lbl_title.text = tr("BADUSB_STORY_1_TITLE")
-		target_text = tr("BADUSB_STORY_1_TEXT")
-		_img_story.texture = preload("res://assets/sprites/placeholder/storyImages/elevator_img.png")
-
-	elif _story_step == 2:
-		_lbl_title.text = tr("BADUSB_STORY_2_TITLE")
-		target_text = tr("BADUSB_STORY_2_TEXT")
-		_img_story.texture = preload("res://assets/sprites/placeholder/storyImages/door_img.png")
-
-	elif _story_step == 3:
-		_lbl_title.text = tr("BADUSB_STORY_3_TITLE")
-		target_text = tr("BADUSB_STORY_3_TEXT")
-		_img_story.texture = preload("res://assets/sprites/placeholder/storyImages/pc_img.png")
-
-	elif _story_step == 4:
-		_lbl_title.text = tr("BADUSB_STORY_4_TITLE")
-		target_text = tr("BADUSB_STORY_4_TEXT")
-		
-	SfxPlayer.start_typing()
-	_story_hint.set_active(true)
-	_story_typer.start(_lbl_story, target_text, 1.0 / _typewriter_speed)
-	_fit_debrief_frame()
-
-
-# The debrief column grows with its text and shrinks again on a step without an
-# image, so the frame cannot keep the fixed size the scene gave it: on a long
-# paragraph the Weiter button ended up outside it.
-#
-# Driven by the column's own resized signal rather than by waiting a frame after
-# each step: the column keeps growing as the text wraps and the image appears,
-# so any fixed number of frames to wait is a guess that is sometimes wrong.
-func _fit_debrief_frame() -> void:
-	if _debrief_frame == null or not is_instance_valid(_debrief_frame):
+	if _debrief != null:
 		return
-	var column: Control = _ui_resolve.get_node("VBoxContainer")
-	var pad := Vector2(DEBRIEF_PADDING, DEBRIEF_PADDING)
-	_debrief_frame.position = column.position - pad
-	_debrief_frame.size = column.size + pad * 2.0
+	_debrief = Debrief.new()
+	_debrief.stage_advanced.connect(_on_debrief_stage_advanced)
+	_debrief.levels_requested.connect(_on_debrief_levels)
+	_debrief.home_requested.connect(_on_debrief_home)
+	_debrief.replay_requested.connect(_on_debrief_replay)
+	$BadUSBScenario/CanvasLayer.add_child(_debrief)
 
-func _on_typing_finished() -> void:
-	SfxPlayer.stop_typing()
-	_story_hint.set_active(false)
-	if _story_step < 4:
-		_img_story.visible = true
-	# The image appearing changes the column height, so refit once more.
-	_fit_debrief_frame()
+	var stages: Array = []
+	for stage in DEBRIEF_STAGES:
+		var image_path: String = stage["image"]
+		stages.append({
+			"title": tr("BADUSB_STORY_%s_TITLE" % stage["key"]),
+			"text": tr("BADUSB_STORY_%s_TEXT" % stage["key"]),
+			"image": load(image_path) if not image_path.is_empty() else null,
+		})
+	_debrief.configure(stages)
 
-	if _story_step >= 4:
-		_btn_next.visible = false
-		_btn_finish.visible = true
-	else:
-		_btn_next.visible = true
-		_btn_finish.visible = false
 
-	# Text fully revealed: from here on the player is reading, not waiting for
-	# the typewriter. That interval is the debrief dwell time.
-	_clock.mark()
-
-func _on_next_pressed() -> void:
+# How long each debrief stage stood finished on screen before the player moved
+# on. Research question 3 is about whether the feedback lands, and this is the
+# only signal we have for whether it was read at all.
+func _on_debrief_stage_advanced(index: int, dwell_ms: int) -> void:
 	EventBus.emit_action(
 		scenario_id,
 		"debrief_advanced",
-		_clock.take(),
-		{"story_step": _story_step},
+		dwell_ms,
+		{"story_step": index},
 	)
-	_story_step += 1
-	_play_story_step()
 
-func _on_finish_pressed() -> void:
-	EventBus.emit_action(
-		scenario_id,
-		"debrief_advanced",
-		_clock.take(),
-		{"story_step": _story_step},
-	)
+
+func _on_debrief_levels() -> void:
 	complete_scenario()
-	SceneTransition.change_scene("res://scenes/levelAuswahl.tscn")
+	SceneTransition.change_scene(LEVELS_SCENE)
+
+
+func _on_debrief_home() -> void:
+	complete_scenario()
+	SceneTransition.change_scene(HOME_SCENE)
+
+
+# Wipes the per-run handoff state (autoloads survive a scene reload) and loads
+# the level again, mirroring how scenario 1 handles its retry.
+func _on_debrief_replay() -> void:
+	complete_scenario()
+	GameState.reset_scenario()
+	var cfg: ScenarioConfig = Config.get_scenario(StringName(SCENARIO_ID))
+	if cfg == null:
+		push_error("%s: cannot replay, scenario missing from Config" % SCENARIO_ID)
+		return
+	SceneTransition.change_scene(cfg.scene_path)

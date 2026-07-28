@@ -10,6 +10,7 @@
 extends SceneTree
 
 const Typewriter := preload("res://scenarios/base/typewriter.gd")
+const DEBRIEF_PATH := "res://scenarios/bad_usb/debrief.gd"
 
 var _step := 0
 var _usb: Node
@@ -33,6 +34,7 @@ func _process(_delta: float) -> bool:
 	_test_dialogue_gating()
 	_test_click_skips()
 	_test_box_is_clickable()
+	_test_debrief()
 
 	print("TEST DONE")
 	quit()
@@ -137,10 +139,10 @@ func _click_on(target: Control) -> void:
 	target.gui_input.emit(event)
 
 
-# The boxes are Controls with mouse_filter STOP, so a click landing on the box
-# never reaches _unhandled_input. Without their own handler the hint in the
-# corner was the only thing that could be clicked, which is the opposite of what
-# it advertises.
+# The speech box is a Control with mouse_filter STOP, so a click landing on the
+# box never reaches _unhandled_input. Without its own handler the hint in the
+# corner was the only thing that could be clicked, the opposite of what it
+# advertises.
 func _test_box_is_clickable() -> void:
 	_usb._dialogue_step = 30
 	_usb._update_dialogue_ui()
@@ -148,21 +150,57 @@ func _test_box_is_clickable() -> void:
 	_click_on(_usb._ui_dialogue_box)
 	print("clicking the box finishes the line (expect false): ", _usb._dialogue_typer.is_typing())
 
-	_usb._story_step = 0
-	_usb._play_story_step()
-	print("debrief typing before the click (expect true): ", _usb._story_typer.is_typing())
-	_click_on(_usb._debrief_frame)
-	print("clicking the frame finishes it (expect false): ", _usb._story_typer.is_typing())
 
-	# Second click, with the text standing: turns the page like the intro does.
-	_click_on(_usb._debrief_frame)
-	print("a further click turns the page (expect 1): ", _usb._story_step)
+# --- the debrief screen ---------------------------------------------------------
 
-	# The closing page must not be dismissable by a stray click; ending the
-	# scenario stays on its explicit button.
-	_usb._story_step = 4
-	_usb._play_story_step()
-	_usb._story_typer.finish_now()
-	print("last page shows Beenden, not Weiter (expect false): ", _usb._btn_next.visible)
-	_click_on(_usb._debrief_frame)
-	print("clicking the last page does not end the run (expect 4): ", _usb._story_step)
+func _stage(title: String, body: String) -> Dictionary:
+	return {"title": title, "text": body, "image": null}
+
+
+func _test_debrief() -> void:
+	# Loaded at call time, not preloaded: debrief.gd refers to the SfxPlayer
+	# autoload by name, which only resolves once the autoloads are up. A preload
+	# here is compiled before that and fails.
+	var debrief: Control = (load(DEBRIEF_PATH) as GDScript).new()
+	root.add_child(debrief)
+	var seen: Array = []
+	debrief.stage_advanced.connect(func(index: int, dwell: int) -> void:
+		seen.append(index))
+	debrief.configure([
+		_stage("Eins", "Erste Etappe"),
+		_stage("Zwei", "Zweite Etappe"),
+		_stage("Drei", "Letzte Etappe"),
+	])
+
+	print("first stage types itself out (expect true): ", debrief._typer.is_typing())
+	print("exits hidden while stages run (expect false): ", debrief._buttons.visible)
+
+	_click_on(debrief._panel)
+	print("a click finishes the stage (expect false): ", debrief._typer.is_typing())
+	print("still not the last stage, no exits (expect false): ", debrief._buttons.visible)
+
+	# Second click turns the page, the way the intro advances a line.
+	_click_on(debrief._panel)
+	print("click turns to the next stage (expect 1): ", debrief._index)
+	print("advance was reported for stage 0 (expect [0]): ", seen)
+
+	debrief._typer.finish_now()
+	_click_on(debrief._panel)
+	print("and on to the last stage (expect 2): ", debrief._index)
+	debrief._typer.finish_now()
+	# Only the closing stage offers a way out, so the player cannot skip the
+	# lesson by clicking through.
+	print("last stage reveals the exits (expect true): ", debrief._buttons.visible)
+
+	# A stray click on the last stage must not leave the screen.
+	_click_on(debrief._panel)
+	print("clicking the last stage stays put (expect 2): ", debrief._index)
+	print("no advance reported for the last stage (expect [0, 1]): ", seen)
+
+	var exits: Array = []
+	for child in debrief._buttons.get_children():
+		if child is Button:
+			exits.append((child as Button).text)
+	print("three exits offered like scenario 1 (expect 3): ", exits.size())
+
+	debrief.queue_free()
