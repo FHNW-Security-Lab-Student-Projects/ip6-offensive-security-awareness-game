@@ -47,6 +47,7 @@ BADUSB_BTN_FINISH,Szenario Beenden,Finish scenario
 BADUSB_BTN_ENTER_BUILDING,Gebäude Betreten,Enter building
 BADUSB_BTN_RECEPTION_STRESSED,Rezeptionist gestresst ansprechen,Approach the receptionist stressed
 BADUSB_BTN_RECEPTION_CONFIDENT,Rezeptionist überzeugt ansprechen,Approach the receptionist confident
+BADUSB_BRIEF_REWARD,Fernzugriff auf einen Arbeitsplatz-Rechner,Remote access to a workstation
 BADUSB_PHASE_ARRIVAL,Anreise,Approach
 BADUSB_PHASE_LOBBY,Lobby,Lobby
 BADUSB_PHASE_FLOOR,Etage,Floor

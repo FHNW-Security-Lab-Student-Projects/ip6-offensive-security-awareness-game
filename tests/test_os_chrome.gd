@@ -100,15 +100,27 @@ func _process(_delta: float) -> bool:
 	var bare := BriefingResource.new()
 	bare.target_name = "FinTech AG · Vor Ort"
 	bare.mission_text = "Infiltriere die FinTech AG vor Ort"
-	bare.reward_text = ""
+	bare.reward_text = "Fernzugriff auf einen Arbeitsplatz-Rechner"
 	bare.turn_budget = 0
 	_chrome.configure(bare, steps)
 	print("no turn counter without a budget (expect false): ",
 		(_chrome.get_node("%TurnsLabel") as Label).visible)
+	# The reward still belongs on screen; only the time limit does not.
+	var reward_line := (_chrome.get_node("%DossierReward") as Label)
+	print("reward line still shown (expect true): ", reward_line.visible)
+	print("reward names the payoff (expect true): ", reward_line.text.contains("Fernzugriff"))
+	print("no time limit without a budget (expect false): ", reward_line.text.contains("Zeitlimit"))
+
+	# With no reward at all the line disappears entirely.
+	var nothing := BriefingResource.new()
+	nothing.mission_text = "Ohne Belohnung"
+	nothing.reward_text = ""
+	nothing.turn_budget = 0
+	_chrome.configure(nothing, steps)
 	print("no reward line without a reward (expect false): ",
 		(_chrome.get_node("%DossierReward") as Label).visible)
 	print("mission line still shown (expect true): ",
-		(_chrome.get_node("%DossierMission") as Label).text.contains(bare.mission_text))
+		(_chrome.get_node("%DossierMission") as Label).text.contains(nothing.mission_text))
 
 	print("TEST DONE")
 	return true

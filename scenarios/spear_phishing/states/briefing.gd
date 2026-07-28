@@ -44,13 +44,10 @@ func _ready() -> void:
 		return
 	_channel_title.text = tr("BRIEFING_CHANNEL_TITLE") % tr(_briefing.speaker_name)
 	_mission_label.text = tr("BRIEFING_MISSION_LINE") % tr(_briefing.mission_text)
-	# No reward/turn budget for scenarios that leave reward_text empty (bad_usb).
-	if _briefing.reward_text.is_empty():
-		_reward_label.visible = false
-	else:
-		_reward_label.text = tr("BRIEFING_REWARD_LINE") % [
-			tr(_briefing.reward_text), _briefing.turn_budget,
-		]
+	# The resource owns the wording: no time limit for a scenario without a turn
+	# budget, and an empty line when it offers no reward at all.
+	_reward_label.text = _briefing.reward_line()
+	_reward_label.visible = not _reward_label.text.is_empty()
 	_advance_button.visible = false
 	_dialog.lines_finished.connect(_on_lines_finished)
 	_started_at_ms = Time.get_ticks_msec()
