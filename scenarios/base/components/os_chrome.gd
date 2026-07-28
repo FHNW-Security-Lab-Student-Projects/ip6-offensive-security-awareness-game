@@ -84,7 +84,15 @@ func configure(briefing: BriefingResource, steps: Array[Dictionary]) -> void:
 	_target_label.text = "" if briefing.target_name.is_empty() else "· %s" % tr(briefing.target_name)
 	_goal_label.text = tr(briefing.mission_text)
 	_dossier_mission.text = tr("BRIEFING_MISSION_LINE") % tr(briefing.mission_text)
-	_dossier_reward.text = tr("BRIEFING_REWARD_LINE") % [tr(briefing.reward_text), briefing.turn_budget]
+	# The reward line reads "Belohnung: %s · Zeitlimit: %d Züge", which is
+	# meaningless for a scenario that offers neither. Hidden on the same
+	# condition briefing.gd uses for its own reward line, rather than printed
+	# with an empty reward and a zero limit.
+	_dossier_reward.visible = not briefing.reward_text.is_empty()
+	if _dossier_reward.visible:
+		_dossier_reward.text = tr("BRIEFING_REWARD_LINE") % [
+			tr(briefing.reward_text), briefing.turn_budget,
+		]
 	_build_stepper()
 	_refresh_from_state()
 

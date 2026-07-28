@@ -94,5 +94,21 @@ func _process(_delta: float) -> bool:
 		(_chrome.get_node("%DossierMission") as Label).text.contains(briefing.mission_text))
 	tag.pressed.emit()
 	print("dossier closes on second click (expect false): ", dossier.visible)
+	# A scenario without a turn budget (bad_usb) must not show an empty readout.
+	# Both the counter and the reward line would otherwise render as "0/0" and
+	# "Belohnung:  · Zeitlimit: 0 Zuege".
+	var bare := BriefingResource.new()
+	bare.target_name = "FinTech AG · Vor Ort"
+	bare.mission_text = "Infiltriere die FinTech AG vor Ort"
+	bare.reward_text = ""
+	bare.turn_budget = 0
+	_chrome.configure(bare, steps)
+	print("no turn counter without a budget (expect false): ",
+		(_chrome.get_node("%TurnsLabel") as Label).visible)
+	print("no reward line without a reward (expect false): ",
+		(_chrome.get_node("%DossierReward") as Label).visible)
+	print("mission line still shown (expect true): ",
+		(_chrome.get_node("%DossierMission") as Label).text.contains(bare.mission_text))
+
 	print("TEST DONE")
 	return true
