@@ -15,6 +15,39 @@ thesis project, FHNW Security Lab.
    `%APPDATA%\Godot\app_userdata\Offensive Security Awareness Game\logs\session_*.jsonl`
    on Windows.
 
+## Running a study session
+
+Every run writes one append-only JSONL file with the player's decisions,
+errors and decision times.
+
+Before handing the machine to a participant, type their code into the
+**Teilnehmer-Code** field in the corner of the title screen. It is stamped onto
+every event and is what joins the game data to the pre/post questionnaires, so
+the same code has to go into both forms. The field is optional, so internal test
+runs can leave it blank.
+
+After a session:
+
+1. Copy the `logs/` folder off the machine (path is printed at startup).
+2. Turn the logs into tables:
+
+   ```
+   python3 tools/analyze.py <log-folder> -o analysis
+   ```
+
+   This writes `analysis/events.csv` (full trace, one row per event) and
+   `analysis/summary.csv` (one row per session: error rate, decision times,
+   per-scenario outcomes) and prints a per-run overview so an empty or
+   aborted session is spotted immediately.
+
+3. If a session was played without a code, the run warns about it. Fill those
+   in afterwards with a `participants.csv` (`session_uuid,participant_code`)
+   and pass it with `-p`. Sessions sort chronologically by uuid, which makes
+   that reconstruction straightforward.
+
+See [docs/event_schema.md](docs/event_schema.md) for what is logged and which
+events count towards the error rate.
+
 ## Folder layout
 
 ```

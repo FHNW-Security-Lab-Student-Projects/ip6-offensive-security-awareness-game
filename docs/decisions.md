@@ -88,3 +88,110 @@ would be overkill — there is no security requirement.
 
 **Consequence:** Sessions started in the same second on the same machine
 have a 1-in-65k collision chance. Acceptable for this study.
+
+---
+
+## ADR-0003: Local persistence over a collection backend
+
+**Status:** Accepted (2026-07-27). Confirms and scopes ADR-0001 Decision 4.
+
+**Context:** The project agreement (section B, Technisches Konzept) requires the
+tracking data to be stored asynchronously "entweder über eine leichtgewichtige
+Backend-Datenbank **oder** eine sichere lokale Zwischenspeicherung". Both
+options satisfy the agreement. A collection server was designed (ingest endpoint
+with per-session JSONL append, idempotent by `seq`, plus CSV export endpoints)
+and evaluated against the local-only variant.
+
+**Decision:** Keep local JSONL persistence. Data is collected off the study
+machines after the sessions and analysed with `tools/analyze.py`.
+
+**Why:**
+- The study runs supervised on a small number of machines with 20 to 30
+  participants. Transport was never the bottleneck; collecting the files is a
+  folder copy.
+- The value the server would have added was the aggregated export, and that is
+  what `tools/analyze.py` produces directly from the log folder. Same tables, no
+  network, no deployment, no uptime dependency during a session.
+- Privacy by construction: no personal data leaves the machine. The session id
+  is a pseudonym; the mapping to participants lives in a separate
+  `participants.csv` held by the study lead, which is exactly the pseudonymised
+  handling the agreement commits to.
+- A shipped client cannot hold a real API secret, so a token in the game would
+  have been a spam gate rather than authentication. Not building the endpoint
+  avoids claiming a protection we could not deliver.
+
+**Consequence:** No real-time view of a running session, and a machine whose
+files are never copied loses its data. Mitigated by copying the log folder at
+the end of each session and running `tools/analyze.py`, which prints a per-run
+overview so a missing or empty session is noticed immediately.
+
+**Ausblick (for the thesis):** the backend variant remains the right design for
+an unsupervised or distributed rollout, where participants play on their own
+machines and no one can collect the files by hand.
+
+---
+
+## ADR-0004: Correctness is graded at the decision, not at the outcome
+
+**Status:** Accepted (2026-07-27)
+
+**Context:** The agreement promises error rates ("Fehlerquoten") and decision
+times ("Entscheidungszeiten") as telemetry for the descriptive analysis. Events
+carry an `is_correct` field, but not every event that can carry one should
+count: run outcomes (`scenario_debrief`, `mail_outcome`) are graded as well.
+
+**Decision:** The error rate is computed only over graded single decisions
+(`EventBus.emit_decision`, plus the engine phases `mail_card_played` and
+`mail_payload_attempt`). Outcome rows are excluded from the denominator.
+Interactions with no right answer use `EventBus.emit_action`, which forces
+`is_correct` to `null`.
+
+**Why:** Counting an outcome row alongside the decisions that produced it counts
+the same behaviour twice and lets a scenario's aggregate distort a per-decision
+rate. Splitting the two emit helpers makes the distinction impossible to get
+wrong by accident at the call site, rather than relying on discipline.
+
+**Consequence:** Which choices are "wrong" is a modelling decision that has to be
+defensible in the thesis. It is stated per scenario in `docs/event_schema.md`
+and anchored to something the game itself already treats as a mistake (junk
+finds waste a deck slot, SCHROTT cards get a negative verdict in the post-run
+review, a blown cover resets the level).
+
+---
+
+## ADR-0005: The language is chosen in the menu, not mid-scenario
+
+**Status:** Accepted (2026-07-28)
+
+**Context:** Godot re-translates a `Control`'s `text` when the locale changes,
+but only if the stored `text` is a translation key. The menu scenes keep raw
+keys in their `.tscn` (`text = "MENU_LEVELS"`), so they switch live. Scenario
+code resolves through `tr()` at build time and stores the finished string, at 67
+call sites across 11 files. Switching mid-scenario therefore left the running
+screen in the previous language while the menus flipped.
+
+**Decision:** The language row in the settings overlay is only enabled while
+`GameState.is_in_menu()`. During a scenario the buttons are disabled with a
+visible reason. Scenarios pick up whatever locale is active when they start.
+
+**Why not rebuild every screen on `NOTIFICATION_TRANSLATION_CHANGED`:** the two
+screens with the most text also carry run state. `mail_builder._build()`
+constructs a fresh `MailRun`, so re-running it mid-turn would reset the game;
+`mail_preview` accumulates the mail thread incrementally and would lose it;
+`bad_usb._play_story_step()` would restart its typewriter tween. Making those
+safe means separating text construction from state construction in each one,
+which is the riskiest kind of change to make shortly before the study.
+
+**Why it is also the better rule for the study:** a participant who switches
+language halfway through has played a run in two languages, which the dataset
+cannot represent cleanly. One run, one language.
+
+**Consequence:** Participants must be told the language before starting, which
+they are anyway. Live switching everywhere remains possible later; it needs the
+text/state split described above.
+
+**Side effect worth noting:** nothing previously returned `GameState` to `MENU`,
+so the session state stayed on `FEEDBACK` after the first scenario and the
+`state_change` telemetry never showed the way back. The menu scenes now announce
+themselves, which both unlocks the language row again and makes the navigation
+trace in the logs complete.
