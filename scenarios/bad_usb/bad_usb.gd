@@ -81,6 +81,11 @@ const FAIL_ON_CHOICE_2: Array[int] = [11, 21, 31]
 
 const PromptClock := preload("res://scenarios/base/prompt_clock.gd")
 
+# Button padding. Tighter than the DarkMailPalette default (20/10) because
+# several of this level's buttons sit in fixed rects laid out in the .tscn.
+const BUTTON_PADDING_X: int = 16
+const BUTTON_PADDING_Y: int = 8
+
 # _dialogue_step / 10 -> which social-engineering approach the player is on.
 const DIALOGUE_PATHS: Dictionary = {
 	1: "stressed",
@@ -224,6 +229,26 @@ func _setup() -> void:
 	_corridor_start_pos = _world_corridor.get_node("Player").position
 	_tailgate_start_pos = _world_tailgate.get_node("Player").position
 	_npc_tailgate_start_pos = _npc_tailgate.position
+
+	_style_buttons()
+
+
+# This level shipped on Godot's default button theme while scenario 1 dresses
+# every button in the shared DarkMail terminal look, so the two read as
+# different games. One list rather than a tree walk on purpose: the briefing is
+# an instanced scene that styles itself and must not be restyled from here.
+func _style_buttons() -> void:
+	for button: Button in [
+		_ui_enter_btn,
+		_btn_stressed, _btn_confident,
+		_btn_choice1, _btn_choice2,
+		_btn_failure_ok,
+		_ui_corridor_btn, _ui_office_btn, _btn_restricted_elevator,
+		_ui_usb_btn,
+		_btn_next, _btn_finish,
+		_btn_tailgate_trigger, _btn_tailgate_enter,
+	]:
+		DarkMailPalette.style_button(button, BUTTON_PADDING_X, BUTTON_PADDING_Y)
 
 func _swap_in_briefing() -> void:
 	var canvas = $BadUSBScenario/CanvasLayer
