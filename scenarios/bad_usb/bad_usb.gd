@@ -78,6 +78,24 @@ const Typewriter := preload("res://scenarios/base/typewriter.gd")
 const SkipHint := preload("res://scenarios/base/skip_hint.gd")
 const Style := preload("res://scenarios/bad_usb/bad_usb_style.gd")
 const Debrief := preload("res://scenarios/bad_usb/debrief.gd")
+# --- OS shell -----------------------------------------------------------------
+# The eight sub-states are too fine-grained for a phase stepper, so they are
+# grouped into the five beats a player actually perceives. BRIEFING maps to
+# nothing on purpose: scenario 1 leaves its stepper unhighlighted during the
+# briefing too, because no phase has started yet.
+const OS_CHROME_SCENE := "res://scenarios/base/components/OSChrome.tscn"
+const BRIEFING_RESOURCE := "res://resources/scenarios/bad_usb/briefing.tres"
+
+const PHASE_BY_SUBSTATE: Dictionary = {
+	SubState.STREET: &"ARRIVAL",
+	SubState.FRONT: &"ARRIVAL",
+	SubState.INSIDE: &"LOBBY",
+	SubState.CORRIDOR: &"FLOOR",
+	SubState.TAILGATE: &"FLOOR",
+	SubState.OFFICE: &"OFFICE",
+	SubState.RESOLVE: &"DEBRIEF",
+}
+
 # _dialogue_step / 10 -> which social-engineering approach the player is on.
 const DIALOGUE_PATHS: Dictionary = {
 	1: "stressed",
@@ -105,6 +123,8 @@ var _dialogue_typer := Typewriter.new()
 var _dialogue_hint: Label
 # The closing screen, built on demand when the level reaches RESOLVE.
 var _debrief: Control
+# The shared DarkMail OS bar, instanced in _setup.
+var _os_chrome: Control
 # Whether the step currently on screen offers a second option, remembered while
 # both choices are hidden during typing.
 var _second_choice_offered: bool = true
@@ -232,6 +252,7 @@ func _setup() -> void:
 	_npc_tailgate_start_pos = _npc_tailgate.position
 
 	_style_ui()
+	_setup_os_chrome()
 
 	_dialogue_typer.finished.connect(_on_line_typed)
 
@@ -315,6 +336,37 @@ func _style_ui() -> void:
 	Style.style_body(_ui_missing_badge.get_node("MissingBadgeUI"))
 	Style.style_body(_ui_tailgate_locked.get_node("MissingBadgeUI"))
 	Style.style_body(_ui_npc_speech.get_node("NPCSpeechUI"))
+
+# Adds the shared DarkMail OS bar, the same shell scenario 1 runs under, so both
+# levels read as the same system. Instanced in code rather than dropped into
+# bad_usb.tscn so the level scene stays owned by the level work.
+#
+# No turn budget here: the briefing resource carries turn_budget = 0 and OSChrome
+# hides its counter accordingly.
+func _setup_os_chrome() -> void:
+	var briefing := load(BRIEFING_RESOURCE) as BriefingResource
+	if briefing == null:
+		push_error("%s: failed to load %s" % [SCENARIO_ID, BRIEFING_RESOURCE])
+		return
+	_os_chrome = (load(OS_CHROME_SCENE) as PackedScene).instantiate()
+	$BadUSBScenario/CanvasLayer.add_child(_os_chrome)
+	# Stays in front: the briefing and the debrief both cover the whole screen,
+	# and the bar is meant to frame them, not to disappear behind them.
+	_keep_chrome_on_top()
+	var steps: Array[Dictionary] = [
+		{"id": &"ARRIVAL", "label": tr("BADUSB_PHASE_ARRIVAL")},
+		{"id": &"LOBBY", "label": tr("BADUSB_PHASE_LOBBY")},
+		{"id": &"FLOOR", "label": tr("BADUSB_PHASE_FLOOR")},
+		{"id": &"OFFICE", "label": tr("BADUSB_PHASE_OFFICE")},
+		{"id": &"DEBRIEF", "label": tr("BADUSB_PHASE_DEBRIEF")},
+	]
+	_os_chrome.configure(briefing, steps)
+
+
+func _keep_chrome_on_top() -> void:
+	if _os_chrome != null and is_instance_valid(_os_chrome):
+		$BadUSBScenario/CanvasLayer.move_child(_os_chrome, -1)
+
 
 func _swap_in_briefing() -> void:
 	var canvas = $BadUSBScenario/CanvasLayer
@@ -756,7 +808,10 @@ func _change_substate(new_state: SubState) -> void:
 
 	_current = new_state
 	_initialised = true
-	
+
+	# Drive the OS bar's phase stepper; ids match the configure() steps.
+	GameState.set_mission_phase(PHASE_BY_SUBSTATE.get(new_state, &""))
+
 	EventBus.generic_event.emit({
 		"phase": "substate_change",
 		"scenario_id": scenario_id,
@@ -880,6 +935,7 @@ func _start_resolve_story() -> void:
 	_debrief.home_requested.connect(_on_debrief_home)
 	_debrief.replay_requested.connect(_on_debrief_replay)
 	$BadUSBScenario/CanvasLayer.add_child(_debrief)
+	_keep_chrome_on_top()
 
 	var source: Array = DEBRIEF_STAGES_FAILED if _run_failed else DEBRIEF_STAGES_SUCCESS
 	var stages: Array = []

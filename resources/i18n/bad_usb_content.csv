@@ -47,6 +47,11 @@ BADUSB_BTN_FINISH,Szenario Beenden,Finish scenario
 BADUSB_BTN_ENTER_BUILDING,Gebäude Betreten,Enter building
 BADUSB_BTN_RECEPTION_STRESSED,Rezeptionist gestresst ansprechen,Approach the receptionist stressed
 BADUSB_BTN_RECEPTION_CONFIDENT,Rezeptionist überzeugt ansprechen,Approach the receptionist confident
+BADUSB_PHASE_ARRIVAL,Anreise,Approach
+BADUSB_PHASE_LOBBY,Lobby,Lobby
+BADUSB_PHASE_FLOOR,Etage,Floor
+BADUSB_PHASE_OFFICE,Büro,Office
+BADUSB_PHASE_DEBRIEF,Debrief,Debrief
 BADUSB_FAIL_0_TITLE,Aufgeflogen,Blown
 BADUSB_FAIL_1_TITLE,Fazit: Eine Person hat gereicht,Conclusion: one person was enough
 BADUSB_FAIL_1_TEXT,"Physische Angriffe leben davon, dass niemand den ersten Schritt hinterfragt. Hier hat jemand die Regel angewendet, obwohl es unbequem war. Damit war die Angriffskette gestoppt, bevor der USB-Stick überhaupt in die Nähe eines Rechners kam.","Physical attacks rely on nobody questioning the first step. Here someone applied the rule even though it was inconvenient. That stopped the attack chain before the USB stick got anywhere near a computer."

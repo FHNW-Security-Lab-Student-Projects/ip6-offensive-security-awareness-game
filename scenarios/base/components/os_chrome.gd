@@ -30,6 +30,8 @@ const PULSE_INTERVAL := 0.6
 
 var _briefing: BriefingResource
 var _steps: Array[Dictionary] = []
+# False for scenarios that run without a turn budget; set in configure().
+var _shows_turns: bool = true
 var _step_labels: Dictionary = {}  # id (StringName) -> Label
 var _pulse_tween: Tween
 
@@ -73,6 +75,12 @@ func configure(briefing: BriefingResource, steps: Array[Dictionary]) -> void:
 		return
 	_briefing = briefing
 	_steps = steps.duplicate()
+	# A scenario without a turn budget (bad_usb) has nothing to count down, and
+	# an empty readout would sit there permanently at "0/0" in alert red. The
+	# resource already carries the answer, the same way briefing.gd reads
+	# reward_text to decide whether to show a reward line at all.
+	_shows_turns = briefing.turn_budget > 0
+	_turns_label.visible = _shows_turns
 	_target_label.text = "" if briefing.target_name.is_empty() else "· %s" % tr(briefing.target_name)
 	_goal_label.text = tr(briefing.mission_text)
 	_dossier_mission.text = tr("BRIEFING_MISSION_LINE") % tr(briefing.mission_text)
@@ -200,6 +208,8 @@ func _on_phase_changed(phase: StringName) -> void:
 
 
 func _on_turns_changed(turns_left: int, turn_budget: int) -> void:
+	if not _shows_turns:
+		return
 	_turns_label.text = tr("OSCHROME_TURNS") % [turns_left, turn_budget]
 	var color := DarkMailPalette.GREEN
 	if turns_left <= 0:

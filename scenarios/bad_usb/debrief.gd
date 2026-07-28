@@ -30,7 +30,8 @@ const CHARS_PER_SECOND: float = 45.0
 # full-width line of mono text is too long to track back to the next line.
 const BODY_WIDTH: int = 900
 const SIDE_MARGIN: int = 80
-const TOP_MARGIN: int = 60
+# Clears the 80px OS bar, the same y >= 96 contract scenario 1's screens follow.
+const TOP_MARGIN: int = 96
 const BOTTOM_MARGIN: int = 40
 
 var _stages: Array = []          # [{title: String, text: String, image: Texture2D}]
