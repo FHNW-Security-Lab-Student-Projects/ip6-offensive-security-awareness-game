@@ -66,6 +66,34 @@ var _initialised: bool = false
 var _story_step: int = 0
 var _typewriter_speed: float = 0.04
 
+# --- telemetry ---------------------------------------------------------------
+# The study evaluates decisions, error rates and decision times. The dialogue
+# tree encodes correctness positionally: on the opening step of each path the
+# first option blows the cover, on the follow-up step the second one does. These
+# two tables are the single source of truth for grading, so a content change
+# only has to be reflected here.
+const FAIL_ON_CHOICE_1: Array[int] = [10, 20, 30]
+const FAIL_ON_CHOICE_2: Array[int] = [11, 21, 31]
+
+const PromptClock := preload("res://scenarios/base/prompt_clock.gd")
+
+# _dialogue_step / 10 -> which social-engineering approach the player is on.
+const DIALOGUE_PATHS: Dictionary = {
+	1: "stressed",
+	2: "confident",
+	3: "office_npc",
+}
+
+var _clock: PromptClock = PromptClock.new()
+# Blown covers so far. Every failure resets the player to the building entrance,
+# so this doubles as the retry counter for the run.
+var _failure_count: int = 0
+# Dead-end attempts at the badge-protected elevator. Not a cover blower, but a
+# wrong turn worth counting for the usability analysis.
+var _restricted_attempts: int = 0
+# Pretext the player last opened the reception conversation with.
+var _reception_path: String = ""
+
 func _ready() -> void:
 	start_scenario(SCENARIO_ID)
 
@@ -213,13 +241,15 @@ func _on_door_entered(body: Node2D) -> void:
 func _on_entrance_entered(body: Node2D) -> void:
 	if body.name == "Player":
 		_ui_enter_btn.visible = true
-		_front_door_pos = body.position 
+		_clock.mark()
+		_front_door_pos = body.position
 
 func _on_entrance_exited(body: Node2D) -> void:
 	if body.name == "Player":
 		_ui_enter_btn.visible = false
 
 func _on_enter_button_pressed() -> void:
+	EventBus.emit_action(scenario_id, "enter_building", _clock.take())
 	_ui_enter_btn.visible = false
 	_world_inside.get_node("Player").position = _inside_start_pos
 	_change_substate(SubState.INSIDE)
@@ -227,21 +257,25 @@ func _on_enter_button_pressed() -> void:
 func _on_corridor_zone_entered(body: Node2D) -> void:
 	if body.name == "Player":
 		_ui_corridor_btn.visible = true
+		_clock.mark()
 
 func _on_corridor_zone_exited(body: Node2D) -> void:
 	if body.name == "Player":
 		_ui_corridor_btn.visible = false
 
 func _on_corridor_btn_pressed() -> void:
+	EventBus.emit_action(scenario_id, "enter_corridor", _clock.take())
 	_ui_corridor_btn.visible = false
 	_change_substate(SubState.CORRIDOR)
 
 func _on_locked_door_entered(body: Node2D) -> void:
 	if body.name == "Player":
 		if not _tailgate_event_triggered:
-			_btn_tailgate_trigger.visible = true 
-		elif _sprite_open_door.visible: 
+			_btn_tailgate_trigger.visible = true
+			_clock.mark()
+		elif _sprite_open_door.visible:
 			_btn_tailgate_enter.visible = true
+			_clock.mark()
 
 func _on_locked_door_exited(body: Node2D) -> void:
 	if body.name == "Player":
@@ -250,9 +284,12 @@ func _on_locked_door_exited(body: Node2D) -> void:
 		_ui_tailgate_locked.visible = false
 
 func _on_tailgate_trigger_pressed() -> void:
-	_btn_tailgate_trigger.visible = false 
-	_ui_tailgate_locked.visible = true 
-	_tailgate_event_triggered = true 
+	# Waiting at the locked door for someone with a badge is the tailgating
+	# technique this level teaches, so it is graded as the intended move.
+	EventBus.emit_decision(scenario_id, "tailgate_wait", true, _clock.take())
+	_btn_tailgate_trigger.visible = false
+	_ui_tailgate_locked.visible = true
+	_tailgate_event_triggered = true
 	_start_npc_walk_event()
 
 func _start_npc_walk_event() -> void:
@@ -268,33 +305,47 @@ func _start_npc_walk_event() -> void:
 
 func _on_npc_arrived_at_door() -> void:
 	_npc_tailgate.play("idle")
-	
-	_ui_tailgate_locked.visible = false 
-	_sprite_open_door.visible = true 
-	_npc_tailgate.visible = false    
+
+	_ui_tailgate_locked.visible = false
+	_sprite_open_door.visible = true
+	_npc_tailgate.visible = false
 	_btn_tailgate_enter.visible = true
+	_clock.mark()
 
 func _on_tailgate_enter_pressed() -> void:
+	EventBus.emit_decision(scenario_id, "tailgate_through_door", true, _clock.take())
 	_btn_tailgate_enter.visible = false
-	_change_substate(SubState.OFFICE) 
+	_change_substate(SubState.OFFICE)
 
 func _on_restricted_entered(body: Node2D) -> void:
 	if body.name == "Player":
-		_btn_restricted_elevator.visible = true 
+		_btn_restricted_elevator.visible = true
+		_clock.mark()
 
 func _on_restricted_exited(body: Node2D) -> void:
 	if body.name == "Player":
 		_btn_restricted_elevator.visible = false
-		_ui_missing_badge.visible = false 
+		_ui_missing_badge.visible = false
 
 func _on_restricted_btn_pressed() -> void:
-	_btn_restricted_elevator.visible = false 
-	_ui_missing_badge.visible = true 
+	# The badge-protected elevator is a dead end. Taking it is not fatal, but it
+	# is the wrong route, so it counts against the error rate.
+	_restricted_attempts += 1
+	EventBus.emit_decision(
+		scenario_id,
+		"restricted_elevator_attempt",
+		false,
+		_clock.take(),
+		{"attempt": _restricted_attempts},
+	)
+	_btn_restricted_elevator.visible = false
+	_ui_missing_badge.visible = true
 
 func _on_npc_zone_entered(body: Node2D) -> void:
 	if body.name == "Player":
 		_ui_npc_speech.visible = true
 		_ui_office_btn.visible = true
+		_clock.mark()
 
 func _on_npc_zone_exited(body: Node2D) -> void:
 	if body.name == "Player":
@@ -302,9 +353,10 @@ func _on_npc_zone_exited(body: Node2D) -> void:
 		_ui_office_btn.visible = false
 
 func _on_office_btn_pressed() -> void:
+	EventBus.emit_action(scenario_id, "leave_elevator_area", _clock.take())
 	_ui_office_btn.visible = false
 	_ui_npc_speech.visible = false
-	_change_substate(SubState.TAILGATE) 
+	_change_substate(SubState.TAILGATE)
 
 func _start_office_npc_approach() -> void:
 	var player = _world_office.get_node("Player")
@@ -363,6 +415,7 @@ func _on_pc_zone_entered(body: Node2D) -> void:
 	if body.name == "Player":
 		if _office_dialogue_done:
 			_ui_usb_btn.visible = true
+			_clock.mark()
 
 func _on_pc_zone_exited(body: Node2D) -> void:
 	if body.name == "Player":
@@ -370,61 +423,109 @@ func _on_pc_zone_exited(body: Node2D) -> void:
 		_ui_dialogue_box.visible = false
 
 func _on_usb_btn_pressed() -> void:
+	# Planting the drive is the objective of the level: the attack succeeded.
+	EventBus.emit_decision(scenario_id, "usb_inserted", true, _clock.take())
 	_ui_usb_btn.visible = false
-	_change_substate(SubState.RESOLVE) 
+	_change_substate(SubState.RESOLVE)
 
 func _on_reception_entered(body: Node2D) -> void:
 	if body.name == "Player":
 		_ui_reception_menu.visible = true
+		_clock.mark()
 
 func _on_reception_exited(body: Node2D) -> void:
 	if body.name == "Player":
 		_ui_reception_menu.visible = false
 
 func _on_stressed_pressed() -> void:
-	_ui_reception_menu.visible = false
-	_ui_dialogue_box.visible = true
-	_dialogue_step = 10
-	_update_dialogue_ui()
+	_start_reception_dialogue(10)
 
 func _on_confident_pressed() -> void:
+	_start_reception_dialogue(20)
+
+# Both openings are viable pretexts rather than a right/wrong pair, so the
+# choice is recorded ungraded. Which one a player reaches for is still one of
+# the more interesting behavioural signals in this level.
+func _start_reception_dialogue(step: int) -> void:
+	_reception_path = DIALOGUE_PATHS.get(step / 10, "unknown")
+	EventBus.emit_action(
+		scenario_id,
+		"reception_approach",
+		_clock.take(),
+		{"path": _reception_path},
+	)
 	_ui_reception_menu.visible = false
 	_ui_dialogue_box.visible = true
-	_dialogue_step = 20
+	_dialogue_step = step
 	_update_dialogue_ui()
 
 func _on_dialog_choice_1_pressed() -> void:
+	_log_dialogue_choice(1)
 	match _dialogue_step:
-		11, 21, 31: 
+		11, 21, 31:
 			_dialogue_step += 1
 			_update_dialogue_ui()
-		12, 22: 
+		12, 22:
 			_ui_dialogue_box.visible = false
-			_barrier_shape.disabled = true 
+			_barrier_shape.disabled = true
 		32:
 			_ui_dialogue_box.visible = false
 			_office_dialogue_done = true
-			
-			_start_office_npc_run_away() 
+
+			_start_office_npc_run_away()
 			_world_office.get_node("Player").set_physics_process(true)
-			
-		10, 20, 30: 
+
+		10, 20, 30:
 			_ui_dialogue_box.visible = false
 			_ui_failure_popup.visible = true
 
 func _on_dialog_choice_2_pressed() -> void:
+	_log_dialogue_choice(2)
 	match _dialogue_step:
-		10, 20, 30: 
+		10, 20, 30:
 			_dialogue_step += 1
 			_update_dialogue_ui()
-		11, 21, 31: 
+		11, 21, 31:
 			_ui_dialogue_box.visible = false
 			_ui_failure_popup.visible = true
 
+# Grades and records the answer for the step the player is currently on. MUST
+# run before the handlers touch _dialogue_step, otherwise the event lands on the
+# following step and the graded outcome no longer matches the question asked.
+func _log_dialogue_choice(choice: int) -> void:
+	var blows_cover: bool = (
+		FAIL_ON_CHOICE_1.has(_dialogue_step)
+		if choice == 1
+		else FAIL_ON_CHOICE_2.has(_dialogue_step)
+	)
+	EventBus.emit_decision(
+		scenario_id,
+		"dialogue_choice",
+		not blows_cover,
+		_clock.take(),
+		{
+			"step": _dialogue_step,
+			"choice": choice,
+			"path": DIALOGUE_PATHS.get(_dialogue_step / 10, "unknown"),
+			"attempt": _failure_count + 1,
+		},
+	)
+	if blows_cover:
+		_failure_count += 1
+
 func _on_failure_ok_pressed() -> void:
+	# The player was thrown back to the entrance and is starting over. Recorded
+	# separately from the failing answer so a run's retries can be counted
+	# without re-deriving them from the decision stream.
+	EventBus.emit_action(
+		scenario_id,
+		"retry_after_failure",
+		PromptClock.UNKNOWN,
+		{"failures_so_far": _failure_count},
+	)
 	_ui_failure_popup.visible = false
 	_dialogue_step = 0
-	
+
 	_tailgate_event_triggered = false
 	_office_npc_triggered = false
 	_office_dialogue_done = false
@@ -442,8 +543,24 @@ func _on_failure_ok_pressed() -> void:
 func _on_action(_action_id: String) -> void:
 	pass
 
+# One row per run for the study's summary table, mirroring the scenario_debrief
+# that spear_phishing emits from its resolve screen. The level has no losing
+# end state (a blown cover sends the player back to try again), so the outcome
+# is fixed and the interesting variance sits in the retry and detour counters.
 func _on_complete() -> void:
-	pass
+	EventBus.generic_event.emit({
+		"phase": "scenario_debrief",
+		"scenario_id": scenario_id,
+		"action": "USB_PLANTED",
+		"is_correct": true,
+		"latency_ms": null,
+		"payload": {
+			"outcome": "USB_PLANTED",
+			"failures": _failure_count,
+			"restricted_attempts": _restricted_attempts,
+			"reception_path": _reception_path,
+		},
+	})
 
 func _advance() -> void:
 	match _current:
@@ -604,6 +721,9 @@ func _update_dialogue_ui() -> void:
 			_btn_choice1.text = tr("BADUSB_DLG_32_C1")
 			_btn_choice2.visible = false
 
+	# The question is now on screen; the decision time starts here.
+	_clock.mark()
+
 func _start_resolve_story() -> void:
 	_story_step = 0
 	_play_story_step()
@@ -652,8 +772,8 @@ func _play_story_step() -> void:
 func _on_typing_finished() -> void:
 	SfxPlayer.stop_typing()
 	if _story_step < 4:
-		_img_story.visible = true 
-	
+		_img_story.visible = true
+
 	if _story_step >= 4:
 		_btn_next.visible = false
 		_btn_finish.visible = true
@@ -661,10 +781,26 @@ func _on_typing_finished() -> void:
 		_btn_next.visible = true
 		_btn_finish.visible = false
 
+	# Text fully revealed: from here on the player is reading, not waiting for
+	# the typewriter. That interval is the debrief dwell time.
+	_clock.mark()
+
 func _on_next_pressed() -> void:
+	EventBus.emit_action(
+		scenario_id,
+		"debrief_advanced",
+		_clock.take(),
+		{"story_step": _story_step},
+	)
 	_story_step += 1
 	_play_story_step()
 
 func _on_finish_pressed() -> void:
+	EventBus.emit_action(
+		scenario_id,
+		"debrief_advanced",
+		_clock.take(),
+		{"story_step": _story_step},
+	)
 	complete_scenario()
 	SceneTransition.change_scene("res://scenes/levelAuswahl.tscn")

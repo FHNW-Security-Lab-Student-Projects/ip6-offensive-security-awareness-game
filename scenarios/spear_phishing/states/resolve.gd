@@ -101,8 +101,19 @@ func _emit_debrief() -> void:
 			"turns_used": int(r.get("turns_used", 0)),
 			"suspicion": int(r.get("suspicion", 0)),
 			"pressure": int(r.get("pressure", 0)),
+			"cards_played": _played_ids(r),
 		},
 	})
+
+
+# Card ids of the whole run, flattened to plain strings so the JSONL stays
+# readable (StringName has no distinct JSON form) and the analysis can count
+# card usage without replaying the per-turn events.
+func _played_ids(result: Dictionary) -> PackedStringArray:
+	var ids := PackedStringArray()
+	for id in result.get("played", []):
+		ids.append(String(id))
+	return ids
 
 
 # --- layout ------------------------------------------------------------------

@@ -10,6 +10,11 @@ const Pool := preload("res://scenarios/spear_phishing/data/mail_card_pool.gd")
 
 const SCENARIO_ID := "spear_phishing"
 
+# Sentinel for "the caller had no clock". The engine measures no time itself, so
+# a turn played from a test (or from play_card) reports a null latency rather
+# than a fabricated zero.
+const UNKNOWN_LATENCY := -1
+
 enum Outcome { NONE, WIN, SPAM, KOLLEGEN_RUECKFRAGE, IGNORIERT }
 
 var suspicion: int
@@ -81,7 +86,10 @@ func hannes_state() -> int:
 # a per-card reveal trace in last_mail_steps so the UI can show the effect card
 # by card AFTER sending (never before). Returns the resulting Outcome. A payload
 # in the draft fires the attack once its gate is open on the current bars.
-func play_mail(cards: Array) -> Outcome:
+# latency_ms is the player's deliberation time for this turn, supplied by the
+# view (the engine has no clock of its own). Defaults to UNKNOWN_LATENCY so the
+# engine stays callable from tests and from play_card without one.
+func play_mail(cards: Array, latency_ms: int = UNKNOWN_LATENCY) -> Outcome:
 	last_mail_steps = []
 	if is_over() or turns_left <= 0:
 		return outcome
@@ -102,7 +110,7 @@ func play_mail(cards: Array) -> Outcome:
 		last_mail_steps.append({"id": card.id, "suspicion": suspicion, "pressure": pressure})
 
 	turns_left -= 1
-	_emit_mail_sent(ids, suspicion_before, pressure_before)
+	_emit_mail_sent(ids, suspicion_before, pressure_before, latency_ms)
 	_emit_hannes_state()
 
 	if payload_card != null:
@@ -149,7 +157,7 @@ func _find_payload(cards: Array) -> MailCard:
 
 # Passing spends a turn without playing a card (telemetry logs it). Lets a
 # player run the budget down to IGNORIERT instead of being forced into SPAM.
-func pass_turn() -> Outcome:
+func pass_turn(latency_ms: int = UNKNOWN_LATENCY) -> Outcome:
 	if is_over() or turns_left <= 0:
 		return outcome
 	turns_left -= 1
@@ -158,7 +166,7 @@ func pass_turn() -> Outcome:
 		"scenario_id": SCENARIO_ID,
 		"action": "pass_turn",
 		"is_correct": null,
-		"latency_ms": null,
+		"latency_ms": _latency_or_null(latency_ms),
 		"payload": {
 			"turn": played.size(),
 			"turns_left": turns_left,
@@ -213,6 +221,12 @@ func _finish(result: Outcome) -> void:
 # Telemetry sink: the real EventBus autoload, resolved by node path (not the
 # global identifier, which a bare `-s` test script cannot compile). Present at
 # runtime in the game and under headless tests, so events reach Telemetry.
+# Keeps the schema's "int or null" contract for latency_ms: an unmeasured turn
+# must not look like an instant one in the analysis.
+func _latency_or_null(latency_ms: int) -> Variant:
+	return null if latency_ms < 0 else latency_ms
+
+
 func _emit(payload: Dictionary) -> void:
 	if not _bus_resolved:
 		_bus_resolved = true
@@ -244,13 +258,15 @@ func _emit_hannes_state() -> void:
 
 # The mail unit: which cards went out together, on which turn, and the bar delta
 # for the whole mail. Complements the per-card mail_card_played events.
-func _emit_mail_sent(card_ids: Array, suspicion_before: int, pressure_before: int) -> void:
+func _emit_mail_sent(
+	card_ids: Array, suspicion_before: int, pressure_before: int, latency_ms: int
+) -> void:
 	_emit({
 		"phase": "mail_sent",
 		"scenario_id": SCENARIO_ID,
 		"action": "mail_sent",
 		"is_correct": null,
-		"latency_ms": null,
+		"latency_ms": _latency_or_null(latency_ms),
 		"payload": {
 			"card_ids": card_ids,
 			"card_count": card_ids.size(),
@@ -263,12 +279,17 @@ func _emit_mail_sent(card_ids: Array, suspicion_before: int, pressure_before: in
 	})
 
 
+# is_correct grades the card choice on SCHROTT, the one card type the game
+# itself calls a mistake (the post-run review renders REVIEW_VERDICT_SCHROTT for
+# it): it burns one of the three slots and buys nothing. Every other type is a
+# legitimate move whose merit only shows in the outcome, which mail_outcome and
+# mail_payload_attempt already grade.
 func _emit_card_played(card: MailCard, suspicion_before: int, pressure_before: int) -> void:
 	_emit({
 		"phase": "mail_card_played",
 		"scenario_id": SCENARIO_ID,
 		"action": String(card.id),
-		"is_correct": null,
+		"is_correct": card.type != MailCard.Type.SCHROTT,
 		"latency_ms": null,
 		"payload": {
 			"card_type": card.type_name(),

@@ -22,12 +22,14 @@ const Preview := preload("res://scenarios/spear_phishing/components/mail_preview
 const BossChat := preload("res://scenarios/spear_phishing/components/mail_boss_chat.gd")
 const HandCard := preload("res://scenarios/spear_phishing/components/mail_hand_card.gd")
 const ScreenMusic := preload("res://scenarios/base/components/screen_music.gd")
+const PromptClock := preload("res://scenarios/base/prompt_clock.gd")
 
 # MailBuilder-phase music (plays while this screen is visible, stops on advance).
 const MAIL_MUSIC := preload("res://assets/audio/cursor_glow_loop.wav")
 
 const MAX_SLOTS := 3
 const CONTROL_WIDTH := 260   # send / skip buttons, so they match in any language
+const SCENARIO_ID := "spear_phishing"
 const PAYLOAD_SCROLL_TIME := 0.45
 const REVEAL_STEP_TIME := 0.5
 const TOAST_HOLD := 2.6
@@ -61,6 +63,10 @@ var _seen_legendaries: Dictionary = {}
 var _gate_was_open := false
 var _hand_built_once := false
 
+# Telemetry. The clock is re-marked whenever a fresh turn becomes playable, so
+# a turn's latency is the deliberation time and excludes the reveal animation.
+var _clock := PromptClock.new()
+
 
 func _ready() -> void:
 	var music := ScreenMusic.new()
@@ -83,6 +89,7 @@ func _build() -> void:
 	_rebuild_hand()
 	_refresh_committed()
 	_boss.say("MAIL_BOSS_INTRO")
+	_clock.mark()  # first turn is now playable
 
 
 
@@ -308,14 +315,34 @@ func _toggle_slot(_card, widget) -> void:
 		_slots.erase(card)
 		widget.set_slotted(false)
 		_preview.rebuild_draft(_slots)
+		_emit_draft_change("mail_card_undrafted", card)
 	elif _slots.size() < MAX_SLOTS:
 		_slots.append(card)
 		widget.set_slotted(true)
 		_preview.finish_typing()  # skip any running type-in before the next one
 		_preview.add_draft_fragment(card, true)
+		_emit_draft_change("mail_card_drafted", card)
 	else:
 		return
 	_refresh_controls()
+
+
+# Drafting is reversible until the mail is sent, so composing is recorded
+# ungraded; only the sent mail carries a verdict. The trace still shows which
+# cards a player weighed and discarded, which is where the hesitation shows up.
+func _emit_draft_change(action: String, card) -> void:
+	EventBus.emit_action(
+		SCENARIO_ID,
+		action,
+		_clock.elapsed(),
+		{
+			"card_id": String(card.id),
+			"card_type": card.type_name(),
+			"principle": String(card.principle),
+			"slots_used": _slots.size(),
+			"turn": _run.turns_used() + 1,
+		},
+	)
 
 
 # --- send: bundle the draft into one turn, then reveal card by card ----------
@@ -335,7 +362,10 @@ func _commit_mail(cards: Array) -> void:
 	var turns_before: int = _run.turns_left
 	var suspicion_before: int = _run.suspicion
 	var pressure_before: int = _run.pressure
-	_run.play_mail(cards)
+	# The engine owns the mail_sent / mail_card_played telemetry; the view only
+	# contributes the one thing the engine cannot know, namely how long the
+	# player deliberated before committing the turn.
+	_run.play_mail(cards, _clock.take())
 	if _run.turns_left < turns_before:
 		GameState.consume_mission_turn()
 		_record_mail(cards, suspicion_before, pressure_before)
@@ -361,7 +391,7 @@ func _on_pass() -> void:
 	if _revealing or _run.is_over():
 		return
 	var turns_before: int = _run.turns_left
-	_run.pass_turn()
+	_run.pass_turn(_clock.take())
 	if _run.turns_left < turns_before:
 		GameState.consume_mission_turn()
 	# Passing discards the unsent draft: the rebuilt widgets start unslotted, so
@@ -373,6 +403,8 @@ func _on_pass() -> void:
 	_refresh_committed()
 	if _run.is_over():
 		_handle_outcome()
+	else:
+		_clock.mark()  # next turn is playable
 
 
 # Staggered reveal: step the bars through each card's post-effect snapshot and
@@ -421,6 +453,7 @@ func _finish_reveal(cards: Array) -> void:
 		_preview.begin_new_draft()
 		_rebuild_hand()
 		_refresh_committed()
+		_clock.mark()  # reveal is done, the next turn is playable
 
 
 # Picks Hannes' reply key for his current state, rotating through the variants so

@@ -78,6 +78,21 @@ var _active_source: String = ""
 var _tabs: Dictionary = {}  # source(String) -> Button
 var _pages: Dictionary = {}  # source(String) -> SourcePage (cached)
 
+# --- telemetry ---------------------------------------------------------------
+# Recon grades itself on junk: a junk find looks like a lead but carries nothing
+# usable, and the deck only holds DECK_LIMIT entries, so taking one is a real
+# mistake with a real cost. Noise is not collectable at all and therefore never
+# graded. Decision time is measured from the moment the current tab was opened,
+# which is the span the player actually spent reading that page.
+const SCENARIO_ID := "spear_phishing"
+const PromptClock := preload("res://scenarios/base/prompt_clock.gd")
+
+var _clock := PromptClock.new()
+var _phase_started_at_ms: int = 0
+# Set of sources the player actually opened, for the sweep-coverage measure.
+# Distinct from _tabs, which holds every tab that exists whether visited or not.
+var _visited_sources: Dictionary = {}
+
 @onready var _tab_bar: HBoxContainer = %TabBar
 @onready var _finds_container: VBoxContainer = %FindsContainer
 @onready var _collected_label: Label = %CollectedLabel
@@ -89,10 +104,14 @@ func _ready() -> void:
 	music.track = RECON_MUSIC
 	add_child(music)
 	_style_chrome()
+	_phase_started_at_ms = Time.get_ticks_msec()
+	_clock.mark()
 	_finds = ReconPool.get_finds()
 	var sources := _sources_in_order(_finds)
 	if not sources.is_empty():
 		_active_source = sources[0]
+		# The first tab is on screen without being clicked; count it as visited.
+		_visited_sources[_active_source] = true
 	_build_tabs(sources)
 	_rebuild_finds()
 	_update_collected_label()
@@ -108,11 +127,32 @@ func collect(find: ReconFind) -> void:
 	if is_collected(find):
 		return
 	if collected.size() >= DECK_LIMIT:
+		# Hitting the ceiling is a usability signal, not a wrong answer: the
+		# player wanted one more lead than the deck allows.
+		EventBus.emit_action(
+			SCENARIO_ID,
+			"recon_deck_full",
+			_clock.elapsed(),
+			{"find_id": String(find.id), "source": find.source},
+		)
 		return
 	var updated: Array[ReconFind] = collected.duplicate()
 	updated.append(find)
 	collected = updated
-	# TODO(telemetry): recon_find_collected → EventBus.generic_event
+	EventBus.emit_decision(
+		SCENARIO_ID,
+		"recon_find_collected",
+		not find.is_junk,
+		_clock.elapsed(),
+		{
+			"find_id": String(find.id),
+			"source": find.source,
+			"is_junk": find.is_junk,
+			"is_hidden": find.is_hidden,
+			"deck_size": collected.size(),
+			"phase_elapsed_ms": _phase_elapsed_ms(),
+		},
+	)
 
 
 func uncollect(find: ReconFind) -> void:
@@ -123,7 +163,19 @@ func uncollect(find: ReconFind) -> void:
 		if entry.id != find.id:
 			updated.append(entry)
 	collected = updated
-	# TODO(telemetry): recon_find_uncollected → EventBus.generic_event
+	# Ungraded on purpose: reconsidering is not an error, but the correction
+	# itself is worth seeing in the trace.
+	EventBus.emit_action(
+		SCENARIO_ID,
+		"recon_find_uncollected",
+		_clock.elapsed(),
+		{
+			"find_id": String(find.id),
+			"source": find.source,
+			"is_junk": find.is_junk,
+			"deck_size": collected.size(),
+		},
+	)
 
 
 func is_collected(find: ReconFind) -> bool:
@@ -233,8 +285,18 @@ func _build_tabs(sources: Array[String]) -> void:
 
 
 func _on_tab_pressed(source: String) -> void:
-	# Switching tabs is free: no deck slot, no telemetry.
+	# Switching tabs costs no deck slot, but which platforms a player opens (and
+	# how long they linger) is the coverage measure for the OSINT sweep, so the
+	# switch is recorded with the dwell time on the page being left.
+	EventBus.emit_action(
+		SCENARIO_ID,
+		"recon_tab_opened",
+		_clock.take(),
+		{"from": _active_source, "to": source},
+	)
+	_clock.mark()
 	_active_source = source
+	_visited_sources[source] = true
 	for entry_source in _tabs:
 		var tab: Button = _tabs[entry_source]
 		var active: bool = entry_source == source
@@ -530,5 +592,39 @@ func _on_advance_button_pressed() -> void:
 	var ids: Array[StringName] = []
 	for entry in collected:
 		ids.append(entry.id)
+	_emit_recon_summary(ids)
 	GameState.set_collected_finds(ids)
 	advance_requested.emit()
+
+
+# --- telemetry --------------------------------------------------------------
+
+func _phase_elapsed_ms() -> int:
+	if _phase_started_at_ms == 0:
+		return PromptClock.UNKNOWN
+	return Time.get_ticks_msec() - _phase_started_at_ms
+
+
+# Closing datapoint for the phase: what the player walked away with. Keeps the
+# deck composition in one event so the summary table does not have to replay the
+# whole collect/uncollect stream to reconstruct it.
+func _emit_recon_summary(ids: Array[StringName]) -> void:
+	var junk_count: int = 0
+	var collected_ids := PackedStringArray()
+	for entry in collected:
+		collected_ids.append(String(entry.id))
+		if entry.is_junk:
+			junk_count += 1
+	EventBus.emit_action(
+		SCENARIO_ID,
+		"recon_completed",
+		_phase_elapsed_ms(),
+		{
+			"collected_count": ids.size(),
+			"junk_count": junk_count,
+			"deck_limit": DECK_LIMIT,
+			"sources_opened": _visited_sources.size(),
+			"sources_available": _tabs.size(),
+			"collected_ids": collected_ids,
+		},
+	)

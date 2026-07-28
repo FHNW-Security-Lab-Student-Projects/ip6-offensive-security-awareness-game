@@ -1,12 +1,17 @@
 # Append-only JSONL writer. Subscribes to EventBus.generic_event and
 # persists every payload as one JSON object per line under
-# user://logs/session_{uuid}.jsonl. Stamps timestamp_ms and session_uuid
+# user://logs/session_{uuid}.jsonl. Stamps seq, timestamp_ms and session_uuid
 # on every event so the logs are self-describing.
 extends Node
 
 const LOG_DIR: String = "user://logs"
 
 var _log_path: String = ""
+
+# Monotonic per-session event counter, starting at 1. timestamp_ms only has
+# millisecond resolution, so two events emitted in the same frame can share a
+# timestamp; seq gives the analysis a total order that never ties.
+var _seq: int = 0
 
 func _ready() -> void:
 	var err: int = DirAccess.make_dir_recursive_absolute(LOG_DIR)
@@ -22,9 +27,14 @@ func _ready() -> void:
 func _on_event(payload: Dictionary) -> void:
 	if _log_path.is_empty():
 		return
+	_seq += 1
 	var enriched: Dictionary = payload.duplicate()
+	enriched["seq"] = _seq
 	enriched["timestamp_ms"] = Time.get_unix_time_from_system() * 1000.0
 	enriched["session_uuid"] = GameState.session_uuid
+	# Stamped per event rather than once per file so a log stays self-describing
+	# even when lines from several sessions are concatenated for analysis.
+	enriched["participant_code"] = GameState.participant_code
 	var file: FileAccess = FileAccess.open(_log_path, FileAccess.READ_WRITE)
 	if file == null:
 		# READ_WRITE fails if the file does not yet exist; create it.

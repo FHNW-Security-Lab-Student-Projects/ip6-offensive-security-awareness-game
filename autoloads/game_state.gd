@@ -11,8 +11,34 @@ var session_uuid: String = ""
 var current_scenario_id: String = ""
 var state: State = State.MENU
 
+# ---- Study participant code ----
+# The pseudonym that ties this session's telemetry to the participant's pre and
+# post questionnaire. Entered on the title screen, stamped by Telemetry onto
+# every event. Free text on purpose (the study team owns the numbering scheme);
+# it is only trimmed and length-capped so a stray space cannot split one
+# participant into two rows during analysis.
+#
+# Deliberately NOT persisted to disk: a code left over from the previous
+# participant would silently mislabel a whole session, which is far worse than
+# an empty field the analysis can flag.
+const PARTICIPANT_CODE_MAX_LENGTH: int = 32
+
+var participant_code: String = ""
+
+
+func set_participant_code(value: String) -> void:
+	participant_code = value.strip_edges().substr(0, PARTICIPANT_CODE_MAX_LENGTH)
+
 func _ready() -> void:
 	session_uuid = _generate_session_uuid()
+
+# True while the player sits in the title screen or the scenario selection, i.e.
+# outside a running scenario. Menu scenes announce themselves via transition_to
+# on _ready, so this stays accurate across a whole session and not just before
+# the first scenario.
+func is_in_menu() -> bool:
+	return state == State.MENU
+
 
 func transition_to(new_state: State) -> void:
 	if new_state == state:
