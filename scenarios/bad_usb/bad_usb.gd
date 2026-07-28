@@ -24,6 +24,7 @@ var _ui_briefing
 
 @onready var _ui_failure_popup = $BadUSBScenario/CanvasLayer/FailurePopup
 @onready var _btn_failure_ok = $BadUSBScenario/CanvasLayer/FailurePopup/FailureOkBtn
+@onready var _lbl_failure = $BadUSBScenario/CanvasLayer/FailurePopup/Label
 
 @onready var _world_corridor = $BadUSBScenario/BeforeElevator
 @onready var _ui_corridor_btn = $BadUSBScenario/CanvasLayer/EnterCorridorBtn
@@ -80,11 +81,8 @@ const FAIL_ON_CHOICE_1: Array[int] = [10, 20, 30]
 const FAIL_ON_CHOICE_2: Array[int] = [11, 21, 31]
 
 const PromptClock := preload("res://scenarios/base/prompt_clock.gd")
-
-# Button padding. Tighter than the DarkMailPalette default (20/10) because
-# several of this level's buttons sit in fixed rects laid out in the .tscn.
-const BUTTON_PADDING_X: int = 16
-const BUTTON_PADDING_Y: int = 8
+const Typewriter := preload("res://scenarios/base/typewriter.gd")
+const Style := preload("res://scenarios/bad_usb/bad_usb_style.gd")
 
 # _dialogue_step / 10 -> which social-engineering approach the player is on.
 const DIALOGUE_PATHS: Dictionary = {
@@ -102,6 +100,17 @@ var _failure_count: int = 0
 var _restricted_attempts: int = 0
 # Pretext the player last opened the reception conversation with.
 var _reception_path: String = ""
+
+# --- flowing text -------------------------------------------------------------
+# Two typewriters because the two screens differ in what happens when a line
+# lands: the dialogue reveals its choices, the debrief reveals its image and
+# Weiter button. One shared instance would have to disambiguate that in its
+# handler.
+var _dialogue_typer := Typewriter.new()
+var _story_typer := Typewriter.new()
+# Whether the step currently on screen offers a second option, remembered while
+# both choices are hidden during typing.
+var _second_choice_offered: bool = true
 
 func _ready() -> void:
 	start_scenario(SCENARIO_ID)
@@ -230,25 +239,72 @@ func _setup() -> void:
 	_tailgate_start_pos = _world_tailgate.get_node("Player").position
 	_npc_tailgate_start_pos = _npc_tailgate.position
 
-	_style_buttons()
+	_style_ui()
+
+	_dialogue_typer.finished.connect(_on_line_typed)
+	_story_typer.finished.connect(_on_typing_finished)
 
 
-# This level shipped on Godot's default button theme while scenario 1 dresses
-# every button in the shared DarkMail terminal look, so the two read as
-# different games. One list rather than a tree walk on purpose: the briefing is
-# an instanced scene that styles itself and must not be restyled from here.
-func _style_buttons() -> void:
+func _process(delta: float) -> void:
+	_dialogue_typer.advance(delta)
+	_story_typer.advance(delta)
+
+
+# Click reveals the rest of the current line at once, the same affordance the
+# intro's dialog box offers. Handled in _unhandled_input so a click that lands
+# on a button (a choice, Weiter) is consumed by that button first and never
+# swallowed here; the input is only marked handled while text is actually
+# running, so world interaction is untouched otherwise.
+func _unhandled_input(event: InputEvent) -> void:
+	if not (event is InputEventMouseButton):
+		return
+	var button_event: InputEventMouseButton = event
+	if button_event.button_index != MOUSE_BUTTON_LEFT or not button_event.pressed:
+		return
+	if _dialogue_typer.is_typing():
+		_dialogue_typer.finish_now()
+		get_viewport().set_input_as_handled()
+	elif _story_typer.is_typing():
+		_story_typer.finish_now()
+		get_viewport().set_input_as_handled()
+
+
+# Puts the level into the DarkMail terminal look of scenario 1. Explicit lists
+# rather than a tree walk on purpose: the briefing is an instanced scene that
+# styles itself and must not be restyled from here.
+func _style_ui() -> void:
 	for button: Button in [
 		_ui_enter_btn,
 		_btn_stressed, _btn_confident,
-		_btn_choice1, _btn_choice2,
 		_btn_failure_ok,
 		_ui_corridor_btn, _ui_office_btn, _btn_restricted_elevator,
 		_ui_usb_btn,
 		_btn_next, _btn_finish,
 		_btn_tailgate_trigger, _btn_tailgate_enter,
 	]:
-		DarkMailPalette.style_button(button, BUTTON_PADDING_X, BUTTON_PADDING_Y)
+		Style.style_button(button)
+
+	# The choices wrap inside a fixed column; left to itself a Button demands the
+	# width of its whole line, which pushed them past the dialogue box edges.
+	for choice: Button in [_btn_choice1, _btn_choice2]:
+		Style.style_choice(choice)
+	Style.layout_choice_column(_ui_dialogue_box.get_node("VBoxContainer"))
+
+	Style.style_panel(_ui_dialogue_box)
+	Style.style_panel(_ui_missing_badge)
+	Style.style_panel(_ui_npc_speech)
+	Style.style_panel(_ui_tailgate_locked)
+	Style.style_panel(_ui_failure_popup)
+
+	Style.replace_backdrop(_ui_resolve, _ui_resolve.get_node("ColorRect"))
+
+	Style.style_body(_lbl_npc_text)
+	Style.style_body(_lbl_failure)
+	Style.style_body(_lbl_story)
+	Style.style_heading(_lbl_title)
+	Style.style_body(_ui_missing_badge.get_node("MissingBadgeUI"))
+	Style.style_body(_ui_tailgate_locked.get_node("MissingBadgeUI"))
+	Style.style_body(_ui_npc_speech.get_node("NPCSpeechUI"))
 
 func _swap_in_briefing() -> void:
 	var canvas = $BadUSBScenario/CanvasLayer
@@ -764,7 +820,23 @@ func _update_dialogue_ui() -> void:
 			_btn_choice1.text = tr("BADUSB_DLG_32_C1")
 			_btn_choice2.visible = false
 
-	# The question is now on screen; the decision time starts here.
+	# The match above decided whether this step offers a second option. Hold both
+	# back while the line types itself out, so the player reads the question
+	# before the answers appear, then restore that decision in _on_line_typed.
+	_second_choice_offered = _btn_choice2.visible
+	_btn_choice1.visible = false
+	_btn_choice2.visible = false
+	SfxPlayer.start_typing()
+	_dialogue_typer.start(_lbl_npc_text, _lbl_npc_text.text)
+
+
+func _on_line_typed() -> void:
+	SfxPlayer.stop_typing()
+	_btn_choice1.visible = true
+	_btn_choice2.visible = _second_choice_offered
+	# Decision time starts when the options actually become clickable. Marking it
+	# when the line starts typing would fold the typewriter duration into every
+	# recorded latency and make fast readers look slow.
 	_clock.mark()
 
 func _start_resolve_story() -> void:
@@ -802,15 +874,8 @@ func _play_story_step() -> void:
 		_lbl_title.text = tr("BADUSB_STORY_4_TITLE")
 		target_text = tr("BADUSB_STORY_4_TEXT")
 		
-	_lbl_story.text = target_text
-	_lbl_story.visible_characters = 0
-	
-	var total_time = target_text.length() * _typewriter_speed
 	SfxPlayer.start_typing()
-	var tween = create_tween()
-	tween.tween_property(_lbl_story, "visible_characters", target_text.length(), total_time)
-
-	tween.finished.connect(_on_typing_finished)
+	_story_typer.start(_lbl_story, target_text, 1.0 / _typewriter_speed)
 
 func _on_typing_finished() -> void:
 	SfxPlayer.stop_typing()
