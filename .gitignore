@@ -28,3 +28,7 @@ Thumbs.db
 # Local planning notes (not for the repo)
 .plans/
 
+# Output of tools/analyze.py. Regenerable from the session logs, and during the
+# study it holds participant data, which must not end up in the repository.
+analysis/
+
