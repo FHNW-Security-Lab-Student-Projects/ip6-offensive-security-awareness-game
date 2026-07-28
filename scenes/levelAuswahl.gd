@@ -4,6 +4,9 @@ const MenuStyle := preload("res://resources/theme/menu_style.gd")
 
 
 func _ready() -> void:
+	# Returning here ends the previous scenario as far as the session state is
+	# concerned (see the same call in user_interface.gd).
+	GameState.transition_to(GameState.State.MENU)
 	# Keep the menu music going on the scenario selection (resume if a scenario
 	# stopped it before returning here).
 	MusicPlayer.play_menu_music()

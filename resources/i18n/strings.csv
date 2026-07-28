@@ -45,6 +45,8 @@ MENU_SETTINGS,Einstellungen,Settings
 MENU_QUIT,Beenden,Quit
 MENU_BACK,Zurück,Back
 SETTINGS_LANGUAGE,Sprache,Language
+SETTINGS_LANGUAGE_MENU_ONLY,Nur im Hauptmenü änderbar,Can only be changed in the main menu
+STUDY_PARTICIPANT_CODE,Teilnehmer-Code,Participant code
 RECON_WINDOW_TITLE,Browser,Browser
 RECON_INTERCEPT,⇅ INTERCEPT,⇅ INTERCEPT
 RECON_SWEEP_TITLE,RECON // OSINT-SWEEP,RECON // OSINT SWEEP

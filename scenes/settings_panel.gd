@@ -123,6 +123,12 @@ func _checkbox_row(key: String, pressed: bool) -> Control:
 
 # One button per language, the active one highlighted like the primary menu
 # entry. Switching rebuilds this panel so its own labels flip immediately.
+#
+# Only available from the menus. A Control re-translates its text at draw time
+# only when the stored text is a translation key, and the scenarios resolve
+# theirs through tr() at build time, so switching mid-scenario would leave the
+# running screen in the old language. Locking it here keeps a run in exactly one
+# language, which the study needs anyway.
 func _language_row() -> Control:
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 16)
@@ -133,16 +139,26 @@ func _language_row() -> Control:
 	name_label.custom_minimum_size.x = ROW_LABEL_WIDTH
 	row.add_child(name_label)
 
+	var unlocked: bool = GameState.is_in_menu()
 	for entry in [["de", "Deutsch"], ["en", "English"]]:
 		var code: String = entry[0]
 		var button := Button.new()
 		button.text = entry[1]
 		MenuStyle.style_button(button, Settings.locale == code)
+		button.disabled = not unlocked
 		button.pressed.connect(func() -> void:
 			if Settings.locale != code:
 				Settings.set_locale(code)
 				_rebuild())
 		row.add_child(button)
+
+	if not unlocked:
+		var hint := Label.new()
+		MenuStyle.apply_label(hint)
+		hint.text = tr("SETTINGS_LANGUAGE_MENU_ONLY")
+		hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		hint.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		row.add_child(hint)
 	return row
 
 
