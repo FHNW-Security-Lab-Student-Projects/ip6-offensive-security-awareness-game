@@ -24,17 +24,21 @@ const SkipHint := preload("res://scenarios/base/skip_hint.gd")
 const PromptClock := preload("res://scenarios/base/prompt_clock.gd")
 
 const FADE_TIME: float = 0.45
-const PANEL_WIDTH: int = 1180
 const IMAGE_HEIGHT: int = 300
 const CHARS_PER_SECOND: float = 45.0
-const PADDING: int = 44
+# Wrap width for the paragraphs, the same idea as scenario 1's BODY_WIDTH: a
+# full-width line of mono text is too long to track back to the next line.
+const BODY_WIDTH: int = 900
+const SIDE_MARGIN: int = 80
+const TOP_MARGIN: int = 60
+const BOTTOM_MARGIN: int = 40
 
 var _stages: Array = []          # [{title: String, text: String, image: Texture2D}]
 var _index: int = 0
 
 var _typer := Typewriter.new()
 var _clock := PromptClock.new()
-var _panel: PanelContainer
+var _panel: Control   # the opaque full-screen backdrop, also the click target
 var _title: Label
 var _body: Label
 var _image: TextureRect
@@ -64,41 +68,30 @@ func configure(stages: Array) -> void:
 # --- layout -------------------------------------------------------------------
 
 func _build() -> void:
-	var dim := ColorRect.new()
-	dim.color = Color(0, 0, 0, 0.55)
-	dim.anchor_right = 1.0
-	dim.anchor_bottom = 1.0
+	# Opaque, not a dim over the level: the closing screen takes the whole
+	# display the way scenario 1's Resolve does, so the debrief is the only
+	# thing left to look at. Same colour as its Background rect.
+	_panel = ColorRect.new()
+	(_panel as ColorRect).color = DarkMailPalette.BG_PANEL
+	_panel.anchor_right = 1.0
+	_panel.anchor_bottom = 1.0
 	# The whole screen is the click target, the way scenario 1's reveal catcher
 	# is: the hint in the corner advertises it, but it is not the only way in.
-	dim.mouse_filter = Control.MOUSE_FILTER_STOP
-	dim.gui_input.connect(_on_click)
-	add_child(dim)
-
-	_panel = PanelContainer.new()
-	_panel.anchor_left = 0.5
-	_panel.anchor_top = 0.5
-	_panel.anchor_right = 0.5
-	_panel.anchor_bottom = 0.5
-	_panel.grow_horizontal = Control.GROW_DIRECTION_BOTH
-	_panel.grow_vertical = Control.GROW_DIRECTION_BOTH
-	_panel.custom_minimum_size.x = PANEL_WIDTH
 	_panel.mouse_filter = Control.MOUSE_FILTER_STOP
 	_panel.gui_input.connect(_on_click)
-	var box := DarkMailPalette.flat_box(
-		Color(DarkMailPalette.BG_PANEL, 0.97),
-		DarkMailPalette.GREEN,
-		DarkMailPalette.BORDER_WIDTH,
-	)
-	box.content_margin_left = PADDING
-	box.content_margin_right = PADDING
-	box.content_margin_top = PADDING
-	box.content_margin_bottom = PADDING
-	_panel.add_theme_stylebox_override("panel", box)
 	add_child(_panel)
 
 	var column := VBoxContainer.new()
-	column.add_theme_constant_override("separation", 22)
-	_panel.add_child(column)
+	column.anchor_right = 1.0
+	column.anchor_bottom = 1.0
+	column.offset_left = SIDE_MARGIN
+	column.offset_top = TOP_MARGIN
+	column.offset_right = -SIDE_MARGIN
+	column.offset_bottom = -BOTTOM_MARGIN
+	column.alignment = BoxContainer.ALIGNMENT_CENTER
+	column.add_theme_constant_override("separation", 28)
+	column.mouse_filter = Control.MOUSE_FILTER_IGNORE  # clicks fall through
+	add_child(column)
 
 	# Everything that changes per stage lives in one node, so a stage change is
 	# one fade instead of three that can drift apart.
@@ -106,23 +99,21 @@ func _build() -> void:
 	(_stage_box as VBoxContainer).add_theme_constant_override("separation", 22)
 	column.add_child(_stage_box)
 
-	_title = Label.new()
-	_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	DarkMailPalette.apply_mono_label(
-		_title, DarkMailPalette.FONT_SIZE_MONO_LARGE, DarkMailPalette.GREEN)
+	_title = _make_label(DarkMailPalette.FONT_SIZE_MONO_LARGE, DarkMailPalette.GREEN)
 	_stage_box.add_child(_title)
 
-	_body = Label.new()
-	_body.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	DarkMailPalette.apply_mono_label(
-		_body, DarkMailPalette.FONT_SIZE_MONO, DarkMailPalette.TEXT_GREEN)
+	_body = _make_label(DarkMailPalette.FONT_SIZE_MONO, DarkMailPalette.TEXT_GREEN)
+	# Bounded and centred like scenario 1's paragraphs rather than run edge to
+	# edge across the display.
+	_body.custom_minimum_size.x = BODY_WIDTH
+	_body.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	_stage_box.add_child(_body)
 
 	_image = TextureRect.new()
 	_image.custom_minimum_size.y = IMAGE_HEIGHT
 	_image.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	_image.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	_image.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_stage_box.add_child(_image)
 
 	_hint = SkipHint.new()
@@ -144,6 +135,17 @@ func _build_buttons() -> Control:
 	_add_button(row, "RESOLVE_HOME", func() -> void: home_requested.emit())
 	_add_button(row, "RESOLVE_RETRY", func() -> void: replay_requested.emit())
 	return row
+
+
+# Centred mono label, the shape scenario 1's debrief uses for every line it
+# shows. Clicks fall through so the whole screen stays one target.
+func _make_label(size: int, color: Color) -> Label:
+	var label := Label.new()
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	DarkMailPalette.apply_mono_label(label, size, color)
+	return label
 
 
 func _add_button(row: HBoxContainer, key: String, on_press: Callable) -> void:
