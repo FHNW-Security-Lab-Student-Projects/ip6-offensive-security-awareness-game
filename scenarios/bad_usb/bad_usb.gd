@@ -175,9 +175,8 @@ func _setup() -> void:
 	if not _btn_choice2.pressed.is_connected(_on_dialog_choice_2_pressed):
 		_btn_choice2.pressed.connect(_on_dialog_choice_2_pressed)
 	
+	# Left in the scene but never shown: the fail screen replaced it.
 	_ui_failure_popup.visible = false
-	if not _btn_failure_ok.pressed.is_connected(_on_failure_ok_pressed):
-		_btn_failure_ok.pressed.connect(_on_failure_ok_pressed)
 	
 	var corridor_zone = $BadUSBScenario/InsideBuilding/CorridorZone
 	if not corridor_zone.body_entered.is_connected(_on_corridor_zone_entered):
@@ -286,7 +285,6 @@ func _style_ui() -> void:
 	for button: Button in [
 		_ui_enter_btn,
 		_btn_stressed, _btn_confident,
-		_btn_failure_ok,
 		_ui_corridor_btn, _ui_office_btn, _btn_restricted_elevator,
 		_ui_usb_btn,
 		_btn_tailgate_trigger, _btn_tailgate_enter,
@@ -303,7 +301,6 @@ func _style_ui() -> void:
 	Style.style_panel(_ui_missing_badge)
 	Style.style_panel(_ui_npc_speech)
 	Style.style_panel(_ui_tailgate_locked)
-	Style.style_panel(_ui_failure_popup)
 
 	_dialogue_hint = SkipHint.new()
 	Style.place_skip_hint(_dialogue_hint, _ui_dialogue_box)
@@ -315,7 +312,6 @@ func _style_ui() -> void:
 		_ui_dialogue_box.gui_input.connect(_on_dialogue_box_clicked)
 
 	Style.style_body(_lbl_npc_text)
-	Style.style_body(_lbl_failure)
 	Style.style_body(_ui_missing_badge.get_node("MissingBadgeUI"))
 	Style.style_body(_ui_tailgate_locked.get_node("MissingBadgeUI"))
 	Style.style_body(_ui_npc_speech.get_node("NPCSpeechUI"))
@@ -575,8 +571,7 @@ func _on_dialog_choice_1_pressed() -> void:
 			_world_office.get_node("Player").set_physics_process(true)
 
 		10, 20, 30:
-			_ui_dialogue_box.visible = false
-			_ui_failure_popup.visible = true
+			_fail_run()
 
 func _on_dialog_choice_2_pressed() -> void:
 	_log_dialogue_choice(2)
@@ -585,8 +580,7 @@ func _on_dialog_choice_2_pressed() -> void:
 			_dialogue_step += 1
 			_update_dialogue_ui()
 		11, 21, 31:
-			_ui_dialogue_box.visible = false
-			_ui_failure_popup.visible = true
+			_fail_run()
 
 # Grades and records the answer for the step the player is currently on. MUST
 # run before the handlers touch _dialogue_step, otherwise the event lands on the
@@ -612,15 +606,19 @@ func _log_dialogue_choice(choice: int) -> void:
 	if blows_cover:
 		_failure_count += 1
 
-# A blown cover ends the run and goes straight to the debrief, the way a losing
-# outcome in scenario 1 goes to its Resolve screen. The player gets back in via
-# "Nochmal spielen" there, which reloads the level cleanly.
+# A blown cover ends the run and goes straight to the fail screen, the way a
+# losing outcome in scenario 1 goes to its Resolve screen. The player gets back
+# in via "Nochmal spielen" there, which reloads the level cleanly.
 #
-# This replaces the in-run reset that used to put the player back at the
-# entrance. That reset (positions, NPCs, the tailgate door) is gone with it: a
-# scene reload rebuilds all of it, and for the study a run now has exactly one
-# outcome instead of an unbounded number of silent retries.
-func _on_failure_ok_pressed() -> void:
+# No intermediate popup: the notice it used to carry (BADUSB_FAILURE_TEXT) is
+# now the opening line of the fail screen, so the player is told what happened
+# in the same place where they are told what it means.
+#
+# This also replaces the in-run reset that put the player back at the entrance.
+# That reset (positions, NPCs, the tailgate door) is gone with it: a scene
+# reload rebuilds all of it, and for the study a run now has exactly one outcome
+# instead of an unbounded number of silent retries.
+func _fail_run() -> void:
 	_run_failed = true
 	EventBus.emit_action(
 		scenario_id,
@@ -628,7 +626,7 @@ func _on_failure_ok_pressed() -> void:
 		PromptClock.UNKNOWN,
 		{"at_step": _dialogue_step, "path": _reception_path},
 	)
-	_ui_failure_popup.visible = false
+	_ui_dialogue_box.visible = false
 	_dialogue_step = 0
 	_change_substate(SubState.RESOLVE)
 
@@ -847,19 +845,30 @@ func _on_line_typed() -> void:
 # ("Du konntest den eingeschraenkten Bereich betreten"). Showing them after a
 # blown cover would tell the player about an infiltration that did not happen.
 const DEBRIEF_STAGES_SUCCESS: Array[Dictionary] = [
-	{"key": "STORY_0", "image": "res://assets/sprites/placeholder/storyImages/lobby_img.png"},
-	{"key": "STORY_1", "image": "res://assets/sprites/placeholder/storyImages/elevator_img.png"},
-	{"key": "STORY_2", "image": "res://assets/sprites/placeholder/storyImages/door_img.png"},
-	{"key": "STORY_3", "image": "res://assets/sprites/placeholder/storyImages/pc_img.png"},
-	{"key": "STORY_4", "image": ""},
+	{"title": "BADUSB_STORY_0_TITLE", "text": "BADUSB_STORY_0_TEXT",
+		"image": "res://assets/sprites/placeholder/storyImages/lobby_img.png"},
+	{"title": "BADUSB_STORY_1_TITLE", "text": "BADUSB_STORY_1_TEXT",
+		"image": "res://assets/sprites/placeholder/storyImages/elevator_img.png"},
+	{"title": "BADUSB_STORY_2_TITLE", "text": "BADUSB_STORY_2_TEXT",
+		"image": "res://assets/sprites/placeholder/storyImages/door_img.png"},
+	{"title": "BADUSB_STORY_3_TITLE", "text": "BADUSB_STORY_3_TEXT",
+		"image": "res://assets/sprites/placeholder/storyImages/pc_img.png"},
+	{"title": "BADUSB_STORY_4_TITLE", "text": "BADUSB_STORY_4_TEXT", "image": ""},
 ]
 
-# Shorter on purpose: the run ended at the first checkpoint, so there is only
-# that moment to reflect on, plus the lesson it carries.
+# Shorter on purpose: the run ended at the first checkpoint, so there is that
+# moment to reflect on and the lesson it carries, nothing more.
+#
+# The opening line is BADUSB_FAILURE_TEXT, the level's own notice that used to
+# appear in the popup this screen replaced, so the player reads the same
+# sentence they always did, just in the place where it is explained.
 const DEBRIEF_STAGES_FAILED: Array[Dictionary] = [
-	{"key": "FAIL_0", "image": "res://assets/sprites/placeholder/storyImages/lobby_img.png"},
-	{"key": "FAIL_1", "image": ""},
+	{"title": "BADUSB_FAIL_0_TITLE", "text": "BADUSB_FAILURE_TEXT",
+		"image": "res://assets/sprites/placeholder/storyImages/lobby_img.png"},
+	{"title": "BADUSB_FAIL_1_TITLE", "text": "BADUSB_FAIL_1_TEXT", "image": ""},
 ]
+
+const FAIL_ACCENT: Color = DarkMailPalette.ALERT_RED
 
 
 func _start_resolve_story() -> void:
@@ -877,11 +886,12 @@ func _start_resolve_story() -> void:
 	for stage in source:
 		var image_path: String = stage["image"]
 		stages.append({
-			"title": tr("BADUSB_%s_TITLE" % stage["key"]),
-			"text": tr("BADUSB_%s_TEXT" % stage["key"]),
+			"title": tr(stage["title"]),
+			"text": tr(stage["text"]),
 			"image": load(image_path) if not image_path.is_empty() else null,
 		})
-	_debrief.configure(stages)
+	_debrief.configure(
+		stages, FAIL_ACCENT if _run_failed else DarkMailPalette.GREEN)
 
 
 # How long each debrief stage stood finished on screen before the player moved

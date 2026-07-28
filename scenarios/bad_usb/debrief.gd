@@ -59,9 +59,14 @@ func _process(delta: float) -> void:
 
 
 # stages: [{title: <translated>, text: <translated>, image: Texture2D or null}]
-func configure(stages: Array) -> void:
+#
+# accent colours the headings. Scenario 1 does the same thing on its Resolve
+# screen: a losing outcome gets ALERT_RED instead of the phosphor green, so the
+# result is readable before a single word is.
+func configure(stages: Array, accent: Color = DarkMailPalette.GREEN) -> void:
 	_stages = stages.duplicate()
 	_index = 0
+	_title.add_theme_color_override("font_color", accent)
 	_show_stage()
 
 

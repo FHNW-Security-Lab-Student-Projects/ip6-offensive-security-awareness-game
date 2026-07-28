@@ -109,11 +109,15 @@ func _test_failure_counting() -> void:
 	# happened during attempt 2, and only afterwards does attempt 3 begin.
 	print("attempt number rides along (expect 2): ", _last_choice()["payload"].get("attempt"))
 
-	# A blown cover now ends the run instead of resetting to the entrance.
-	_usb._on_failure_ok_pressed()
+	# A blown cover now ends the run instead of resetting to the entrance, and
+	# without the popup that used to sit in between. Counted relative to what the
+	# grading test already produced: every wrong answer there ends a run too.
+	var before := _events_of("run_failed").size()
+	_usb._fail_run()
 	var failed := _events_of("run_failed")
-	print("blown cover recorded (expect 1): ", failed.size())
-	print("failure event stays ungraded (expect true): ", failed[0]["is_correct"] == null)
+	print("blown cover recorded (expect 1 more): ", failed.size() - before)
+	print("no failure popup is shown (expect false): ", _usb._ui_failure_popup.visible)
+	print("failure event stays ungraded (expect true): ", failed[-1]["is_correct"] == null)
 	print("run is marked as failed (expect true): ", _usb._run_failed)
 
 
@@ -168,6 +172,9 @@ func _test_debrief() -> void:
 	print("failed run reports COVER_BLOWN (expect COVER_BLOWN): ", _debrief_outcome())
 	print("failed run is graded wrong (expect false): ", _debrief_correct())
 	print("failed run gets the short debrief (expect 2): ", _usb._debrief._stages.size())
+	# The notice the popup used to carry now opens the fail screen.
+	print("fail screen opens with the level's notice (expect true): ",
+		String(_usb._debrief._stages[0]["text"]) == tr("BADUSB_FAILURE_TEXT"))
 
 	# Now the successful path.
 	_usb._run_failed = false
