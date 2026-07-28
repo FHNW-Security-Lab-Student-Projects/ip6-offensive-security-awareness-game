@@ -47,6 +47,10 @@ BADUSB_BTN_FINISH,Szenario Beenden,Finish scenario
 BADUSB_BTN_ENTER_BUILDING,Gebäude Betreten,Enter building
 BADUSB_BTN_RECEPTION_STRESSED,Rezeptionist gestresst ansprechen,Approach the receptionist stressed
 BADUSB_BTN_RECEPTION_CONFIDENT,Rezeptionist überzeugt ansprechen,Approach the receptionist confident
+BADUSB_FAIL_0_TITLE,Aufgeflogen,Blown
+BADUSB_FAIL_0_TEXT,"Dein Vorwand hat nicht gehalten. Statt dich durchzuwinken, hat die Person nachgefragt und deine Angaben nicht einfach geglaubt. Genau das ist die wirksamste Verteidigung gegen Social Engineering: eine einzige Rückfrage an der richtigen Stelle.","Your pretext did not hold. Instead of waving you through, the person asked questions and did not simply take your story at face value. That is the most effective defence against social engineering: one well-placed question."
+BADUSB_FAIL_1_TITLE,Fazit: Eine Person hat gereicht,Conclusion: one person was enough
+BADUSB_FAIL_1_TEXT,"Physische Angriffe leben davon, dass niemand den ersten Schritt hinterfragt. Hier hat jemand die Regel angewendet, obwohl es unbequem war. Damit war die Angriffskette gestoppt, bevor der USB-Stick überhaupt in die Nähe eines Rechners kam.","Physical attacks rely on nobody questioning the first step. Here someone applied the rule even though it was inconvenient. That stopped the attack chain before the USB stick got anywhere near a computer."
 BADUSB_FAILURE_TEXT,Gescheitert: Deine Antworten haben aufsehen erregt und du wurdest zurückgewiesen.,Failed: your answers drew attention and you were turned away.
 BADUSB_BTN_RETRY,Erneut Versuchen,Try again
 BADUSB_BTN_GO_ELEVATOR,Zum Aufzug gehen,Go to the lift

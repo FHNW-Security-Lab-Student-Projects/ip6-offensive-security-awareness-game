@@ -109,11 +109,12 @@ func _test_failure_counting() -> void:
 	# happened during attempt 2, and only afterwards does attempt 3 begin.
 	print("attempt number rides along (expect 2): ", _last_choice()["payload"].get("attempt"))
 
+	# A blown cover now ends the run instead of resetting to the entrance.
 	_usb._on_failure_ok_pressed()
-	var retries := _events_of("retry_after_failure")
-	print("restart after failure recorded (expect 1): ", retries.size())
-	print("retry event stays ungraded (expect true): ", retries[0]["is_correct"] == null)
-	print("retry event carries the count (expect 2): ", retries[0]["payload"].get("failures_so_far"))
+	var failed := _events_of("run_failed")
+	print("blown cover recorded (expect 1): ", failed.size())
+	print("failure event stays ungraded (expect true): ", failed[0]["is_correct"] == null)
+	print("run is marked as failed (expect true): ", _usb._run_failed)
 
 
 # --- reception approach ------------------------------------------------------
@@ -144,19 +145,41 @@ func _test_dead_end() -> void:
 
 # --- run summary -------------------------------------------------------------
 
+func _debriefs() -> Array:
+	var out: Array = []
+	for e in _events:
+		if e.get("phase") == "scenario_debrief" and e.get("scenario_id") == "bad_usb":
+			out.append(e)
+	return out
+
+
+func _debrief_outcome() -> String:
+	_usb._on_complete()
+	return String(_debriefs()[-1]["payload"].get("outcome", ""))
+
+
+func _debrief_correct():
+	return _debriefs()[-1]["is_correct"]
+
+
 func _test_debrief() -> void:
+	# _test_failure_counting left the run in the failed state; a failed run must
+	# never be reported as a planted stick.
+	print("failed run reports COVER_BLOWN (expect COVER_BLOWN): ", _debrief_outcome())
+	print("failed run is graded wrong (expect false): ", _debrief_correct())
+	print("failed run gets the short debrief (expect 2): ", _usb._debrief._stages.size())
+
+	# Now the successful path.
+	_usb._run_failed = false
 	_usb._failure_count = 3
 	_usb._restricted_attempts = 2
 	_usb._reception_path = "confident"
 	_usb._on_complete()
 
-	var debriefs: Array = []
-	for e in _events:
-		if e.get("phase") == "scenario_debrief" and e.get("scenario_id") == "bad_usb":
-			debriefs.append(e)
-	print("one debrief row emitted (expect 1): ", debriefs.size())
-	var payload: Dictionary = debriefs[0]["payload"]
-	print("debrief carries the outcome (expect USB_PLANTED): ", payload.get("outcome"))
+	var debriefs: Array = _debriefs()
+	print("one debrief row per completion (expect 2): ", debriefs.size())
+	var payload: Dictionary = debriefs[-1]["payload"]
+	print("successful run reports USB_PLANTED (expect USB_PLANTED): ", payload.get("outcome"))
 	print("debrief carries the failures (expect 3): ", payload.get("failures"))
 	print("debrief carries the detours (expect 2): ", payload.get("restricted_attempts"))
 	print("debrief carries the pretext (expect confident): ", payload.get("reception_path"))

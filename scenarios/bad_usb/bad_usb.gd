@@ -94,6 +94,10 @@ var _failure_count: int = 0
 var _restricted_attempts: int = 0
 # Pretext the player last opened the reception conversation with.
 var _reception_path: String = ""
+# True once a blown cover has ended the run. Decides both which debrief is shown
+# and which outcome the study data records, so a failed run can never be
+# reported as a planted stick.
+var _run_failed: bool = false
 
 # --- flowing text -------------------------------------------------------------
 var _dialogue_typer := Typewriter.new()
@@ -608,46 +612,25 @@ func _log_dialogue_choice(choice: int) -> void:
 	if blows_cover:
 		_failure_count += 1
 
+# A blown cover ends the run and goes straight to the debrief, the way a losing
+# outcome in scenario 1 goes to its Resolve screen. The player gets back in via
+# "Nochmal spielen" there, which reloads the level cleanly.
+#
+# This replaces the in-run reset that used to put the player back at the
+# entrance. That reset (positions, NPCs, the tailgate door) is gone with it: a
+# scene reload rebuilds all of it, and for the study a run now has exactly one
+# outcome instead of an unbounded number of silent retries.
 func _on_failure_ok_pressed() -> void:
-	# The player was thrown back to the entrance and is starting over. Recorded
-	# separately from the failing answer so a run's retries can be counted
-	# without re-deriving them from the decision stream.
+	_run_failed = true
 	EventBus.emit_action(
 		scenario_id,
-		"retry_after_failure",
+		"run_failed",
 		PromptClock.UNKNOWN,
-		{"failures_so_far": _failure_count},
+		{"at_step": _dialogue_step, "path": _reception_path},
 	)
 	_ui_failure_popup.visible = false
 	_dialogue_step = 0
-
-	_tailgate_event_triggered = false
-	_office_npc_triggered = false
-	_office_dialogue_done = false
-	
-	# --- Reset Office NPC ---
-	_npc_office.position = _office_npc_start_pos
-	_npc_office.flip_h = false
-	_npc_office.play("idle")
-	_npc_office.visible = false 
-	
-	_world_office.get_node("Player").set_physics_process(true)
-	_world_inside.get_node("Player").set_physics_process(true)
-	
-	# --- Reset Tailgate Scene ---
-	_sprite_open_door.visible = false
-	_npc_tailgate.position = _npc_tailgate_start_pos
-	_npc_tailgate.flip_h = false 
-	_npc_tailgate.play("idle")
-	_npc_tailgate.visible = true 
-	
-	# --- Reset Player Positions ---
-	_world_front.get_node("Player").position = _front_door_pos
-	_world_inside.get_node("Player").position = _inside_start_pos
-	_world_corridor.get_node("Player").position = _corridor_start_pos
-	_world_tailgate.get_node("Player").position = _tailgate_start_pos
-	
-	_change_substate(SubState.FRONT)
+	_change_substate(SubState.RESOLVE)
 
 func _on_action(_action_id: String) -> void:
 	pass
@@ -657,14 +640,15 @@ func _on_action(_action_id: String) -> void:
 # end state (a blown cover sends the player back to try again), so the outcome
 # is fixed and the interesting variance sits in the retry and detour counters.
 func _on_complete() -> void:
+	var outcome: String = "COVER_BLOWN" if _run_failed else "USB_PLANTED"
 	EventBus.generic_event.emit({
 		"phase": "scenario_debrief",
 		"scenario_id": scenario_id,
-		"action": "USB_PLANTED",
-		"is_correct": true,
+		"action": outcome,
+		"is_correct": not _run_failed,
 		"latency_ms": null,
 		"payload": {
-			"outcome": "USB_PLANTED",
+			"outcome": outcome,
 			"failures": _failure_count,
 			"restricted_attempts": _restricted_attempts,
 			"reception_path": _reception_path,
@@ -856,15 +840,25 @@ func _on_line_typed() -> void:
 
 # --- debrief ------------------------------------------------------------------
 
-# The five closing stages, resolved to text at build time so the debrief
-# component stays a pure view. Image per stage; the last one closes with the
-# lesson and has none.
-const DEBRIEF_STAGES: Array[Dictionary] = [
-	{"key": "0", "image": "res://assets/sprites/placeholder/storyImages/lobby_img.png"},
-	{"key": "1", "image": "res://assets/sprites/placeholder/storyImages/elevator_img.png"},
-	{"key": "2", "image": "res://assets/sprites/placeholder/storyImages/door_img.png"},
-	{"key": "3", "image": "res://assets/sprites/placeholder/storyImages/pc_img.png"},
-	{"key": "4", "image": ""},
+# The closing stages, resolved to text at build time so the debrief component
+# stays a pure view. Image per stage; the closing lesson has none.
+#
+# Two sets, because the success stages describe things a failed run never did
+# ("Du konntest den eingeschraenkten Bereich betreten"). Showing them after a
+# blown cover would tell the player about an infiltration that did not happen.
+const DEBRIEF_STAGES_SUCCESS: Array[Dictionary] = [
+	{"key": "STORY_0", "image": "res://assets/sprites/placeholder/storyImages/lobby_img.png"},
+	{"key": "STORY_1", "image": "res://assets/sprites/placeholder/storyImages/elevator_img.png"},
+	{"key": "STORY_2", "image": "res://assets/sprites/placeholder/storyImages/door_img.png"},
+	{"key": "STORY_3", "image": "res://assets/sprites/placeholder/storyImages/pc_img.png"},
+	{"key": "STORY_4", "image": ""},
+]
+
+# Shorter on purpose: the run ended at the first checkpoint, so there is only
+# that moment to reflect on, plus the lesson it carries.
+const DEBRIEF_STAGES_FAILED: Array[Dictionary] = [
+	{"key": "FAIL_0", "image": "res://assets/sprites/placeholder/storyImages/lobby_img.png"},
+	{"key": "FAIL_1", "image": ""},
 ]
 
 
@@ -878,12 +872,13 @@ func _start_resolve_story() -> void:
 	_debrief.replay_requested.connect(_on_debrief_replay)
 	$BadUSBScenario/CanvasLayer.add_child(_debrief)
 
+	var source: Array = DEBRIEF_STAGES_FAILED if _run_failed else DEBRIEF_STAGES_SUCCESS
 	var stages: Array = []
-	for stage in DEBRIEF_STAGES:
+	for stage in source:
 		var image_path: String = stage["image"]
 		stages.append({
-			"title": tr("BADUSB_STORY_%s_TITLE" % stage["key"]),
-			"text": tr("BADUSB_STORY_%s_TEXT" % stage["key"]),
+			"title": tr("BADUSB_%s_TITLE" % stage["key"]),
+			"text": tr("BADUSB_%s_TEXT" % stage["key"]),
 			"image": load(image_path) if not image_path.is_empty() else null,
 		})
 	_debrief.configure(stages)
