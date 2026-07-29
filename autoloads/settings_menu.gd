@@ -9,6 +9,7 @@ extends CanvasLayer
 
 const SettingsPanel := preload("res://scenes/settings_panel.gd")
 const OVERLAY_LAYER := 100
+const TITLE_SCENE := "res://scenes/StartScreen.tscn"
 
 var _panel: Control
 
@@ -52,3 +53,25 @@ func close() -> void:
 	if is_open():
 		_panel.queue_free()
 	_panel = null
+
+
+# "Zum Hauptmenü" from inside a running scenario. Owned here rather than by the
+# panel because the pause and the overlay lifecycle live here too.
+#
+# The run is recorded as abandoned first. Without that event the analysis only
+# sees a scenario_start with no debrief and cannot tell a deliberate exit from a
+# crash or a closed window, which matters when deciding whether to exclude a
+# participant.
+#
+# Order matters: close() lifts the pause before the scene change, otherwise the
+# fade in SceneTransition would sit frozen on a paused tree.
+func leave_to_title() -> void:
+	if not GameState.is_in_menu():
+		EventBus.emit_action(
+			GameState.current_scenario_id,
+			"scenario_aborted",
+			-1,  # no clock on this: it is an exit, not a decision
+			{"phase": String(GameState.mission_phase)},
+		)
+	close()
+	SceneTransition.change_scene(TITLE_SCENE)

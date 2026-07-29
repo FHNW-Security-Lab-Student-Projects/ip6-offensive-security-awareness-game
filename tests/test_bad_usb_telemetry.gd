@@ -116,10 +116,14 @@ func _test_failure_counting() -> void:
 	# grading test already produced: every wrong answer there ends a run too.
 	var before := _events_of("run_failed").size()
 	_usb._fail_run()
+	# _fail_run hands the substate change to SceneTransition, which fades for
+	# 350ms first, so the debrief does not exist yet in this synchronous test.
+	# The telemetry below fires immediately; the screen is forced in afterwards.
 	var failed := _events_of("run_failed")
 	print("blown cover recorded (expect 1 more): ", failed.size() - before)
 	print("no failure popup is shown (expect false): ", _usb._ui_failure_popup.visible)
 	print("failure event stays ungraded (expect true): ", failed[-1]["is_correct"] == null)
+	_usb._change_substate(7)  # what the fade would have done
 	print("run is marked as failed (expect true): ", _usb._run_failed)
 
 

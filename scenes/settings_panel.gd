@@ -63,6 +63,10 @@ func _build() -> void:
 	var buttons := HBoxContainer.new()
 	buttons.alignment = BoxContainer.ALIGNMENT_CENTER
 	buttons.add_theme_constant_override("separation", 20)
+	# Only offered while a scenario is running: on the title screen there is
+	# nothing to leave, and the button would just reload the screen you are on.
+	if not GameState.is_in_menu():
+		buttons.add_child(_button("RESOLVE_HOME", SettingsMenu.leave_to_title))
 	buttons.add_child(_button("SETTINGS_RESET", _on_reset))
 	buttons.add_child(_button("SETTINGS_CLOSE", func() -> void: closed.emit()))
 	col.add_child(buttons)

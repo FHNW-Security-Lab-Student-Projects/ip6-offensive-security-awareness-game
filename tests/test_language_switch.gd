@@ -25,6 +25,7 @@ var _restore_locale := "de"
 # Assigned in _process rather than @onready, since SceneTree is not a Node.
 var _settings: Node
 var _game_state: Node
+var _aborted_events: Array = []
 
 # Mirrors GameState.State, which is not reachable as a global type from here.
 const STATE_MENU := 0
@@ -71,6 +72,7 @@ func _process(_delta: float) -> bool:
 	if _step == 1:
 		_settings = root.get_node("Settings")
 		_game_state = root.get_node("GameState")
+		root.get_node("EventBus").connect("generic_event", _on_event)
 		_restore_locale = _settings.locale
 		return false
 	if _step != 2:
@@ -80,6 +82,7 @@ func _process(_delta: float) -> bool:
 	_test_menu_state_recovers()
 	_test_row_locked_in_scenario()
 	_test_row_unlocked_in_menu()
+	_test_leave_to_title()
 
 	_settings.set_locale(_restore_locale)
 	print("TEST DONE")
@@ -163,3 +166,51 @@ func _test_row_unlocked_in_menu() -> void:
 	_settings.set_locale(target)
 	print("switching applies the locale (expect true): ", TranslationServer.get_locale() == target)
 	panel.queue_free()
+
+
+# --- leaving a run from the pause menu ------------------------------------------
+
+func _on_event(payload: Dictionary) -> void:
+	if payload.get("action") == "scenario_aborted":
+		_aborted_events.append(payload)
+
+
+func _buttons_in(node: Node, out: Array) -> void:
+	for child in node.get_children():
+		if child is Button:
+			out.append((child as Button).text)
+		_buttons_in(child, out)
+
+
+# Quitting a scenario through the menu has to leave a trace. Without it the
+# analysis sees a scenario_start with no debrief and cannot tell a deliberate
+# exit from a crash, which is the difference between excluding a participant on
+# a stated rule and guessing.
+func _test_leave_to_title() -> void:
+	_game_state.transition_to(STATE_MENU)
+	var in_menu := _open_panel()
+	var menu_labels: Array = []
+	_buttons_in(in_menu, menu_labels)
+	print("no exit button on the title screen (expect false): ",
+		tr("RESOLVE_HOME") in menu_labels)
+	in_menu.queue_free()
+
+	_game_state.current_scenario_id = "bad_usb"
+	_game_state.transition_to(STATE_IN_SCENARIO)
+	_game_state.set_mission_phase(&"LOBBY")
+	var in_run := _open_panel()
+	var run_labels: Array = []
+	_buttons_in(in_run, run_labels)
+	print("exit button offered during a run (expect true): ",
+		tr("RESOLVE_HOME") in run_labels)
+
+	var before: int = _aborted_events.size()
+	root.get_node("SettingsMenu").leave_to_title()
+	print("abort recorded (expect 1 more): ", _aborted_events.size() - before)
+	var abort: Dictionary = _aborted_events[-1]
+	print("abort names the scenario (expect bad_usb): ", abort["scenario_id"])
+	print("abort records the phase (expect LOBBY): ", abort["payload"].get("phase"))
+	print("abort stays ungraded (expect true): ", abort["is_correct"] == null)
+	# The overlay pauses the tree; leaving has to lift that or the fade freezes.
+	print("pause lifted on the way out (expect false): ", paused)
+
