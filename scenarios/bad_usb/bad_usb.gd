@@ -65,19 +65,16 @@ var _current: SubState = SubState.BRIEFING
 var _initialised: bool = false
 
 # --- telemetry ---------------------------------------------------------------
-# The study evaluates decisions, error rates and decision times. The dialogue
-# tree encodes correctness positionally: on the opening step of each path the
-# first option blows the cover, on the follow-up step the second one does. These
-# two tables are the single source of truth for grading, so a content change
-# only has to be reflected here.
-const FAIL_ON_CHOICE_1: Array[int] = [10, 20, 30]
-const FAIL_ON_CHOICE_2: Array[int] = [11, 21, 31]
+# The study evaluates decisions, error rates and decision times. Which answer is
+# right, and which pretext a step belongs to, lives in dialogue.gd next to the
+# lines themselves.
 
 const PromptClock := preload("res://scenarios/base/prompt_clock.gd")
 const Typewriter := preload("res://scenarios/base/typewriter.gd")
 const SkipHint := preload("res://scenarios/base/skip_hint.gd")
 const Style := preload("res://scenarios/bad_usb/bad_usb_style.gd")
 const Debrief := preload("res://scenarios/bad_usb/debrief.gd")
+const Dialogue := preload("res://scenarios/bad_usb/dialogue.gd")
 const ScreenMusic := preload("res://scenarios/base/components/screen_music.gd")
 
 # Reused from scenario 1's Recon phase: a low, stalking bed that fits sneaking
@@ -116,12 +113,6 @@ const PHASE_BY_SUBSTATE: Dictionary = {
 	SubState.RESOLVE: &"DEBRIEF",
 }
 
-# _dialogue_step / 10 -> which social-engineering approach the player is on.
-const DIALOGUE_PATHS: Dictionary = {
-	1: "stressed",
-	2: "confident",
-	3: "office_npc",
-}
 
 var _clock: PromptClock = PromptClock.new()
 # Blown covers so far. Every failure resets the player to the building entrance,
@@ -651,7 +642,7 @@ func _on_confident_pressed() -> void:
 # choice is recorded ungraded. Which one a player reaches for is still one of
 # the more interesting behavioural signals in this level.
 func _start_reception_dialogue(step: int) -> void:
-	_reception_path = DIALOGUE_PATHS.get(step / 10, "unknown")
+	_reception_path = Dialogue.path_for(step)
 	EventBus.emit_action(
 		scenario_id,
 		"reception_approach",
@@ -702,11 +693,7 @@ func _on_dialog_choice_2_pressed() -> void:
 # run before the handlers touch _dialogue_step, otherwise the event lands on the
 # following step and the graded outcome no longer matches the question asked.
 func _log_dialogue_choice(choice: int) -> void:
-	var blows_cover: bool = (
-		FAIL_ON_CHOICE_1.has(_dialogue_step)
-		if choice == 1
-		else FAIL_ON_CHOICE_2.has(_dialogue_step)
-	)
+	var blows_cover: bool = Dialogue.blows_cover(_dialogue_step, choice)
 	EventBus.emit_decision(
 		scenario_id,
 		"dialogue_choice",
@@ -715,7 +702,7 @@ func _log_dialogue_choice(choice: int) -> void:
 		{
 			"step": _dialogue_step,
 			"choice": choice,
-			"path": DIALOGUE_PATHS.get(_dialogue_step / 10, "unknown"),
+			"path": Dialogue.path_for(_dialogue_step),
 			"attempt": _failure_count + 1,
 		},
 	)
@@ -886,55 +873,17 @@ func _change_substate(new_state: SubState) -> void:
 	})
 	
 func _update_dialogue_ui() -> void:
-	_btn_choice2.visible = true
-	
-	match _dialogue_step:
-		# --- STRESSED PATH ---
-		10:
-			_lbl_npc_text.text = tr("BADUSB_DLG_10_NPC")
-			_btn_choice1.text = tr("BADUSB_DLG_10_C1")
-			_btn_choice2.text = tr("BADUSB_DLG_10_C2")
-		11:
-			_lbl_npc_text.text = tr("BADUSB_DLG_11_NPC")
-			_btn_choice1.text = tr("BADUSB_DLG_11_C1")
-			_btn_choice2.text = tr("BADUSB_DLG_11_C2")
-		12:
-			_lbl_npc_text.text = tr("BADUSB_DLG_12_NPC")
-			_btn_choice1.text = tr("BADUSB_DLG_12_C1")
-			_btn_choice2.visible = false
+	if not Dialogue.has_step(_dialogue_step):
+		push_error("%s: no dialogue for step %d" % [SCENARIO_ID, _dialogue_step])
+		return
+	_lbl_npc_text.text = tr(Dialogue.npc_key(_dialogue_step))
+	_btn_choice1.text = tr(Dialogue.choice_key(_dialogue_step, 1))
+	_second_choice_offered = Dialogue.offers_second_choice(_dialogue_step)
+	if _second_choice_offered:
+		_btn_choice2.text = tr(Dialogue.choice_key(_dialogue_step, 2))
 
-		# --- CONFIDENT PATH ---
-		20:
-			_lbl_npc_text.text = tr("BADUSB_DLG_20_NPC")
-			_btn_choice1.text = tr("BADUSB_DLG_20_C1")
-			_btn_choice2.text = tr("BADUSB_DLG_20_C2")
-		21:
-			_lbl_npc_text.text = tr("BADUSB_DLG_21_NPC")
-			_btn_choice1.text = tr("BADUSB_DLG_21_C1")
-			_btn_choice2.text = tr("BADUSB_DLG_21_C2")
-		22:
-			_lbl_npc_text.text = tr("BADUSB_DLG_22_NPC")
-			_btn_choice1.text = tr("BADUSB_DLG_22_C1")
-			_btn_choice2.visible = false
-
-		# --- SUSPICIOUS IT OFFICE NPC ---
-		30:
-			_lbl_npc_text.text = tr("BADUSB_DLG_30_NPC")
-			_btn_choice1.text = tr("BADUSB_DLG_30_C1")
-			_btn_choice2.text = tr("BADUSB_DLG_30_C2")
-		31:
-			_lbl_npc_text.text = tr("BADUSB_DLG_31_NPC")
-			_btn_choice1.text = tr("BADUSB_DLG_31_C1")
-			_btn_choice2.text = tr("BADUSB_DLG_31_C2")
-		32:
-			_lbl_npc_text.text = tr("BADUSB_DLG_32_NPC")
-			_btn_choice1.text = tr("BADUSB_DLG_32_C1")
-			_btn_choice2.visible = false
-
-	# The match above decided whether this step offers a second option. Hold both
-	# back while the line types itself out, so the player reads the question
-	# before the answers appear, then restore that decision in _on_line_typed.
-	_second_choice_offered = _btn_choice2.visible
+	# Hold both answers back while the question types itself out, so the player
+	# reads it before answering; _on_line_typed restores the decision above.
 	_btn_choice1.visible = false
 	_btn_choice2.visible = false
 	SfxPlayer.start_typing()
