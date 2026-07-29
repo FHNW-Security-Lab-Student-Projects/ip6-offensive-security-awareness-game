@@ -157,8 +157,9 @@ func _debriefs() -> Array:
 	return out
 
 
+# The debrief row is emitted when the screen is built, not on the exit button,
+# so this drives that instead of complete_scenario.
 func _debrief_outcome() -> String:
-	_usb._on_complete()
 	return String(_debriefs()[-1]["payload"].get("outcome", ""))
 
 
@@ -176,12 +177,14 @@ func _test_debrief() -> void:
 	print("fail screen opens with the level's notice (expect true): ",
 		String(_usb._debrief._stages[0]["text"]) == tr("BADUSB_FAILURE_TEXT"))
 
-	# Now the successful path.
+	# Now the successful path: a fresh debrief has to be built for the row to
+	# fire again, mirroring what a replay does.
 	_usb._run_failed = false
 	_usb._failure_count = 3
 	_usb._restricted_attempts = 2
 	_usb._reception_path = "confident"
-	_usb._on_complete()
+	_usb._debrief = null
+	_usb._start_resolve_story()
 
 	var debriefs: Array = _debriefs()
 	print("one debrief row per completion (expect 2): ", debriefs.size())

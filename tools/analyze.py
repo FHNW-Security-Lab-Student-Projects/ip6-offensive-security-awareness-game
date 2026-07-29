@@ -88,7 +88,12 @@ SUMMARY_COLUMNS = [
     "duration_s",
     "scenarios_played",
     "events_total",
-    "attempts_total",
+    # A run that was started but never reached its debrief screen: the
+    # participant quit mid-scenario. Without this the row looks like "scenario
+    # not played", and an abandoned session cannot be excluded on purpose.
+    "runs_started",
+    "runs_finished",
+    "runs_aborted",
     # first attempt of each scenario
     "decisions_graded",
     "decisions_correct",
@@ -273,6 +278,11 @@ def summarise(uuid: str, events: list[dict], code: str) -> dict:
         {e.get("scenario_id") for e in events if e.get("scenario_id")} - {""}
     )
 
+    # Both scenarios emit scenario_debrief when their debrief screen appears, so
+    # a start without a debrief means the player left before reaching the end.
+    started = sum(1 for e in events if e.get("phase") == "scenario_start")
+    finished = sum(1 for e in events if e.get("phase") == "scenario_debrief")
+
     row = {
         "participant_code": code,
         "session_uuid": uuid,
@@ -281,7 +291,9 @@ def summarise(uuid: str, events: list[dict], code: str) -> dict:
         "duration_s": round((last - first) / 1000.0, 1) if timestamps else "",
         "scenarios_played": ";".join(scenarios),
         "events_total": len(events),
-        "attempts_total": sum(1 for e in events if e.get("phase") == "scenario_start"),
+        "runs_started": started,
+        "runs_finished": finished,
+        "runs_aborted": started - finished,
         "decisions_graded": len(graded),
         "decisions_correct": correct,
         "decisions_wrong": wrong,
@@ -395,8 +407,10 @@ def print_report(summaries: list[dict]) -> None:
         error_text = f"{error:.0%}" if isinstance(error, float) else "-"
         # A star marks a session with replays, where the headline error rate is
         # the first attempt only and the _all columns differ.
-        runs = row["attempts_total"]
+        runs = row["runs_started"]
         runs_text = f"{runs}*" if runs > len(row["scenarios_played"].split(";")) else str(runs)
+        if row["runs_aborted"]:
+            runs_text += "!"
         print(
             f"{row['participant_code'] or '-':<12}"
             f"{row['session_uuid']:<22}"
@@ -412,9 +426,11 @@ def print_report(summaries: list[dict]) -> None:
     if graded:
         print("-" * 70)
         print(f"{'mean error rate (first attempts)':<40}{statistics.fmean(graded):.1%}")
-    if any(str(r["attempts_total"]) != str(len(r["scenarios_played"].split(";")))
+    if any(str(r["runs_started"]) != str(len(r["scenarios_played"].split(";")))
            for r in summaries):
         print("* session contains a replay; err is the first attempt, see *_all columns")
+    if any(r["runs_aborted"] for r in summaries):
+        print("! session has a run that never reached its debrief (quit mid-scenario)")
 
 
 def main() -> int:

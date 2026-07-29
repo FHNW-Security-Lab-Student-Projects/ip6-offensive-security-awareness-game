@@ -20,6 +20,7 @@ signal replay_requested    # "Retry": shell resets + reloads this scenario fresh
 
 const MailReview := preload("res://scenarios/spear_phishing/components/mail_review.gd")
 const ScreenMusic := preload("res://scenarios/base/components/screen_music.gd")
+const PromptClock := preload("res://scenarios/base/prompt_clock.gd")
 
 # Debrief music: covers the whole post-run screen, including the Spielbewertung
 # overlay (a child of this screen, so this stays visible underneath it).
@@ -44,6 +45,15 @@ var _button_row: Control
 var _click_catcher: Control
 var _reveal_tween: Tween
 var _revealed := false
+
+# --- feedback attention (research question 3) --------------------------------
+# How long the finished debrief stood before the player left, and whether the
+# optional turn-by-turn review was opened at all. Without this the screen is a
+# black box: we would know what the run did but not whether its explanation was
+# ever looked at.
+var _screen_clock := PromptClock.new()
+var _review_clock := PromptClock.new()
+var _review_opened := false
 var _built := false
 
 
@@ -228,18 +238,41 @@ func _build_buttons() -> Control:
 # Opens the optional turn-by-turn review as a full-screen overlay on top of the
 # debrief; its Back button frees it and returns here. Read-only, no flow change.
 func _open_review() -> void:
+	# Research question 3 asks how the feedback has to be built. Whether anyone
+	# opens the optional turn-by-turn review at all is the most direct signal we
+	# have for that, so it is recorded rather than left invisible.
+	_review_opened = true
+	EventBus.emit_action(SCENARIO_ID, "review_opened", _screen_clock.elapsed())
+	_review_clock.mark()
+
 	var review := MailReview.new()
+	review.close_requested.connect(_on_review_closed)
 	review.close_requested.connect(review.queue_free)
 	add_child(review)
 	review.configure(
 		GameState.mail_result, GameState.collected_find_ids, GameState.probe_signature_obtained)
 
 
+# How long the player stayed inside the review. A second of it means they
+# glanced; half a minute means they read it.
+func _on_review_closed() -> void:
+	EventBus.emit_action(SCENARIO_ID, "review_closed", _review_clock.take())
+
+
 func _add_button(row: HBoxContainer, key: String, on_press: Callable) -> void:
 	var button := Button.new()
 	button.text = tr(key)
 	_style_button(button)
-	button.pressed.connect(on_press)
+	# Every exit reports how long the debrief stood before the player left it,
+	# which is the dwell time the feedback question rests on.
+	button.pressed.connect(func() -> void:
+		EventBus.emit_action(
+			SCENARIO_ID,
+			"resolve_left",
+			_screen_clock.elapsed(),
+			{"exit": key, "review_opened": _review_opened},
+		)
+		on_press.call())
 	row.add_child(button)
 
 
@@ -279,6 +312,10 @@ func _fade_in(node: CanvasItem) -> void:
 func _on_catcher_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
 		SfxPlayer.play_highlight()  # clicking ahead through the debrief text
+		# Skipping the staged reveal means the player did not wait for the text
+		# to arrive. Worth separating from a slow read of the finished screen.
+		if not _revealed:
+			EventBus.emit_action(SCENARIO_ID, "resolve_reveal_skipped", PromptClock.UNKNOWN)
 		reveal_all()
 
 
@@ -297,6 +334,9 @@ func reveal_all() -> void:
 
 func _show_buttons() -> void:
 	_revealed = true
+	# Dwell starts once the whole debrief stands and the exits are reachable, so
+	# the measurement is reading time and not the staged reveal's own duration.
+	_screen_clock.mark()
 	_button_row.modulate.a = 1.0
 	if is_instance_valid(_click_catcher):
 		_click_catcher.queue_free()

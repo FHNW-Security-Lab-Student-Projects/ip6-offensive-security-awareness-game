@@ -76,6 +76,33 @@ What counts as an error per scenario:
 | MailBuilder | Playing a `SCHROTT` card (the post-run review calls it a mistake too), and a payload fired against bars that cannot win. |
 | bad_usb | The dialogue answer that blows the cover, and taking the badge-protected elevator dead end. |
 
+## Did the feedback get read?
+
+Research question 3 asks how the closing feedback has to be built, so both
+scenarios record whether it was actually looked at:
+
+| Action | Meaning | `latency_ms` |
+|---|---|---|
+| `debrief_advanced` (bad_usb) | one stage of the closing screen was read | how long the finished stage stood |
+| `resolve_left` (spear_phishing) | the debrief was left | how long the finished debrief stood |
+| `review_opened` (spear_phishing) | the optional turn-by-turn review was opened | delay before opening it |
+| `review_closed` (spear_phishing) | that review was closed again | time spent inside it |
+| `resolve_reveal_skipped` | the staged reveal was clicked through | none |
+
+`resolve_left.payload.review_opened` says whether the review was seen at all, so
+a single row answers "did this participant look at the detailed feedback".
+
+## Abandoned runs
+
+Both scenarios emit `scenario_debrief` when their closing screen **appears**,
+not when the player leaves it. A `scenario_start` without a matching
+`scenario_debrief` therefore means the participant quit mid-scenario.
+
+`tools/analyze.py` surfaces this as `runs_started`, `runs_finished` and
+`runs_aborted`. Without those columns an abandoned run is indistinguishable from
+a scenario that was never launched, which makes it impossible to exclude
+participants on a stated rule.
+
 ## Decision times
 
 `latency_ms` on a graded decision is the time from the choice becoming

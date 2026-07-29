@@ -122,6 +122,24 @@ def replayed_session(uuid: str) -> list[dict]:
     return events
 
 
+def abandoned_session(uuid: str) -> list[dict]:
+    """Started the level and quit halfway: no scenario_debrief, so no outcome.
+
+    Without an explicit abort count this looks identical in the summary to a
+    participant who never launched the scenario at all.
+    """
+    events = [
+        event(1, "scenario_start", "bad_usb", None, None, 0, offset=0),
+        event(2, "action", "bad_usb", "enter_building", None, 4000, {}, offset=4_000),
+        event(3, "action", "bad_usb", "dialogue_choice", True, 3000,
+              {"step": 10, "choice": 2, "path": "stressed"}, offset=9_000),
+        # ...and here the participant closed the game.
+    ]
+    for item in events:
+        item["session_uuid"] = uuid
+    return events
+
+
 def stamp_code(events: list[dict], code: str) -> list[dict]:
     """A session where the player entered the code in-game, so every line
     carries it. Returns new dicts; the input is left alone."""
@@ -163,6 +181,9 @@ def main() -> int:
         uuid_e = "20260727_181000_e8f9"
         write_session(logs, uuid_e, stamp_code(full_session(uuid_e), "P50"))
 
+        uuid_f = "20260727_191000_f0a1"
+        write_session(logs, uuid_f, stamp_code(abandoned_session(uuid_f), "P42"))
+
         participants = Path(tmp) / "participants.csv"
         participants.write_text(
             "session_uuid,participant_code\n"
@@ -179,10 +200,10 @@ def main() -> int:
         summary = read_csv(out / "summary.csv")
         events = read_csv(out / "events.csv")
 
-        check("one summary row per session", 5, len(summary))
+        check("one summary row per session", 6, len(summary))
         # 12 good events in each of the four full sessions (the truncated 13th
         # line is dropped) plus 11 in the replayed one.
-        check("all readable events kept", 59, len(events))
+        check("all readable events kept", 62, len(events))
 
         # --- participant code ------------------------------------------------
         stamped = next(r for r in summary if r["session_uuid"] == uuid_d)
@@ -231,7 +252,20 @@ def main() -> int:
         rep = next(r for r in summary if r["session_uuid"] == uuid_c)
         check("replay stays one session row", "P03", rep["participant_code"])
         check("both attempts counted", "2", rep["sp_attempts"])
-        check("attempts_total sees both starts", "2", rep["attempts_total"])
+        check("both starts counted", "2", rep["runs_started"])
+        check("both runs finished", "2", rep["runs_finished"])
+        check("nothing aborted", "0", rep["runs_aborted"])
+
+        # --- abandoned run ----------------------------------------------------
+        gone = next(r for r in summary if r["session_uuid"] == uuid_f)
+        check("abandoned run counted as started", "1", gone["runs_started"])
+        check("abandoned run never finished", "0", gone["runs_finished"])
+        check("abandoned run flagged", "1", gone["runs_aborted"])
+        # No debrief means no outcome; the abort column is the only thing that
+        # distinguishes this from "never played the scenario".
+        check("abandoned run has no outcome", "", gone["usb_outcome"])
+        # Its decisions are still there and still count.
+        check("decisions before the abort kept", "1", gone["decisions_graded"])
 
         # Headline numbers describe the FIRST run: it lost, with 2 graded
         # decisions of which 2 were wrong.

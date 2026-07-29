@@ -363,6 +363,26 @@ func _setup_os_chrome() -> void:
 	_os_chrome.configure(briefing, steps)
 
 
+# One row per run for the study's summary table, mirroring the scenario_debrief
+# that spear_phishing emits from its resolve screen. Fires once, when the
+# debrief is built.
+func _emit_debrief() -> void:
+	var outcome: String = "COVER_BLOWN" if _run_failed else "USB_PLANTED"
+	EventBus.generic_event.emit({
+		"phase": "scenario_debrief",
+		"scenario_id": scenario_id,
+		"action": outcome,
+		"is_correct": not _run_failed,
+		"latency_ms": null,
+		"payload": {
+			"outcome": outcome,
+			"failures": _failure_count,
+			"restricted_attempts": _restricted_attempts,
+			"reception_path": _reception_path,
+		},
+	})
+
+
 func _keep_chrome_on_top() -> void:
 	if _os_chrome != null and is_instance_valid(_os_chrome):
 		$BadUSBScenario/CanvasLayer.move_child(_os_chrome, -1)
@@ -685,25 +705,13 @@ func _fail_run() -> void:
 func _on_action(_action_id: String) -> void:
 	pass
 
-# One row per run for the study's summary table, mirroring the scenario_debrief
-# that spear_phishing emits from its resolve screen. The level has no losing
-# end state (a blown cover sends the player back to try again), so the outcome
-# is fixed and the interesting variance sits in the retry and detour counters.
+# The base class owns scenario_complete; the run's summary row is emitted when
+# the debrief screen appears (see _emit_debrief), not here. That mirrors
+# scenario 1 and means one row exists as soon as the player reached the end of
+# the level, whether or not they then clicked an exit.
 func _on_complete() -> void:
-	var outcome: String = "COVER_BLOWN" if _run_failed else "USB_PLANTED"
-	EventBus.generic_event.emit({
-		"phase": "scenario_debrief",
-		"scenario_id": scenario_id,
-		"action": outcome,
-		"is_correct": not _run_failed,
-		"latency_ms": null,
-		"payload": {
-			"outcome": outcome,
-			"failures": _failure_count,
-			"restricted_attempts": _restricted_attempts,
-			"reception_path": _reception_path,
-		},
-	})
+	pass
+
 
 func _advance() -> void:
 	match _current:
@@ -936,6 +944,8 @@ func _start_resolve_story() -> void:
 	_debrief.replay_requested.connect(_on_debrief_replay)
 	$BadUSBScenario/CanvasLayer.add_child(_debrief)
 	_keep_chrome_on_top()
+
+	_emit_debrief()
 
 	var source: Array = DEBRIEF_STAGES_FAILED if _run_failed else DEBRIEF_STAGES_SUCCESS
 	var stages: Array = []
