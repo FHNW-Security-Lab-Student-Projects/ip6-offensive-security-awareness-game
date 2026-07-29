@@ -110,8 +110,14 @@ func start_typing() -> void:
 
 
 func stop_typing() -> void:
-	if _typing != null and _typing.playing:
-		_typing.stop()
+	if _typing == null:
+		return
+	# Deliberately unguarded. `playing` reads false while the tree is paused, so
+	# the old `if _typing.playing` check skipped the stop exactly when it was
+	# needed: leaving a screen through the pause menu left the loop running
+	# forever, because it resumed the moment the tree was unpaused. Calling
+	# stop() on an idle player costs nothing.
+	_typing.stop()
 
 
 # Something new became playable: a legendary appeared, or the payload gate opened.

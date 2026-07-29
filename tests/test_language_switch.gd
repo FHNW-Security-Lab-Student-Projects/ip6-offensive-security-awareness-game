@@ -214,3 +214,13 @@ func _test_leave_to_title() -> void:
 	# The overlay pauses the tree; leaving has to lift that or the fade freezes.
 	print("pause lifted on the way out (expect false): ", paused)
 
+	# The typewriter bed must not survive the screen that started it. It used to:
+	# stop_typing() was guarded on `playing`, which reads false on a paused tree,
+	# so the stop was skipped and the loop resumed on unpause and never ended.
+	var sfx: Node = root.get_node("SfxPlayer")
+	sfx.start_typing()
+	root.get_node("SettingsMenu").open()
+	sfx.stop_typing()
+	print("typing stops even from a paused tree (expect false): ", sfx._typing.playing)
+	root.get_node("SettingsMenu").close()
+
