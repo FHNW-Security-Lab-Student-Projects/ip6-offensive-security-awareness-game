@@ -61,6 +61,7 @@ func _process(_delta: float) -> bool:
 	_test_reception_paths()
 	_test_dead_end()
 	_test_debrief()
+	_test_chrome_visibility()
 
 	print("TEST DONE")
 	quit()
@@ -193,3 +194,21 @@ func _test_debrief() -> void:
 	print("debrief carries the failures (expect 3): ", payload.get("failures"))
 	print("debrief carries the detours (expect 2): ", payload.get("restricted_attempts"))
 	print("debrief carries the pretext (expect confident): ", payload.get("reception_path"))
+
+
+# --- OS bar visibility ---------------------------------------------------------
+
+# The bar frames the two DarkMail screens; over the pixel-art world it reads as
+# a foreign overlay, so it is hidden during the playable phases.
+func _test_chrome_visibility() -> void:
+	var chrome: Control = _usb.get_node("BadUSBScenario/CanvasLayer/OSChrome")
+	_usb._change_substate(0)  # BRIEFING
+	print("bar shown in the briefing (expect true): ", chrome.visible)
+	for playable in [1, 2, 3, 4, 5, 6]:  # STREET .. OFFICE
+		_usb._change_substate(playable)
+		if chrome.visible:
+			print("bar wrongly shown in substate %d (expect false): true" % playable)
+			return
+	print("bar hidden through all playable phases (expect true): true")
+	_usb._change_substate(7)  # RESOLVE
+	print("bar shown again on the debrief (expect true): ", chrome.visible)

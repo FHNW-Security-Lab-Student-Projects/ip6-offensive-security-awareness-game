@@ -86,6 +86,13 @@ const Debrief := preload("res://scenarios/bad_usb/debrief.gd")
 const OS_CHROME_SCENE := "res://scenarios/base/components/OSChrome.tscn"
 const BRIEFING_RESOURCE := "res://resources/scenarios/bad_usb/briefing.tres"
 
+# The bar belongs to the DarkMail terminal screens. Over the pixel-art world it
+# reads as a foreign overlay, so it only shows on the two screens that are part
+# of that terminal: the briefing and the closing debrief (success or fail).
+# Scenario 1 keeps it up throughout, because every one of its phases IS such a
+# screen.
+const CHROME_SUBSTATES: Array[int] = [SubState.BRIEFING, SubState.RESOLVE]
+
 const PHASE_BY_SUBSTATE: Dictionary = {
 	SubState.STREET: &"ARRIVAL",
 	SubState.FRONT: &"ARRIVAL",
@@ -819,6 +826,8 @@ func _change_substate(new_state: SubState) -> void:
 
 	# Drive the OS bar's phase stepper; ids match the configure() steps.
 	GameState.set_mission_phase(PHASE_BY_SUBSTATE.get(new_state, &""))
+	if _os_chrome != null and is_instance_valid(_os_chrome):
+		_os_chrome.visible = CHROME_SUBSTATES.has(new_state)
 
 	EventBus.generic_event.emit({
 		"phase": "substate_change",
