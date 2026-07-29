@@ -112,6 +112,9 @@ func _build() -> void:
 	# one fade instead of three that can drift apart.
 	_stage_box = VBoxContainer.new()
 	(_stage_box as VBoxContainer).add_theme_constant_override("separation", 22)
+	# Without this the container defaults to STOP and eats every click that lands
+	# on the text, so only the bare background stayed clickable.
+	_stage_box.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	column.add_child(_stage_box)
 
 	_title = _make_label(DarkMailPalette.FONT_SIZE_MONO_LARGE, DarkMailPalette.GREEN)
@@ -146,6 +149,9 @@ func _build_buttons() -> Control:
 	var row := HBoxContainer.new()
 	row.alignment = BoxContainer.ALIGNMENT_CENTER
 	row.add_theme_constant_override("separation", 20)
+	# Same reason: the gaps between the buttons must not swallow clicks. The
+	# buttons themselves sit on top and still receive their own.
+	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_add_button(row, "RESOLVE_LEVELS", func() -> void: levels_requested.emit())
 	_add_button(row, "RESOLVE_HOME", func() -> void: home_requested.emit())
 	_add_button(row, "RESOLVE_RETRY", func() -> void: replay_requested.emit())

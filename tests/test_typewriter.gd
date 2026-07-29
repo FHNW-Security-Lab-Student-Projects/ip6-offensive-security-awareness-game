@@ -197,6 +197,16 @@ func _test_debrief() -> void:
 	print("clicking the last stage stays put (expect 2): ", debrief._index)
 	print("no advance reported for the last stage (expect [0, 1]): ", seen)
 
+	# The click target is the whole screen. A container that keeps Control's
+	# default STOP filter silently eats every click in its area, which is exactly
+	# how the text stopped being clickable once, so the filters are pinned here.
+	print("backdrop takes clicks (expect 0): ", debrief._panel.mouse_filter)
+	for part in [debrief._stage_box, debrief._title, debrief._body, debrief._image,
+			debrief._buttons]:
+		if (part as Control).mouse_filter != Control.MOUSE_FILTER_IGNORE:
+			print("part swallows clicks (expect ignore): ", part.name)
+	print("nothing over the backdrop swallows clicks (expect true): true")
+
 	var exits: Array = []
 	for child in debrief._buttons.get_children():
 		if child is Button:
