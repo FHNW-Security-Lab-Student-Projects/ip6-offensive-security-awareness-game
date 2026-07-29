@@ -86,6 +86,11 @@ const ScreenMusic := preload("res://scenarios/base/components/screen_music.gd")
 # holder rather than the world nodes, because ScreenMusic follows its parent's
 # visibility and swapping worlds would restart the track at every doorway.
 const WORLD_MUSIC := preload("res://assets/audio/terminal_stalk.wav")
+# Every change of location fades through black, the same beat the briefing to
+# street transition already used. Without it the worlds snap over each other,
+# which reads as a glitch rather than as walking somewhere. SceneTransition
+# swallows input during the fade, so a double click cannot skip a room.
+
 # --- OS shell -----------------------------------------------------------------
 # The eight sub-states are too fine-grained for a phase stepper, so they are
 # grouped into the five beats a player actually perceives. BRIEFING maps to
@@ -431,11 +436,18 @@ func _swap_in_briefing() -> void:
 	canvas.add_child(_ui_briefing)
 
 func _on_start() -> void:
-	_change_substate(SubState.BRIEFING)
+	# A replay drops straight into the street: the player has just read the
+	# briefing and sitting through it again is pure friction. Same one-shot flag
+	# scenario 1 uses, consumed here.
+	if GameState.replay_skip_briefing:
+		GameState.replay_skip_briefing = false
+		_change_substate(SubState.STREET)
+	else:
+		_change_substate(SubState.BRIEFING)
 
 func _on_door_entered(body: Node2D) -> void:
 	if body.name == "Player":
-		_change_substate(SubState.FRONT)
+		SceneTransition.flash(_change_substate.bind(SubState.FRONT))
 
 func _on_entrance_entered(body: Node2D) -> void:
 	if body.name == "Player":
@@ -451,7 +463,7 @@ func _on_enter_button_pressed() -> void:
 	EventBus.emit_action(scenario_id, "enter_building", _clock.take())
 	_ui_enter_btn.visible = false
 	_world_inside.get_node("Player").position = _inside_start_pos
-	_change_substate(SubState.INSIDE)
+	SceneTransition.flash(_change_substate.bind(SubState.INSIDE))
 
 func _on_corridor_zone_entered(body: Node2D) -> void:
 	if body.name == "Player":
@@ -465,7 +477,7 @@ func _on_corridor_zone_exited(body: Node2D) -> void:
 func _on_corridor_btn_pressed() -> void:
 	EventBus.emit_action(scenario_id, "enter_corridor", _clock.take())
 	_ui_corridor_btn.visible = false
-	_change_substate(SubState.CORRIDOR)
+	SceneTransition.flash(_change_substate.bind(SubState.CORRIDOR))
 
 func _on_locked_door_entered(body: Node2D) -> void:
 	if body.name == "Player":
@@ -514,7 +526,7 @@ func _on_npc_arrived_at_door() -> void:
 func _on_tailgate_enter_pressed() -> void:
 	EventBus.emit_decision(scenario_id, "tailgate_through_door", true, _clock.take())
 	_btn_tailgate_enter.visible = false
-	_change_substate(SubState.OFFICE)
+	SceneTransition.flash(_change_substate.bind(SubState.OFFICE))
 
 func _on_restricted_entered(body: Node2D) -> void:
 	if body.name == "Player":
@@ -555,7 +567,7 @@ func _on_office_btn_pressed() -> void:
 	EventBus.emit_action(scenario_id, "leave_elevator_area", _clock.take())
 	_ui_office_btn.visible = false
 	_ui_npc_speech.visible = false
-	_change_substate(SubState.TAILGATE)
+	SceneTransition.flash(_change_substate.bind(SubState.TAILGATE))
 
 func _start_office_npc_approach() -> void:
 	var player = _world_office.get_node("Player")
@@ -618,7 +630,7 @@ func _on_usb_btn_pressed() -> void:
 	# Planting the drive is the objective of the level: the attack succeeded.
 	EventBus.emit_decision(scenario_id, "usb_inserted", true, _clock.take())
 	_ui_usb_btn.visible = false
-	_change_substate(SubState.RESOLVE)
+	SceneTransition.flash(_change_substate.bind(SubState.RESOLVE))
 
 func _on_reception_entered(body: Node2D) -> void:
 	if body.name == "Player":
@@ -732,7 +744,7 @@ func _fail_run() -> void:
 	)
 	_ui_dialogue_box.visible = false
 	_dialogue_step = 0
-	_change_substate(SubState.RESOLVE)
+	SceneTransition.flash(_change_substate.bind(SubState.RESOLVE))
 
 func _on_action(_action_id: String) -> void:
 	pass
@@ -1028,6 +1040,7 @@ func _on_debrief_home() -> void:
 func _on_debrief_replay() -> void:
 	complete_scenario()
 	GameState.reset_scenario()
+	GameState.replay_skip_briefing = true
 	var cfg: ScenarioConfig = Config.get_scenario(StringName(SCENARIO_ID))
 	if cfg == null:
 		push_error("%s: cannot replay, scenario missing from Config" % SCENARIO_ID)
