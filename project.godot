@@ -54,7 +54,3 @@ move_right={
 
 textures/canvas_textures/default_texture_filter=0
 renderer/rendering_method="gl_compatibility"
-
-[audio]
-
-buses/default_bus_layout="res://default_bus_layout.tres"

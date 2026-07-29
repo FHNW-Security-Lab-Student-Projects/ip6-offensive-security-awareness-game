@@ -681,8 +681,8 @@ transform = Transform2D(1, 0, 0, 1, 3000, 0)
 position = Vector2(23050, 2360)
 
 [node name="Sprite2D" type="Sprite2D" parent="BadUSBScenario/BigOffice/Background/Background" unique_id=2062593110]
-position = Vector2(107, -347)
-scale = Vector2(3, 3)
+position = Vector2(-142, -324)
+scale = Vector2(5.12, 5.12)
 texture = ExtResource("12_a3ter")
 centered = false
 
@@ -696,7 +696,7 @@ position = Vector2(23050, 2360)
 [node name="StaticBody2D" type="StaticBody2D" parent="BadUSBScenario/BigOffice/Environment" unique_id=2130681970]
 
 [node name="BorderRight" type="CollisionShape2D" parent="BadUSBScenario/BigOffice/Environment/StaticBody2D" unique_id=758000926]
-position = Vector2(19065, 555)
+position = Vector2(20948, 736)
 shape = SubResource("RectangleShape2D_kp1x0")
 
 [node name="BorderLeft" type="CollisionShape2D" parent="BadUSBScenario/BigOffice/Environment/StaticBody2D" unique_id=1353861391]
@@ -711,9 +711,9 @@ SPEED = 500.0
 
 [node name="Camera2D" type="Camera2D" parent="BadUSBScenario/BigOffice/Player" unique_id=1560822566]
 position = Vector2(551, -117)
-limit_left = 26242
+limit_left = 25954
 limit_top = -9999938
-limit_right = 29203
+limit_right = 31114
 limit_bottom = 10000062
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="BadUSBScenario/BigOffice/Player" unique_id=187389510]
@@ -738,7 +738,7 @@ motion_scale = Vector2(1.5, 1.5)
 [node name="PCZone" type="Area2D" parent="BadUSBScenario/BigOffice" unique_id=464644010]
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="BadUSBScenario/BigOffice/PCZone" unique_id=193069968]
-position = Vector2(18657, 416)
+position = Vector2(20484, 514)
 shape = SubResource("RectangleShape2D_3r2ah")
 
 [node name="OfficeNPC" type="AnimatedSprite2D" parent="BadUSBScenario/BigOffice" unique_id=1232017907]
