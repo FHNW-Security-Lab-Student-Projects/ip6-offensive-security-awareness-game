@@ -62,6 +62,7 @@ func _process(_delta: float) -> bool:
 	_test_dead_end()
 	_test_debrief()
 	_test_chrome_visibility()
+	_test_music()
 
 	print("TEST DONE")
 	quit()
@@ -212,3 +213,38 @@ func _test_chrome_visibility() -> void:
 	print("bar hidden through all playable phases (expect true): true")
 	_usb._change_substate(7)  # RESOLVE
 	print("bar shown again on the debrief (expect true): ", chrome.visible)
+
+
+# --- music ---------------------------------------------------------------------
+
+func _first_player(host: Node) -> AudioStreamPlayer:
+	for child in host.get_children():
+		if child is AudioStreamPlayer:
+			return child as AudioStreamPlayer
+	return null
+
+
+# The world bed hangs off its own holder so it survives a change of area. Tying
+# it to the world nodes would restart the track at every doorway.
+func _test_music() -> void:
+	var host: Control = _usb.get_node("BadUSBScenario/CanvasLayer/WorldMusicHost")
+	var world := _first_player(host)
+	print("world music has a track (expect true): ", world != null and world.stream != null)
+	# Routed through the Music bus, so the settings slider reaches it.
+	print("world music on the Music bus (expect Music): ", world.bus)
+
+	# Checked via the holder, not via `playing`: fade_out stops playback from a
+	# tween half a second later, which no headless test ever reaches.
+	_usb._change_substate(0)  # BRIEFING brings its own track
+	print("holder hidden in the briefing (expect false): ", host.visible)
+
+	_usb._change_substate(3)  # Lobby
+	print("plays once gameplay starts (expect true): ", world.playing)
+	_usb._change_substate(6)  # Office, still a playable phase
+	print("keeps playing across areas (expect true): ", world.playing)
+
+	_usb._change_substate(7)  # Debrief
+	print("holder hidden on the debrief (expect false): ", host.visible)
+	var debrief_music := _first_player(_usb._debrief)
+	print("debrief brings its own track (expect true): ",
+		debrief_music != null and debrief_music.stream != null)

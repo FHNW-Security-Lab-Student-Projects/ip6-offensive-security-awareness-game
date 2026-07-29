@@ -78,6 +78,14 @@ const Typewriter := preload("res://scenarios/base/typewriter.gd")
 const SkipHint := preload("res://scenarios/base/skip_hint.gd")
 const Style := preload("res://scenarios/bad_usb/bad_usb_style.gd")
 const Debrief := preload("res://scenarios/bad_usb/debrief.gd")
+const ScreenMusic := preload("res://scenarios/base/components/screen_music.gd")
+
+# Reused from scenario 1's Recon phase: a low, stalking bed that fits sneaking
+# through a building as well as it fits digging through someone's profiles.
+# Covers every playable phase as ONE continuous track. It hangs off a dedicated
+# holder rather than the world nodes, because ScreenMusic follows its parent's
+# visibility and swapping worlds would restart the track at every doorway.
+const WORLD_MUSIC := preload("res://assets/audio/terminal_stalk.wav")
 # --- OS shell -----------------------------------------------------------------
 # The eight sub-states are too fine-grained for a phase stepper, so they are
 # grouped into the five beats a player actually perceives. BRIEFING maps to
@@ -132,6 +140,9 @@ var _dialogue_hint: Label
 var _debrief: Control
 # The shared DarkMail OS bar, instanced in _setup.
 var _os_chrome: Control
+# Invisible holder whose visibility drives the world music: shown exactly while
+# the player is in a playable phase.
+var _world_music_host: Control
 # Whether the step currently on screen offers a second option, remembered while
 # both choices are hidden during typing.
 var _second_choice_offered: bool = true
@@ -260,6 +271,7 @@ func _setup() -> void:
 
 	_style_ui()
 	_setup_os_chrome()
+	_setup_world_music()
 
 	_dialogue_typer.finished.connect(_on_line_typed)
 
@@ -388,6 +400,19 @@ func _emit_debrief() -> void:
 			"reception_path": _reception_path,
 		},
 	})
+
+
+# The briefing and the debrief bring their own track, so the world bed is tied to
+# the playable phases only, which is exactly the inverse of the OS bar's rule.
+func _setup_world_music() -> void:
+	_world_music_host = Control.new()
+	_world_music_host.name = "WorldMusicHost"
+	_world_music_host.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_world_music_host.visible = false
+	$BadUSBScenario/CanvasLayer.add_child(_world_music_host)
+	var music := ScreenMusic.new()
+	music.track = WORLD_MUSIC
+	_world_music_host.add_child(music)
 
 
 func _keep_chrome_on_top() -> void:
@@ -818,7 +843,11 @@ func _change_substate(new_state: SubState) -> void:
 			# the Debrief component instead, which owns its own full-screen
 			# layout. The node is left in the scene so the level file keeps
 			# working in the editor.
-			SfxPlayer.play_completion()  # scenario finished, the debrief comes up
+			# A blown cover must not end on the success chime.
+			if _run_failed:
+				SfxPlayer.play_fail()
+			else:
+				SfxPlayer.play_completion()
 			_start_resolve_story()
 
 	_current = new_state
@@ -826,8 +855,11 @@ func _change_substate(new_state: SubState) -> void:
 
 	# Drive the OS bar's phase stepper; ids match the configure() steps.
 	GameState.set_mission_phase(PHASE_BY_SUBSTATE.get(new_state, &""))
+	var on_terminal_screen: bool = CHROME_SUBSTATES.has(new_state)
 	if _os_chrome != null and is_instance_valid(_os_chrome):
-		_os_chrome.visible = CHROME_SUBSTATES.has(new_state)
+		_os_chrome.visible = on_terminal_screen
+	if _world_music_host != null and is_instance_valid(_world_music_host):
+		_world_music_host.visible = not on_terminal_screen
 
 	EventBus.generic_event.emit({
 		"phase": "substate_change",

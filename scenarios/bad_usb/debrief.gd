@@ -22,6 +22,12 @@ signal replay_requested
 const Typewriter := preload("res://scenarios/base/typewriter.gd")
 const SkipHint := preload("res://scenarios/base/skip_hint.gd")
 const PromptClock := preload("res://scenarios/base/prompt_clock.gd")
+const ScreenMusic := preload("res://scenarios/base/components/screen_music.gd")
+
+# The same debrief track scenario 1 closes on, so both levels end on the same
+# note. Tied to this screen's visibility by ScreenMusic, so it fades in with the
+# screen and out when the scenario is left.
+const DEBRIEF_MUSIC := preload("res://assets/audio/terminal_echo_drift.wav")
 
 const FADE_TIME: float = 0.45
 const IMAGE_HEIGHT: int = 300
@@ -51,6 +57,9 @@ var _stage_box: Control
 func _ready() -> void:
 	anchor_right = 1.0
 	anchor_bottom = 1.0
+	var music := ScreenMusic.new()
+	music.track = DEBRIEF_MUSIC
+	add_child(music)
 	_build()
 	_typer.finished.connect(_on_stage_typed)
 
