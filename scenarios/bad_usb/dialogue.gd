@@ -1,21 +1,14 @@
-# The bad_usb conversation tree as data: which lines belong to which step, which
-# answer blows the cover, and which social-engineering path a step belongs to.
+# The bad_usb conversation tree as data: the lines, which answer blows the cover,
+# and which pretext a step belongs to.
 #
-# Pure data and pure functions, no node access and no translation: it hands back
-# translation KEYS and lets the caller resolve them, so this stays testable
-# without a scene and a locale.
-#
-# Why the grading lives here: the tree encodes correctness positionally, and
-# spreading that rule over the two button handlers is how it silently drifts out
-# of sync with the content. One table, one place to change.
-#
-# Referenced by preload path rather than a class_name, so the headless tests
-# compile it without the editor's global class cache.
+# Hands back translation KEYS, never resolved text, so it stays testable without
+# a scene or a locale. The grading lives next to the content on purpose: the tree
+# encodes correctness positionally, and split across the two button handlers that
+# rule drifts out of sync as soon as anyone edits a line.
 extends RefCounted
 
-# step -> [npc line, first option, second option]
-# An empty second option marks a closing step: the conversation ends here and
-# only the acknowledgement is offered.
+# step -> [npc line, first option, second option]. An empty second option marks
+# a closing step, which offers only the acknowledgement.
 const LINES: Dictionary = {
 	# stressed path
 	10: ["BADUSB_DLG_10_NPC", "BADUSB_DLG_10_C1", "BADUSB_DLG_10_C2"],
@@ -31,13 +24,11 @@ const LINES: Dictionary = {
 	32: ["BADUSB_DLG_32_NPC", "BADUSB_DLG_32_C1", ""],
 }
 
-# On the opening step of each path the FIRST option blows the cover; on the
-# follow-up step the SECOND one does. Closing steps appear in neither, so their
-# single option is always safe.
+# Opening step of each path: the FIRST option blows the cover. Follow-up step:
+# the SECOND one does. Closing steps appear in neither and are always safe.
 const FAIL_ON_CHOICE_1: Array[int] = [10, 20, 30]
 const FAIL_ON_CHOICE_2: Array[int] = [11, 21, 31]
 
-# step / 10 -> which pretext the player is running.
 const PATHS: Dictionary = {
 	1: "stressed",
 	2: "confident",
@@ -57,7 +48,6 @@ static func choice_key(step: int, choice: int) -> String:
 	return LINES.get(step, ["", "", ""])[choice]
 
 
-# False on a closing step, which offers the acknowledgement only.
 static func offers_second_choice(step: int) -> bool:
 	return not String(choice_key(step, 2)).is_empty()
 

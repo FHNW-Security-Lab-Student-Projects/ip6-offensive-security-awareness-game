@@ -1,20 +1,15 @@
-# Types a Label out character by character, and can be finished early.
+# Types a Label out character by character, and can be finished early by a click.
 #
-# Same feel as the intro's DialogBox: while text is still running a click jumps
-# to the end of the line instead of skipping it, so a fast reader never has to
-# wait and a slow one is not rushed. Extracted as its own object because two
-# screens in bad_usb need it (the NPC dialogue and the debrief story) and
-# neither should own a copy of the timing logic.
+# The owner drives it: start(), then advance(delta) from _process, finish_now()
+# on a click. Used by the NPC dialogue and the debrief in bad_usb.
 #
-# The owner drives it: call start(), then advance(delta) from _process, and
-# finish_now() on a click. Referenced by preload path, not a class_name, so the
-# headless tests can compile it without the editor's global class cache.
+# Preload path instead of class_name: a bare `godot -s` run has no global class
+# cache.
 extends RefCounted
 
 signal finished
 
-# Characters per second. The intro's DialogBox uses 40, so the two screens read
-# at the same speed.
+# Matches the intro's DialogBox, so both screens read at the same speed.
 const DEFAULT_SPEED: float = 40.0
 
 var _label: Label = null
@@ -28,8 +23,7 @@ func is_typing() -> bool:
 	return _typing
 
 
-# Begins typing `text` into `label`. Starting a new line while one is running
-# simply replaces it; the caller owns the sequencing.
+# Starting a new line while one runs simply replaces it; the caller sequences.
 func start(label: Label, text: String, speed: float = DEFAULT_SPEED) -> void:
 	_label = label
 	_full_text = text
@@ -39,9 +33,8 @@ func start(label: Label, text: String, speed: float = DEFAULT_SPEED) -> void:
 		_typing = false
 		return
 	label.text = text
-	# visible_characters rather than slicing the string: the label keeps its full
-	# layout from the first frame, so the box does not grow line by line while
-	# typing and the text below it never jumps.
+	# visible_characters, not string slicing: the label keeps its full layout from
+	# frame one, so the box does not grow line by line and nothing below jumps.
 	label.visible_characters = 0
 	_typing = not text.is_empty()
 	if not _typing:
@@ -49,7 +42,6 @@ func start(label: Label, text: String, speed: float = DEFAULT_SPEED) -> void:
 		finished.emit()
 
 
-# Call once per frame from the owner's _process while typing.
 func advance(delta: float) -> void:
 	if not _typing or _label == null:
 		return
@@ -60,7 +52,7 @@ func advance(delta: float) -> void:
 	_label.visible_characters = int(_chars_shown)
 
 
-# Reveals the rest immediately. Safe to call when nothing is running.
+# Safe to call when nothing is running.
 func finish_now() -> void:
 	if not _typing:
 		return

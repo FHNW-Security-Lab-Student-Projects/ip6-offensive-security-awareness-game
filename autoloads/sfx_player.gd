@@ -112,11 +112,9 @@ func start_typing() -> void:
 func stop_typing() -> void:
 	if _typing == null:
 		return
-	# Deliberately unguarded. `playing` reads false while the tree is paused, so
-	# the old `if _typing.playing` check skipped the stop exactly when it was
-	# needed: leaving a screen through the pause menu left the loop running
-	# forever, because it resumed the moment the tree was unpaused. Calling
-	# stop() on an idle player costs nothing.
+	# Unguarded on purpose: `playing` reads false while the tree is paused, so a
+	# `if playing` check skipped the stop when leaving through the pause menu and
+	# the loop resumed on unpause. stop() on an idle player is free.
 	_typing.stop()
 
 

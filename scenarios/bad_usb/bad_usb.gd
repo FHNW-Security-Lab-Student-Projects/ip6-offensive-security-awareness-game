@@ -77,30 +77,23 @@ const Debrief := preload("res://scenarios/bad_usb/debrief.gd")
 const Dialogue := preload("res://scenarios/bad_usb/dialogue.gd")
 const ScreenMusic := preload("res://scenarios/base/components/screen_music.gd")
 
-# Reused from scenario 1's Recon phase: a low, stalking bed that fits sneaking
-# through a building as well as it fits digging through someone's profiles.
-# Covers every playable phase as ONE continuous track. It hangs off a dedicated
-# holder rather than the world nodes, because ScreenMusic follows its parent's
-# visibility and swapping worlds would restart the track at every doorway.
+# Reused from scenario 1's Recon phase. One continuous track across every
+# playable phase, hung off a dedicated holder rather than the world nodes:
+# ScreenMusic follows its parent's visibility, so swapping worlds would restart
+# it at every doorway.
 const WORLD_MUSIC := preload("res://assets/audio/terminal_stalk.wav")
-# Every change of location fades through black, the same beat the briefing to
-# street transition already used. Without it the worlds snap over each other,
-# which reads as a glitch rather than as walking somewhere. SceneTransition
-# swallows input during the fade, so a double click cannot skip a room.
+# Every change of location fades through black; without it the worlds snap over
+# each other. SceneTransition swallows input during the fade.
 
 # --- OS shell -----------------------------------------------------------------
-# The eight sub-states are too fine-grained for a phase stepper, so they are
-# grouped into the five beats a player actually perceives. BRIEFING maps to
-# nothing on purpose: scenario 1 leaves its stepper unhighlighted during the
-# briefing too, because no phase has started yet.
+# The eight sub-states are too fine-grained for a stepper, so they are grouped
+# into five. BRIEFING maps to nothing, as in scenario 1.
 const OS_CHROME_SCENE := "res://scenarios/base/components/OSChrome.tscn"
 const BRIEFING_RESOURCE := "res://resources/scenarios/bad_usb/briefing.tres"
 
-# The bar belongs to the DarkMail terminal screens. Over the pixel-art world it
-# reads as a foreign overlay, so it only shows on the two screens that are part
-# of that terminal: the briefing and the closing debrief (success or fail).
-# Scenario 1 keeps it up throughout, because every one of its phases IS such a
-# screen.
+# The bar belongs to the terminal screens; over the pixel-art world it reads as
+# a foreign overlay. Scenario 1 keeps it up throughout because every one of its
+# phases IS such a screen.
 const CHROME_SUBSTATES: Array[int] = [SubState.BRIEFING, SubState.RESOLVE]
 
 const PHASE_BY_SUBSTATE: Dictionary = {
@@ -276,15 +269,12 @@ func _process(delta: float) -> void:
 	_dialogue_typer.advance(delta)
 
 
-# Click reveals the rest of the current line at once, the same affordance the
-# intro's dialog box offers. Handled in _unhandled_input so a click that lands
-# on a button (a choice, Weiter) is consumed by that button first and never
-# swallowed here; the input is only marked handled while text is actually
-# running, so world interaction is untouched otherwise.
+# Click reveals the rest of the line, as in the intro. In _unhandled_input so a
+# click on a button is consumed by that button first, and only marked handled
+# while text is running.
 #
-# This path only catches clicks OUTSIDE the boxes: the panels are Controls with
-# mouse_filter STOP, so a click on the box itself is consumed by the panel and
-# never reaches here. _on_box_clicked handles those.
+# Catches clicks OUTSIDE the boxes only: the panels have mouse_filter STOP and
+# swallow their own clicks, which _on_dialogue_box_clicked handles.
 func _unhandled_input(event: InputEvent) -> void:
 	if not _is_left_click(event):
 		return
@@ -352,12 +342,9 @@ func _style_ui() -> void:
 	Style.style_body(_ui_tailgate_locked.get_node("MissingBadgeUI"))
 	Style.style_body(_ui_npc_speech.get_node("NPCSpeechUI"))
 
-# Adds the shared DarkMail OS bar, the same shell scenario 1 runs under, so both
-# levels read as the same system. Instanced in code rather than dropped into
-# bad_usb.tscn so the level scene stays owned by the level work.
-#
-# No turn budget here: the briefing resource carries turn_budget = 0 and OSChrome
-# hides its counter accordingly.
+# The same OS bar scenario 1 runs under. Instanced in code so bad_usb.tscn stays
+# untouched. The briefing resource carries turn_budget = 0, so OSChrome hides its
+# counter.
 func _setup_os_chrome() -> void:
 	var briefing := load(BRIEFING_RESOURCE) as BriefingResource
 	if briefing == null:
@@ -398,8 +385,8 @@ func _emit_debrief() -> void:
 	})
 
 
-# The briefing and the debrief bring their own track, so the world bed is tied to
-# the playable phases only, which is exactly the inverse of the OS bar's rule.
+# The briefing and the debrief bring their own track, so the world bed follows
+# the inverse of the OS bar's rule.
 func _setup_world_music() -> void:
 	_world_music_host = Control.new()
 	_world_music_host.name = "WorldMusicHost"
@@ -709,18 +696,12 @@ func _log_dialogue_choice(choice: int) -> void:
 	if blows_cover:
 		_failure_count += 1
 
-# A blown cover ends the run and goes straight to the fail screen, the way a
-# losing outcome in scenario 1 goes to its Resolve screen. The player gets back
-# in via "Nochmal spielen" there, which reloads the level cleanly.
+# A blown cover ends the run and goes straight to the fail screen, like a losing
+# outcome in scenario 1. Back in via "Nochmal spielen", which reloads the level.
 #
-# No intermediate popup: the notice it used to carry (BADUSB_FAILURE_TEXT) is
-# now the opening line of the fail screen, so the player is told what happened
-# in the same place where they are told what it means.
-#
-# This also replaces the in-run reset that put the player back at the entrance.
-# That reset (positions, NPCs, the tailgate door) is gone with it: a scene
-# reload rebuilds all of it, and for the study a run now has exactly one outcome
-# instead of an unbounded number of silent retries.
+# BADUSB_FAILURE_TEXT, formerly the popup notice, now opens that screen. The
+# in-run reset to the entrance is gone with the popup: a reload rebuilds it, and
+# a run now has exactly one outcome instead of silent retries.
 func _fail_run() -> void:
 	_run_failed = true
 	EventBus.emit_action(
@@ -903,12 +884,8 @@ func _on_line_typed() -> void:
 
 # --- debrief ------------------------------------------------------------------
 
-# The closing stages, resolved to text at build time so the debrief component
-# stays a pure view. Image per stage; the closing lesson has none.
-#
 # Two sets, because the success stages describe things a failed run never did
-# ("Du konntest den eingeschraenkten Bereich betreten"). Showing them after a
-# blown cover would tell the player about an infiltration that did not happen.
+# ("Du konntest den eingeschraenkten Bereich betreten").
 const DEBRIEF_STAGES_SUCCESS: Array[Dictionary] = [
 	{"title": "BADUSB_STORY_0_TITLE", "text": "BADUSB_STORY_0_TEXT",
 		"image": "res://assets/sprites/placeholder/storyImages/lobby_img.png"},
@@ -921,12 +898,8 @@ const DEBRIEF_STAGES_SUCCESS: Array[Dictionary] = [
 	{"title": "BADUSB_STORY_4_TITLE", "text": "BADUSB_STORY_4_TEXT", "image": ""},
 ]
 
-# Shorter on purpose: the run ended at the first checkpoint, so there is that
-# moment to reflect on and the lesson it carries, nothing more.
-#
-# The opening line is BADUSB_FAILURE_TEXT, the level's own notice that used to
-# appear in the popup this screen replaced, so the player reads the same
-# sentence they always did, just in the place where it is explained.
+# Shorter on purpose: the run ended at the first checkpoint. Opens with
+# BADUSB_FAILURE_TEXT, the notice the popup used to carry.
 const DEBRIEF_STAGES_FAILED: Array[Dictionary] = [
 	{"title": "BADUSB_FAIL_0_TITLE", "text": "BADUSB_FAILURE_TEXT",
 		"image": "res://assets/sprites/placeholder/storyImages/lobby_img.png"},

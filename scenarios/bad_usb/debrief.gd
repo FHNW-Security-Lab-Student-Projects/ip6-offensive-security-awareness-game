@@ -1,15 +1,12 @@
 # The bad_usb closing screen, built to match scenario 1's RESOLVE: full screen,
-# DarkMail look, content fading in rather than snapping, a click that hurries
-# the text along, and the same set of exits at the end.
+# DarkMail look, fading content, click to hurry the text, same exits.
 #
-# Difference to scenario 1: this debrief has five stages, each with its own
-# image, so they are shown one at a time instead of stacked. Five images on one
-# surface would need scrolling, and a debrief the player has to scroll is a
-# debrief the player stops reading.
+# Unlike scenario 1 the stages are shown one at a time rather than stacked: five
+# images on one surface would need scrolling, and a debrief that scrolls is a
+# debrief nobody finishes.
 #
-# VIEW only. It renders what it is configured with and reports what the player
-# did; it owns no game logic and no routing. The scenario shell decides what
-# each exit means.
+# VIEW only, no game logic and no routing. The scenario shell decides what each
+# exit means.
 extends Control
 
 # The player is done reading a stage. dwell_ms is the time the finished text
@@ -24,16 +21,13 @@ const SkipHint := preload("res://scenarios/base/skip_hint.gd")
 const PromptClock := preload("res://scenarios/base/prompt_clock.gd")
 const ScreenMusic := preload("res://scenarios/base/components/screen_music.gd")
 
-# The same debrief track scenario 1 closes on, so both levels end on the same
-# note. Tied to this screen's visibility by ScreenMusic, so it fades in with the
-# screen and out when the scenario is left.
+# The track scenario 1 closes on, so both levels end on the same note.
 const DEBRIEF_MUSIC := preload("res://assets/audio/terminal_echo_drift.wav")
 
 const FADE_TIME: float = 0.45
 const IMAGE_HEIGHT: int = 300
 const CHARS_PER_SECOND: float = 45.0
-# Wrap width for the paragraphs, the same idea as scenario 1's BODY_WIDTH: a
-# full-width line of mono text is too long to track back to the next line.
+# A full-width line of mono text is too long to track back to the next line.
 const BODY_WIDTH: int = 900
 const SIDE_MARGIN: int = 80
 # Clears the 80px OS bar, the same y >= 96 contract scenario 1's screens follow.
@@ -68,11 +62,9 @@ func _process(delta: float) -> void:
 	_typer.advance(delta)
 
 
-# stages: [{title: <translated>, text: <translated>, image: Texture2D or null}]
-#
-# accent colours the headings. Scenario 1 does the same thing on its Resolve
-# screen: a losing outcome gets ALERT_RED instead of the phosphor green, so the
-# result is readable before a single word is.
+# stages: [{title, text, image}], already translated.
+# accent colours the headings; scenario 1 uses ALERT_RED for a losing outcome so
+# the result reads before a single word does.
 func configure(stages: Array, accent: Color = DarkMailPalette.GREEN) -> void:
 	_stages = stages.duplicate()
 	_index = 0
@@ -108,8 +100,8 @@ func _build() -> void:
 	column.mouse_filter = Control.MOUSE_FILTER_IGNORE  # clicks fall through
 	add_child(column)
 
-	# Everything that changes per stage lives in one node, so a stage change is
-	# one fade instead of three that can drift apart.
+	# One node for everything that changes per stage, so a stage change is one
+	# fade instead of three that can drift apart.
 	_stage_box = VBoxContainer.new()
 	(_stage_box as VBoxContainer).add_theme_constant_override("separation", 22)
 	# Without this the container defaults to STOP and eats every click that lands
@@ -121,8 +113,6 @@ func _build() -> void:
 	_stage_box.add_child(_title)
 
 	_body = _make_label(DarkMailPalette.FONT_SIZE_MONO, DarkMailPalette.TEXT_GREEN)
-	# Bounded and centred like scenario 1's paragraphs rather than run edge to
-	# edge across the display.
 	_body.custom_minimum_size.x = BODY_WIDTH
 	_body.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	_stage_box.add_child(_body)
@@ -143,8 +133,7 @@ func _build() -> void:
 	column.add_child(_buttons)
 
 
-# The exits scenario 1 offers, minus "next scenario": bad_usb is the last one in
-# the registry, so that button would have nowhere to go.
+# Scenario 1's exits minus "next scenario": bad_usb is last in the registry.
 func _build_buttons() -> Control:
 	var row := HBoxContainer.new()
 	row.alignment = BoxContainer.ALIGNMENT_CENTER
@@ -158,8 +147,7 @@ func _build_buttons() -> Control:
 	return row
 
 
-# Centred mono label, the shape scenario 1's debrief uses for every line it
-# shows. Clicks fall through so the whole screen stays one target.
+# Clicks fall through so the whole screen stays one target.
 func _make_label(size: int, color: Color) -> Label:
 	var label := Label.new()
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER

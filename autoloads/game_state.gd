@@ -12,15 +12,10 @@ var current_scenario_id: String = ""
 var state: State = State.MENU
 
 # ---- Study participant code ----
-# The pseudonym that ties this session's telemetry to the participant's pre and
-# post questionnaire. Entered on the title screen, stamped by Telemetry onto
-# every event. Free text on purpose (the study team owns the numbering scheme);
-# it is only trimmed and length-capped so a stray space cannot split one
-# participant into two rows during analysis.
-#
-# Deliberately NOT persisted to disk: a code left over from the previous
-# participant would silently mislabel a whole session, which is far worse than
-# an empty field the analysis can flag.
+# Ties this session's telemetry to the participant's questionnaires. Free text;
+# only trimmed and capped so a stray space cannot split one participant into two
+# rows. NOT persisted: a code left over from the previous participant would
+# mislabel a whole session.
 const PARTICIPANT_CODE_MAX_LENGTH: int = 32
 
 var participant_code: String = ""

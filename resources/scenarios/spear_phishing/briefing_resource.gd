@@ -13,12 +13,9 @@ extends Resource
 @export var turn_budget: int = 8
 
 
-# The reward line as the briefing screen and the OS dossier both show it.
-#
-# Lives here rather than in the two screens because the shape depends on this
-# resource's own fields: empty when the scenario offers no reward, and without
-# the time limit when it runs without a turn budget (bad_usb), where the full
-# template would print "Zeitlimit: 0 Züge".
+# The reward line for the briefing screen and the OS dossier. Lives here because
+# the shape depends on these fields: no time limit without a turn budget, and
+# empty without a reward.
 func reward_line() -> String:
 	if reward_text.is_empty():
 		return ""

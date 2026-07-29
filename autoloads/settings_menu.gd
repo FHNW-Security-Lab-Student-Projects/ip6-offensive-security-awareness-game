@@ -55,16 +55,11 @@ func close() -> void:
 	_panel = null
 
 
-# "Zum Hauptmenü" from inside a running scenario. Owned here rather than by the
-# panel because the pause and the overlay lifecycle live here too.
+# "Zum Hauptmenü" from inside a running scenario. Records the run as abandoned
+# first, so the analysis can tell a deliberate exit from a crash.
 #
-# The run is recorded as abandoned first. Without that event the analysis only
-# sees a scenario_start with no debrief and cannot tell a deliberate exit from a
-# crash or a closed window, which matters when deciding whether to exclude a
-# participant.
-#
-# Order matters: close() lifts the pause before the scene change, otherwise the
-# fade in SceneTransition would sit frozen on a paused tree.
+# Order matters: close() lifts the pause before the scene change, or the fade
+# sits frozen on a paused tree.
 func leave_to_title() -> void:
 	if not GameState.is_in_menu():
 		EventBus.emit_action(

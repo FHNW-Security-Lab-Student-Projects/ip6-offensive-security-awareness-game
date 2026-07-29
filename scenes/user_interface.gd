@@ -9,10 +9,8 @@ const FIELD_PADDING_Y := 6
 
 
 func _ready() -> void:
-	# Back out of a finished scenario: nothing else returns the session state to
-	# MENU, so without this it would stay on FEEDBACK for the rest of the run,
-	# the state_change log would never show the way back, and settings that are
-	# menu-only (the language) would stay locked.
+	# Nothing else returns the session state to MENU. Without this it stays on
+	# FEEDBACK for the rest of the run and the language stays locked.
 	GameState.transition_to(GameState.State.MENU)
 	# The menu music lives in the persistent MusicPlayer autoload so it carries
 	# over to the scenario selection; resume it in case a scenario stopped it.
@@ -25,13 +23,9 @@ func _ready() -> void:
 	_build_participant_field()
 
 
-# The study's participant code, tying this session's telemetry to the pre and
-# post questionnaire. Parked in the bottom corner instead of the menu column on
-# purpose: it is an operator control for the study lead, not a menu entry the
-# player is meant to act on. Optional, so ordinary play is unaffected.
-#
-# Built in code rather than in the .tscn so the title screen stays owned by the
-# menu work and this study addition sits in one reviewable place.
+# The study's participant code. In the corner rather than the menu column: it is
+# an operator control for the study lead, not something the player acts on.
+# Optional, so ordinary play is unaffected.
 func _build_participant_field() -> void:
 	var holder := PanelContainer.new()
 	holder.name = "ParticipantRow"

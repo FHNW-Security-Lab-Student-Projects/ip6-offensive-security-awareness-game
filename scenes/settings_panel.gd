@@ -63,8 +63,7 @@ func _build() -> void:
 	var buttons := HBoxContainer.new()
 	buttons.alignment = BoxContainer.ALIGNMENT_CENTER
 	buttons.add_theme_constant_override("separation", 20)
-	# Only offered while a scenario is running: on the title screen there is
-	# nothing to leave, and the button would just reload the screen you are on.
+	# Nothing to leave on the title screen.
 	if not GameState.is_in_menu():
 		buttons.add_child(_button("RESOLVE_HOME", SettingsMenu.leave_to_title))
 	buttons.add_child(_button("SETTINGS_RESET", _on_reset))
@@ -125,14 +124,11 @@ func _checkbox_row(key: String, pressed: bool) -> Control:
 	return row
 
 
-# One button per language, the active one highlighted like the primary menu
-# entry. Switching rebuilds this panel so its own labels flip immediately.
+# One button per language; switching rebuilds this panel so its labels flip.
 #
-# Only available from the menus. A Control re-translates its text at draw time
-# only when the stored text is a translation key, and the scenarios resolve
-# theirs through tr() at build time, so switching mid-scenario would leave the
-# running screen in the old language. Locking it here keeps a run in exactly one
-# language, which the study needs anyway.
+# Menu only: a Control re-translates its text at draw time only if the stored
+# text is a key, and the scenarios resolve theirs through tr() at build time, so
+# switching mid-scenario would leave the running screen in the old language.
 func _language_row() -> Control:
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 16)
