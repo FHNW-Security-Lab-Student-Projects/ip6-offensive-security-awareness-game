@@ -184,6 +184,18 @@ def main() -> int:
         uuid_f = "20260727_191000_f0a1"
         write_session(logs, uuid_f, stamp_code(abandoned_session(uuid_f), "P42"))
 
+        # The lift dead end is logged with a verdict but must not reach the error
+        # rate: it costs the player nothing. full_session() has two of them in its
+        # bad_usb debrief payload and none as graded events, so this uses an
+        # explicit fixture.
+        uuid_h = "20260727_211000_h2c3"
+        explore = stamp_code(full_session(uuid_h), "P77") + [
+            dict(event(90, "action", "bad_usb", "restricted_elevator_attempt",
+                       False, 1000, {"attempt": 1}, offset=160_000),
+                 session_uuid=uuid_h, participant_code="P77"),
+        ]
+        write_session(logs, uuid_h, explore)
+
         participants = Path(tmp) / "participants.csv"
         participants.write_text(
             "session_uuid,participant_code\n"
@@ -200,10 +212,10 @@ def main() -> int:
         summary = read_csv(out / "summary.csv")
         events = read_csv(out / "events.csv")
 
-        check("one summary row per session", 6, len(summary))
+        check("one summary row per session", 7, len(summary))
         # 12 good events in each of the four full sessions (the truncated 13th
         # line is dropped) plus 11 in the replayed one.
-        check("all readable events kept", 62, len(events))
+        check("all readable events kept", 75, len(events))
 
         # --- participant code ------------------------------------------------
         stamped = next(r for r in summary if r["session_uuid"] == uuid_d)
@@ -257,6 +269,19 @@ def main() -> int:
         check("nothing aborted", "0", rep["runs_aborted"])
 
         # --- abandoned run ----------------------------------------------------
+        explored = next(r for r in summary if r["session_uuid"] == uuid_h)
+        plain = next(r for r in summary if r["session_uuid"] == uuid_d)
+        # Same run plus one lift click: the error rate must not move.
+        check("lift click leaves the error rate alone",
+              plain["error_rate"], explored["error_rate"])
+        check("and is not counted as a decision",
+              plain["decisions_graded"], explored["decisions_graded"])
+        # It still exists in the trace.
+        lift = [e for e in events
+                if e["session_uuid"] == uuid_h
+                and e["action"] == "restricted_elevator_attempt"]
+        check("but stays in events.csv", 1, len(lift))
+
         gone = next(r for r in summary if r["session_uuid"] == uuid_f)
         check("abandoned run counted as started", "1", gone["runs_started"])
         check("abandoned run never finished", "0", gone["runs_finished"])

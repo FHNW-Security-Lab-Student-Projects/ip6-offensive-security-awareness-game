@@ -57,6 +57,12 @@ LATENCY_PHASES = {"action", "mail_sent", "mail_pass"}
 # events.csv, they just do not belong in the decision-time statistic.
 NON_DECISION_ACTIONS = {"recon_completed", "debrief_advanced"}
 
+# Logged with a verdict, but kept out of the error rate: walking into the
+# badge-protected lift shows a refusal and costs nothing. No deck slot, no turn,
+# no blown cover, unlike every other graded mistake. It measures exploration, not
+# a security decision. Still reported per participant as usb_restricted_attempts.
+EXPLORATION_ACTIONS = {"restricted_elevator_attempt"}
+
 # A latency below zero is the engine's "no clock was running" sentinel
 # (PromptClock.UNKNOWN / MailRun.UNKNOWN_LATENCY), not a fast answer.
 UNKNOWN_LATENCY = -1
@@ -206,11 +212,17 @@ def first_attempt_events(events: list[dict], attempts: list) -> list[dict]:
 
 
 def graded_decisions(events: list[dict]) -> list[dict]:
-    """The events the error rate is computed from: one graded choice each."""
+    """The events the error rate is computed from: one graded choice each.
+
+    Applied here rather than in the game, so the rule reaches sessions that were
+    already recorded. Changing the emitting code instead would split the dataset
+    into participants logged under the old rule and the new one.
+    """
     return [
         e
         for e in events
         if e.get("phase") in GRADED_DECISION_PHASES
+        and e.get("action") not in EXPLORATION_ACTIONS
         and isinstance(e.get("is_correct"), bool)
     ]
 

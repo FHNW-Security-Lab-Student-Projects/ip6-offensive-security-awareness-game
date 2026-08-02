@@ -68,13 +68,20 @@ events carry a verdict.
   error rate so a run's outcome is not counted on top of the decisions that
   produced it.
 
+Walking into the badge-protected lift in bad_usb is logged with a verdict but
+excluded from the error rate by `tools/analyze.py`: it costs nothing (no deck
+slot, no turn, no blown cover), so it measures exploration rather than a security
+decision. It is reported separately as `usb_restricted_attempts`. The exclusion
+lives in the analysis, not in the game, so it applies to sessions that were
+already recorded.
+
 What counts as an error per scenario:
 
 | Scenario | Graded as wrong |
 |---|---|
 | Recon | Collecting an `is_junk` find. It looks like a lead, carries nothing usable and costs one of the seven deck slots. Noise is not collectable and never graded. |
 | MailBuilder | Playing a `SCHROTT` card (the post-run review calls it a mistake too), and a payload fired against bars that cannot win. |
-| bad_usb | The dialogue answer that blows the cover, and taking the badge-protected elevator dead end. |
+| bad_usb | The dialogue answer that blows the cover. |
 
 ## Did the feedback get read?
 
