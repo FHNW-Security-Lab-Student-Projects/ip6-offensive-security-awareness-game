@@ -96,7 +96,7 @@ MAIL_BOSS_INTRO,"Bau die Mail zusammen. Erst Druck aufbauen, dann den Link setze
 MAIL_BOSS_SUSPICION_HIGH,Vorsicht. Das wird ihm langsam suspekt.,Careful. He is starting to find this odd.
 MAIL_BOSS_SUSPICION_CRITICAL,Noch eine falsche Karte und er meldet uns als Spam. Rudere zurück.,One more wrong card and he reports us as spam. Pull back.
 MAIL_BOSS_PRESSURE_OK,Gut. Er steht unter Druck und die Mail ist sendebereit.,Good. He is under pressure and the mail is ready to send.
-MAIL_BOSS_PAYLOAD_READY,Sauber,"Clean, barely any suspicion. Now the link, this one lands."
+MAIL_BOSS_PAYLOAD_READY,"Sauber, kaum Misstrauen. Jetzt den Link, das sitzt.","Clean, barely any suspicion. Now the link, this one lands."
 MAIL_BOSS_SCHROTT,Was soll das? Der Mist gehört nicht in die Mail.,What is that? The junk does not belong in the mail.
 MAIL_TOAST_PROBE,Automatische Antwort erhalten. Er ist abwesend.,Automatic reply received. He is away.
 HANNES_REPLY_NEUTRAL_1,Guten Tag. Worum geht es genau?,Good day. What exactly is this about?
@@ -105,7 +105,7 @@ HANNES_REPLY_NEUTRAL_3,Danke für die Nachricht. Was steht an?,Thanks for the me
 HANNES_REPLY_MISSTRAUISCH_1,Wer sind Sie nochmal? Das kommt mir komisch vor.,Who are you again? This seems odd to me.
 HANNES_REPLY_MISSTRAUISCH_2,Woher haben Sie meine Adresse? Ich kenne Sie nicht.,Where did you get my address? I do not know you.
 HANNES_REPLY_MISSTRAUISCH_3,Das klingt nicht seriös. Ich frage besser intern nach.,This does not sound legitimate. I had better ask internally.
-HANNES_REPLY_INTERESSIERT_1,Okay,"Okay, that sounds urgent. Tell me more."
+HANNES_REPLY_INTERESSIERT_1,"Okay, das klingt dringend. Erzählen Sie mehr.","Okay, that sounds urgent. Tell me more."
 HANNES_REPLY_INTERESSIERT_2,Verstehe. Was genau brauchen Sie von mir?,I see. What exactly do you need from me?
 HANNES_REPLY_INTERESSIERT_3,"Gut, ich höre zu. Wie geht es weiter?","Alright, I am listening. What happens next?"
 HANNES_REPLY_ANGEBISSEN_1,"Alles klar, was muss ich tun? Sagen Sie mir wo ich klicke.","Understood, what do I need to do? Tell me where to click."
