@@ -17,6 +17,7 @@ work in parallel.
 ### Decision 1 — Autoloads as the cross-cutting service spine
 Five Node-based singletons registered as Godot autoloads:
 `EventBus`, `GameState`, `Telemetry`, `Config`, `FeedbackEngine`.
+(`FeedbackEngine` was removed again, see ADR-0006.)
 
 **Why:** Autoloads are Godot-idiomatic, zero dependencies, available from
 every scene without import boilerplate. They give us global signals, a
@@ -195,3 +196,39 @@ so the session state stayed on `FEEDBACK` after the first scenario and the
 `state_change` telemetry never showed the way back. The menu scenes now announce
 themselves, which both unlocks the language row again and makes the navigation
 trace in the logs complete.
+
+---
+
+## ADR-0006: `FeedbackEngine` removed — feedback belongs to the scenarios
+
+**Status:** Accepted (2026-08-02). Supersedes part of ADR-0001 Decision 1.
+
+**Context:** ADR-0001 planned a `FeedbackEngine` autoload that would turn the
+event stream plus a rule set into the player's closing feedback. It never got
+past the stub stage: it buffered events between `scenario_start` and
+`scenario_complete` and its `evaluate()` returned `{"summary": "Feedback engine
+stub."}`. Outside its own file it had **zero** call sites — no scene, script or
+test ever read from it. The feedback the player actually sees is built inside
+the scenarios (`spear_phishing/states/resolve.gd` from `GameState.mail_result`,
+`bad_usb/debrief.gd` from its own stage list), and the study's numbers come out
+of `tools/analyze.py`, not out of the game.
+
+**Decision:** Delete `autoloads/feedback_engine.gd` and its autoload entry. The
+debrief screens stay the single place where per-run feedback is composed.
+
+**Why:** A stub autoload that nothing calls is not an extension point, it is a
+misleading one — the architecture diagram showed a feedback path that did not
+exist, and the name suggested the game computed a personalised evaluation when
+all in-game feedback is authored text selected by outcome. Removing it makes
+the running system and its description agree.
+
+**Why not implement it instead:** the two scenarios need different feedback
+shapes (a four-outcome mail debrief vs. a five-stage image walkthrough) and both
+already have their own, tested screens. A shared rule engine would have to be
+general enough to express both and would earn nothing back before the study.
+
+**Consequence:** No central place to compute cross-scenario feedback. If a later
+scenario set wants shared rules, the buffer-and-evaluate design is recorded here
+and in the git history. Note that `ScenarioBase.submit_action` / `_on_action`
+are unused for the same reason — both scenarios override the hook with `pass`
+and route their own input — and are the next candidate for the same treatment.

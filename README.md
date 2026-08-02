@@ -51,7 +51,8 @@ events count towards the error rate.
 ## Folder layout
 
 ```
-autoloads/              5 singletons: EventBus, GameState, Telemetry, Config, FeedbackEngine
+autoloads/              singletons: EventBus, GameState, Telemetry, Config, I18n,
+                        SceneTransition, MusicPlayer, SfxPlayer, Settings, SettingsMenu
 scenarios/              one folder per scenario, scripts + scenes co-located
   base/                 ScenarioBase (Template Method lifecycle)
   scene1/, scene2/      playable scenarios (stubs — fill in)

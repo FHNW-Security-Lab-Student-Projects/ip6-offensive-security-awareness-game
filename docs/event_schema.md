@@ -6,8 +6,8 @@ every event emitted via `EventBus.generic_event`. Telemetry stamps
 `timestamp_ms` and `session_uuid` automatically — scenarios should NOT
 set them.
 
-Consumers (Telemetry, FeedbackEngine, post-hoc analysis scripts) MUST
-tolerate unknown keys on `payload` for forward compatibility.
+Consumers (Telemetry, `tools/analyze.py`) MUST tolerate unknown keys on
+`payload` for forward compatibility.
 
 ## Canonical fields
 
@@ -213,8 +213,8 @@ attempt and is counted by the `retry_after_failure` action instead.
 1. Pick a phase name (kebab-case, all lowercase).
 2. Decide which canonical fields are non-null; others stay `null`.
 3. Document the phase here in this file in the same PR that emits it.
-4. Update `FeedbackEngine` if the new phase needs to participate in
-   evaluation.
+4. Update `tools/analyze.py` if the new phase belongs in the error rate,
+   the decision-time statistic or a summary column.
 
 Schema breaking changes (renaming a canonical field, narrowing a type)
 require a new ADR and a migration plan for existing JSONL files.
