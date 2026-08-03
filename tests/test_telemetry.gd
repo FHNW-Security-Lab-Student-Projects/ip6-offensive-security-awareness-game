@@ -6,11 +6,13 @@
 # Run:
 #   godot --headless --path . -s tests/test_telemetry.gd
 #
-# Every line prints the expected value next to the actual one; a run passes
-# when all "expect" values match and it ends with TEST DONE.
+# Every check compares an expected value against the actual one and prints
+# "ok" or "FAIL". The run ends with TEST DONE and exit code 0 when every check
+# passed, otherwise with the failure count and exit code 1.
 extends SceneTree
 
 const PromptClock := preload("res://scenarios/base/prompt_clock.gd")
+const Check := preload("res://tests/check.gd")
 
 # Contract from docs/event_schema.md: these keys must exist on EVERY event, or
 # the post-hoc analysis cannot read the file as one table.
@@ -21,6 +23,7 @@ const CANONICAL_KEYS := [
 var _events: Array = []
 var _recon: Control
 var _done := false
+var _c := Check.new()
 
 
 func _initialize() -> void:
@@ -51,14 +54,14 @@ func _events_of(action: String) -> Array:
 
 func _test_prompt_clock() -> void:
 	var clock := PromptClock.new()
-	print("unmarked clock reports UNKNOWN (expect -1): ", clock.take())
-	print("unmarked elapsed reports UNKNOWN (expect -1): ", clock.elapsed())
+	_c.eq("unmarked clock reports UNKNOWN", -1, clock.take())
+	_c.eq("unmarked elapsed reports UNKNOWN", -1, clock.elapsed())
 
 	clock.mark()
-	print("marked clock elapsed is measurable (expect true): ", clock.elapsed() >= 0)
-	print("elapsed does NOT consume the mark (expect true): ", clock.elapsed() >= 0)
-	print("take returns a measurement (expect true): ", clock.take() >= 0)
-	print("take consumed the mark (expect -1): ", clock.take())
+	_c.ok("marked clock elapsed is measurable", clock.elapsed() >= 0)
+	_c.ok("elapsed does NOT consume the mark", clock.elapsed() >= 0)
+	_c.ok("take returns a measurement", clock.take() >= 0)
+	_c.eq("take consumed the mark", -1, clock.take())
 
 
 # --- EventBus helpers --------------------------------------------------------
@@ -66,24 +69,24 @@ func _test_prompt_clock() -> void:
 func _test_event_bus_helpers() -> void:
 	var bus := root.get_node_or_null("EventBus")
 	if bus == null:
-		print("EventBus autoload missing (expect present): false")
+		_c.ok("EventBus autoload present", false)
 		return
 
 	bus.emit_decision("t_scenario", "graded_wrong", false, 1234, {"k": "v"})
 	var graded: Array = _events_of("graded_wrong")
-	print("emit_decision produced one event (expect 1): ", graded.size())
-	print("emit_decision phase is action (expect action): ", graded[0]["phase"])
-	print("emit_decision keeps is_correct false (expect false): ", graded[0]["is_correct"])
-	print("emit_decision carries latency (expect 1234): ", graded[0]["latency_ms"])
-	print("emit_decision passes extras through (expect v): ", graded[0]["payload"].get("k"))
+	_c.eq("emit_decision produced one event", 1, graded.size())
+	_c.eq("emit_decision phase is action", "action", graded[0]["phase"])
+	_c.eq("emit_decision keeps is_correct false", false, graded[0]["is_correct"])
+	_c.eq("emit_decision carries latency", 1234, graded[0]["latency_ms"])
+	_c.eq("emit_decision passes extras through", "v", graded[0]["payload"].get("k"))
 
 	bus.emit_action("t_scenario", "ungraded", 42)
 	var ungraded: Array = _events_of("ungraded")
-	print("emit_action produced one event (expect 1): ", ungraded.size())
+	_c.eq("emit_action produced one event", 1, ungraded.size())
 	# The whole point of the ungraded helper: it must never pollute the error
 	# rate, so is_correct has to stay null rather than default to false.
-	print("emit_action leaves is_correct null (expect true): ", ungraded[0]["is_correct"] == null)
-	print("emit_action carries latency (expect 42): ", ungraded[0]["latency_ms"])
+	_c.ok("emit_action leaves is_correct null", ungraded[0]["is_correct"] == null)
+	_c.eq("emit_action carries latency", 42, ungraded[0]["latency_ms"])
 
 
 # --- Recon grading -----------------------------------------------------------
@@ -100,34 +103,33 @@ func _process(_delta: float) -> bool:
 
 	_recon.collect(good)
 	var good_events := _events_of("recon_find_collected")
-	print("collecting a real lead is graded correct (expect true): ",
+	_c.ok("collecting a real lead is graded correct",
 		good_events.size() == 1 and good_events[0]["is_correct"] == true)
 
 	_recon.collect(junk)
 	good_events = _events_of("recon_find_collected")
-	print("collecting junk is graded WRONG (expect false): ", good_events[1]["is_correct"])
-	print("junk event flags is_junk (expect true): ", good_events[1]["payload"].get("is_junk"))
-	print("collect event names the find (expect q6x_lob): ", good_events[1]["payload"].get("find_id"))
+	_c.eq("collecting junk is graded WRONG", false, good_events[1]["is_correct"])
+	_c.eq("junk event flags is_junk", true, good_events[1]["payload"].get("is_junk"))
+	_c.eq("collect event names the find", "q6x_lob", good_events[1]["payload"].get("find_id"))
 
 	# Noise is not collectable at all, so it must not produce a graded event and
 	# must not count against the player.
 	_recon.collect(noise)
-	print("noise emits no collect event (expect 2): ", _events_of("recon_find_collected").size())
+	_c.eq("noise emits no collect event", 2, _events_of("recon_find_collected").size())
 
 	_recon.uncollect(junk)
 	var undone := _events_of("recon_find_uncollected")
-	print("uncollect is recorded (expect 1): ", undone.size())
-	print("uncollect stays ungraded (expect true): ", undone[0]["is_correct"] == null)
+	_c.eq("uncollect is recorded", 1, undone.size())
+	_c.ok("uncollect stays ungraded", undone[0]["is_correct"] == null)
 
 	_recon._on_advance_button_pressed()
 	var summary := _events_of("recon_completed")
-	print("advance emits one summary (expect 1): ", summary.size())
-	print("summary counts the kept finds (expect 1): ", summary[0]["payload"].get("collected_count"))
-	print("summary counts visited sources (expect 1): ", summary[0]["payload"].get("sources_opened"))
+	_c.eq("advance emits one summary", 1, summary.size())
+	_c.eq("summary counts the kept finds", 1, summary[0]["payload"].get("collected_count"))
+	_c.eq("summary counts visited sources", 1, summary[0]["payload"].get("sources_opened"))
 
 	_test_schema()
-	print("TEST DONE")
-	quit()
+	quit(_c.finish())
 	return true
 
 
@@ -146,9 +148,9 @@ func _test_schema() -> void:
 		if graded != null and typeof(graded) != TYPE_BOOL:
 			bad_grade += 1
 	# 2 helper probes + 2 collects + 1 uncollect + 1 summary; noise emits nothing.
-	print("events captured (expect 6): ", _events.size())
-	print("all events carry the canonical keys (expect 0 missing): ", missing)
-	print("is_correct is bool or null everywhere (expect 0 bad): ", bad_grade)
+	_c.eq("events captured", 6, _events.size())
+	_c.eq("all events carry the canonical keys", 0, missing)
+	_c.eq("is_correct is bool or null everywhere", 0, bad_grade)
 
 
 # --- helpers -----------------------------------------------------------------
