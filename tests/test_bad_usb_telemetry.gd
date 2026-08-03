@@ -6,13 +6,17 @@
 # Run:
 #   godot --headless --path . -s tests/test_bad_usb_telemetry.gd
 #
-# Every line prints the expected value next to the actual one; a run passes
-# when all "expect" values match and it ends with TEST DONE.
+# Every check compares an expected value against the actual one and prints
+# "ok" or "FAIL". The run ends with TEST DONE and exit code 0 when every check
+# passed, otherwise with the failure count and exit code 1.
 extends SceneTree
+
+const Check := preload("res://tests/check.gd")
 
 var _events: Array = []
 var _usb: Node
 var _done := false
+var _c := Check.new()
 
 
 func _initialize() -> void:
@@ -64,8 +68,7 @@ func _process(_delta: float) -> bool:
 	_test_chrome_visibility()
 	_test_music()
 
-	print("TEST DONE")
-	quit()
+	quit(_c.finish())
 	return true
 
 
@@ -75,27 +78,27 @@ func _test_grading() -> void:
 	# Opening steps: option 1 blows the cover, option 2 is the safe answer.
 	for step in [10, 20, 30]:
 		var wrong := _answer(step, 1)
-		print("step %d choice 1 graded wrong (expect false): " % step, wrong.get("is_correct"))
+		_c.eq("step %d choice 1 graded wrong" % step, false, wrong.get("is_correct"))
 		var right := _answer(step, 2)
-		print("step %d choice 2 graded right (expect true): " % step, right.get("is_correct"))
+		_c.eq("step %d choice 2 graded right" % step, true, right.get("is_correct"))
 
 	# Follow-up steps: the polarity flips.
 	for step in [11, 21, 31]:
 		var right := _answer(step, 1)
-		print("step %d choice 1 graded right (expect true): " % step, right.get("is_correct"))
+		_c.eq("step %d choice 1 graded right" % step, true, right.get("is_correct"))
 		var wrong := _answer(step, 2)
-		print("step %d choice 2 graded wrong (expect false): " % step, wrong.get("is_correct"))
+		_c.eq("step %d choice 2 graded wrong" % step, false, wrong.get("is_correct"))
 
 	# Closing steps only offer one option and it is always the safe one.
 	for step in [12, 22, 32]:
 		var event := _answer(step, 1)
-		print("step %d closing answer graded right (expect true): " % step, event.get("is_correct"))
+		_c.eq("step %d closing answer graded right" % step, true, event.get("is_correct"))
 
 	var sample := _answer(10, 1)
-	print("choice event names its path (expect stressed): ", sample["payload"].get("path"))
-	print("choice event records the step (expect 10): ", sample["payload"].get("step"))
-	print("choice event records the option (expect 1): ", sample["payload"].get("choice"))
-	print("office path labelled (expect office_npc): ", _answer(30, 2)["payload"].get("path"))
+	_c.eq("choice event names its path", "stressed", sample["payload"].get("path"))
+	_c.eq("choice event records the step", 10, sample["payload"].get("step"))
+	_c.eq("choice event records the option", 1, sample["payload"].get("choice"))
+	_c.eq("office path labelled", "office_npc", _answer(30, 2)["payload"].get("path"))
 
 
 # --- failure counting --------------------------------------------------------
@@ -103,13 +106,13 @@ func _test_grading() -> void:
 func _test_failure_counting() -> void:
 	_usb._failure_count = 0
 	_answer(10, 2)  # safe answer, must not count
-	print("a right answer leaves the failure count at 0 (expect 0): ", _usb._failure_count)
+	_c.eq("a right answer leaves the failure count at 0", 0, _usb._failure_count)
 	_answer(10, 1)  # blown cover
 	_answer(21, 2)  # blown cover on another path
-	print("two blown covers counted (expect 2): ", _usb._failure_count)
+	_c.eq("two blown covers counted", 2, _usb._failure_count)
 	# attempt is the run the decision was made in: the second blown cover
 	# happened during attempt 2, and only afterwards does attempt 3 begin.
-	print("attempt number rides along (expect 2): ", _last_choice()["payload"].get("attempt"))
+	_c.eq("attempt number rides along", 2, _last_choice()["payload"].get("attempt"))
 
 	# A blown cover now ends the run instead of resetting to the entrance, and
 	# without the popup that used to sit in between. Counted relative to what the
@@ -120,11 +123,11 @@ func _test_failure_counting() -> void:
 	# 350ms first, so the debrief does not exist yet in this synchronous test.
 	# The telemetry below fires immediately; the screen is forced in afterwards.
 	var failed := _events_of("run_failed")
-	print("blown cover recorded (expect 1 more): ", failed.size() - before)
-	print("no failure popup is shown (expect false): ", _usb._ui_failure_popup.visible)
-	print("failure event stays ungraded (expect true): ", failed[-1]["is_correct"] == null)
+	_c.eq("blown cover recorded", 1, failed.size() - before)
+	_c.eq("no failure popup is shown", false, _usb._ui_failure_popup.visible)
+	_c.ok("failure event stays ungraded", failed[-1]["is_correct"] == null)
 	_usb._change_substate(7)  # what the fade would have done
-	print("run is marked as failed (expect true): ", _usb._run_failed)
+	_c.eq("run is marked as failed", true, _usb._run_failed)
 
 
 # --- reception approach ------------------------------------------------------
@@ -132,14 +135,14 @@ func _test_failure_counting() -> void:
 func _test_reception_paths() -> void:
 	_usb._on_stressed_pressed()
 	var approaches := _events_of("reception_approach")
-	print("reception approach recorded (expect 1): ", approaches.size())
+	_c.eq("reception approach recorded", 1, approaches.size())
 	# Both pretexts are viable, so this must not be scored as right or wrong.
-	print("reception approach is ungraded (expect true): ", approaches[0]["is_correct"] == null)
-	print("stressed pretext labelled (expect stressed): ", approaches[0]["payload"].get("path"))
+	_c.ok("reception approach is ungraded", approaches[0]["is_correct"] == null)
+	_c.eq("stressed pretext labelled", "stressed", approaches[0]["payload"].get("path"))
 
 	_usb._on_confident_pressed()
 	approaches = _events_of("reception_approach")
-	print("confident pretext labelled (expect confident): ", approaches[1]["payload"].get("path"))
+	_c.eq("confident pretext labelled", "confident", approaches[1]["payload"].get("path"))
 
 
 # --- dead end ----------------------------------------------------------------
@@ -148,9 +151,9 @@ func _test_dead_end() -> void:
 	_usb._restricted_attempts = 0
 	_usb._on_restricted_btn_pressed()
 	var attempts := _events_of("restricted_elevator_attempt")
-	print("elevator dead end recorded (expect 1): ", attempts.size())
-	print("elevator dead end graded wrong (expect false): ", attempts[0]["is_correct"])
-	print("elevator attempt numbered (expect 1): ", attempts[0]["payload"].get("attempt"))
+	_c.eq("elevator dead end recorded", 1, attempts.size())
+	_c.eq("elevator dead end graded wrong", false, attempts[0]["is_correct"])
+	_c.eq("elevator attempt numbered", 1, attempts[0]["payload"].get("attempt"))
 
 
 # --- run summary -------------------------------------------------------------
@@ -176,11 +179,11 @@ func _debrief_correct():
 func _test_debrief() -> void:
 	# _test_failure_counting left the run in the failed state; a failed run must
 	# never be reported as a planted stick.
-	print("failed run reports COVER_BLOWN (expect COVER_BLOWN): ", _debrief_outcome())
-	print("failed run is graded wrong (expect false): ", _debrief_correct())
-	print("failed run gets the short debrief (expect 2): ", _usb._debrief._stages.size())
+	_c.eq("failed run reports COVER_BLOWN", "COVER_BLOWN", _debrief_outcome())
+	_c.eq("failed run is graded wrong", false, _debrief_correct())
+	_c.eq("failed run gets the short debrief", 2, _usb._debrief._stages.size())
 	# The notice the popup used to carry now opens the fail screen.
-	print("fail screen opens with the level's notice (expect true): ",
+	_c.ok("fail screen opens with the level's notice",
 		String(_usb._debrief._stages[0]["text"]) == tr("BADUSB_FAILURE_TEXT"))
 
 	# Now the successful path: a fresh debrief has to be built for the row to
@@ -193,12 +196,12 @@ func _test_debrief() -> void:
 	_usb._start_resolve_story()
 
 	var debriefs: Array = _debriefs()
-	print("one debrief row per completion (expect 2): ", debriefs.size())
+	_c.eq("one debrief row per completion", 2, debriefs.size())
 	var payload: Dictionary = debriefs[-1]["payload"]
-	print("successful run reports USB_PLANTED (expect USB_PLANTED): ", payload.get("outcome"))
-	print("debrief carries the failures (expect 3): ", payload.get("failures"))
-	print("debrief carries the detours (expect 2): ", payload.get("restricted_attempts"))
-	print("debrief carries the pretext (expect confident): ", payload.get("reception_path"))
+	_c.eq("successful run reports USB_PLANTED", "USB_PLANTED", payload.get("outcome"))
+	_c.eq("debrief carries the failures", 3, payload.get("failures"))
+	_c.eq("debrief carries the detours", 2, payload.get("restricted_attempts"))
+	_c.eq("debrief carries the pretext", "confident", payload.get("reception_path"))
 
 
 # --- OS bar visibility ---------------------------------------------------------
@@ -208,15 +211,14 @@ func _test_debrief() -> void:
 func _test_chrome_visibility() -> void:
 	var chrome: Control = _usb.get_node("BadUSBScenario/CanvasLayer/OSChrome")
 	_usb._change_substate(0)  # BRIEFING
-	print("bar shown in the briefing (expect true): ", chrome.visible)
+	_c.eq("bar shown in the briefing", true, chrome.visible)
+	# Checked per substate instead of bailing out on the first offender, so a
+	# regression names the phase it happened in.
 	for playable in [1, 2, 3, 4, 5, 6]:  # STREET .. OFFICE
 		_usb._change_substate(playable)
-		if chrome.visible:
-			print("bar wrongly shown in substate %d (expect false): true" % playable)
-			return
-	print("bar hidden through all playable phases (expect true): true")
+		_c.eq("bar hidden in playable substate %d" % playable, false, chrome.visible)
 	_usb._change_substate(7)  # RESOLVE
-	print("bar shown again on the debrief (expect true): ", chrome.visible)
+	_c.eq("bar shown again on the debrief", true, chrome.visible)
 
 
 # --- music ---------------------------------------------------------------------
@@ -233,22 +235,22 @@ func _first_player(host: Node) -> AudioStreamPlayer:
 func _test_music() -> void:
 	var host: Control = _usb.get_node("BadUSBScenario/CanvasLayer/WorldMusicHost")
 	var world := _first_player(host)
-	print("world music has a track (expect true): ", world != null and world.stream != null)
+	_c.ok("world music has a track", world != null and world.stream != null)
 	# Routed through the Music bus, so the settings slider reaches it.
-	print("world music on the Music bus (expect Music): ", world.bus)
+	_c.eq("world music on the Music bus", "Music", world.bus)
 
 	# Checked via the holder, not via `playing`: fade_out stops playback from a
 	# tween half a second later, which no headless test ever reaches.
 	_usb._change_substate(0)  # BRIEFING brings its own track
-	print("holder hidden in the briefing (expect false): ", host.visible)
+	_c.eq("holder hidden in the briefing", false, host.visible)
 
 	_usb._change_substate(3)  # Lobby
-	print("plays once gameplay starts (expect true): ", world.playing)
+	_c.eq("plays once gameplay starts", true, world.playing)
 	_usb._change_substate(6)  # Office, still a playable phase
-	print("keeps playing across areas (expect true): ", world.playing)
+	_c.eq("keeps playing across areas", true, world.playing)
 
 	_usb._change_substate(7)  # Debrief
-	print("holder hidden on the debrief (expect false): ", host.visible)
+	_c.eq("holder hidden on the debrief", false, host.visible)
 	var debrief_music := _first_player(_usb._debrief)
-	print("debrief brings its own track (expect true): ",
+	_c.ok("debrief brings its own track",
 		debrief_music != null and debrief_music.stream != null)

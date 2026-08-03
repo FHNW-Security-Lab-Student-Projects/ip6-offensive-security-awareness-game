@@ -67,6 +67,11 @@ func _equal(a: Variant, b: Variant) -> bool:
 		# int/float mischen sich in GDScript haeufig unbeabsichtigt.
 		if (a is int or a is float) and (b is int or b is float):
 			return is_equal_approx(float(a), float(b))
+		# String und StringName sind verschiedene Typen, aber dieselbe Angabe:
+		# node.bus, node.name und die Enum-keys() liefern mal das eine, mal das
+		# andere. Ohne diesen Zweig waere jede solche Pruefung falsch rot.
+		if (a is String or a is StringName) and (b is String or b is StringName):
+			return String(a) == String(b)
 		return false
 	if a is Array:
 		if a.size() != b.size():
