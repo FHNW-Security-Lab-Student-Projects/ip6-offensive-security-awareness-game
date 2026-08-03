@@ -1,12 +1,12 @@
 # Offensive Security Awareness Game
 
-A 2D serious game in **Godot 4.6** for cybersecurity awareness training.
+A 2D serious game in **Godot 4.7** for cybersecurity awareness training.
 Two attacker scenarios (phishing solitaire, physical infiltration). Bachelor
 thesis project, FHNW Security Lab.
 
 ## Setup
 
-1. Install [Godot 4.6](https://godotengine.org/download) (standard, not Mono).
+1. Install [Godot 4.7](https://godotengine.org/download) (standard, not Mono).
 2. Clone this repo.
 3. Open `project.godot` in Godot.
 4. Press **F5** to run. The entry point is `scenes/StartScreen.tscn`
@@ -55,12 +55,34 @@ autoloads/              singletons: EventBus, GameState, Telemetry, Config, I18n
                         SceneTransition, MusicPlayer, SfxPlayer, Settings, SettingsMenu
 scenarios/              one folder per scenario, scripts + scenes co-located
   base/                 ScenarioBase (Template Method lifecycle)
-  scene1/, scene2/      playable scenarios (stubs — fill in)
+  spear_phishing/       scenario 1: recon → mail builder → resolve
+  bad_usb/              scenario 2: on-site infiltration
 resources/scenarios/    typed ScenarioConfig .tres files (one per scenario)
 scenes/                 menu scenes (StartScreen, LevelAuswahl, settings)
 assets/                 audio, fonts, sprites
-tests/                  test framework TBD
+tests/                  headless tests, one file per area
+  fixtures/             a recorded session log used by tools/test_analyze.py
 ```
+
+## Tests
+
+Plain headless scripts, no framework. Each file runs on its own:
+
+```
+godot --headless --path . -s tests/test_mail_builder.gd
+python3 tools/test_analyze.py
+```
+
+Every check prints `ok` or `FAIL` with the expected value next to the actual
+one. A file ends with `TEST DONE (n checks passed)` and exit code 0, or with
+`n CHECK(S) FAILED` and exit code 1 — so a failure is visible in the exit code
+and does not depend on anyone reading the output.
+
+`tests/check.gd` holds the comparison helper; `tools/test_analyze.py` uses the
+same convention on the Python side.
+
+Note that a test run writes a real session log into the same `logs/` folder as
+a study session. Clear it before handing the machine to a participant.
 
 ## Adding a scenario
 

@@ -32,3 +32,6 @@ Thumbs.db
 # study it holds participant data, which must not end up in the repository.
 analysis/
 
+
+# Python-Bytecode aus tools/
+tools/__pycache__/
