@@ -5,12 +5,16 @@
 # Run:
 #   godot --headless --path . -s tests/test_recon.gd
 #
-# Every line prints the expected value next to the actual one; a run passes
-# when all "expect" values match and it ends with TEST DONE.
+# Every check compares an expected value against the actual one and prints
+# "ok" or "FAIL". The run ends with TEST DONE and exit code 0 when every check
+# passed, otherwise with the failure count and exit code 1.
 extends SceneTree
+
+const Check := preload("res://tests/check.gd")
 
 var _recon: Control
 var _done := false
+var _c := Check.new()
 
 
 func _find_by_id(finds: Array[ReconFind], id: StringName) -> ReconFind:
@@ -89,17 +93,17 @@ func _process(_delta: float) -> bool:
 		if f.is_junk:
 			junk += 1
 		sources[f.source] = true
-	print("pool size (expect 31): ", finds.size())
-	print("junk count (expect 7): ", junk)
-	print("distinct sources (expect 6): ", sources.size())
+	_c.eq("pool size", 31, finds.size())
+	_c.eq("junk count", 7, junk)
+	_c.eq("distinct sources", 6, sources.size())
 
 	# Noise is non-collectable stage dressing: collect() rejects it and its body
 	# carries no leak marker (deck is still empty here).
 	var noise := _find_by_id(finds, &"n_goggle_uni")
-	print("noise carries no leak marker (expect true): ", not tr(noise.body_key()).contains(ReconFind.LEAK_OPEN))
+	_c.ok("noise carries no leak marker", not tr(noise.body_key()).contains(ReconFind.LEAK_OPEN))
 	var before_noise: int = _recon.collected.size()
 	_recon.collect(noise)
-	print("collect() rejects noise (expect unchanged): ", _recon.collected.size() == before_noise)
+	_c.eq("collect() rejects noise, deck unchanged", before_noise, _recon.collected.size())
 
 	# Marker invariant across every post-rendered find (any find that resolves a
 	# body). A body WITHOUT a marker is valid (no leak); a body WITH markers must
@@ -118,10 +122,10 @@ func _process(_delta: float) -> bool:
 		var leak := ReconFind.parse_leak(body)
 		if int(leak["start"]) < 0 or int(leak["len"]) <= 0:
 			bad_marker += 1
-	print("all post bodies have valid leak spans (expect 0 bad): ", bad_marker)
+	_c.eq("all post bodies have valid leak spans", 0, bad_marker)
 
 	# Namesake traps still carry the exact target name (Hannes Zinsli).
-	print("q7_jodler names target (expect true): ", tr(_find_by_id(finds, &"q7_jodler").title_key()).contains("Hannes Zinsli"))
+	_c.ok("q7_jodler names target", tr(_find_by_id(finds, &"q7_jodler").title_key()).contains("Hannes Zinsli"))
 
 	# Tabs: one per source, exactly one active; three traffic-light dots.
 	var tab_bar := _recon.get_node("%TabBar")
@@ -129,8 +133,9 @@ func _process(_delta: float) -> bool:
 	for t in tab_bar.get_children():
 		if t is Button and t.button_pressed:
 			active += 1
-	print("tab count (expect 6): ", tab_bar.get_child_count(), " active (expect 1): ", active)
-	print("traffic dots (expect 3): ", _recon.get_node("%TrafficLights").get_child_count())
+	_c.eq("tab count", 6, tab_bar.get_child_count())
+	_c.eq("exactly one tab active", 1, active)
+	_c.eq("traffic dots", 3, _recon.get_node("%TrafficLights").get_child_count())
 
 	# LinkBook view: real posts (RichTextLabels), no collect buttons, one photo.
 	var posts: Array = []
@@ -139,42 +144,43 @@ func _process(_delta: float) -> bool:
 	_walk(_finds_container(), Button, buttons)
 	var photos: Array = []
 	_walk(_finds_container(), TextureRect, photos)
-	print("linkbook post labels (expect 5): ", posts.size())
+	_c.eq("linkbook post labels", 5, posts.size())
 	# The whiteboard is now a hotspot on the team photo, not a reveal button.
-	print("linkbook buttons in page (expect 0): ", buttons.size())
-	print("linkbook photo surfaces (expect 1): ", photos.size())
+	_c.eq("linkbook buttons in page", 0, buttons.size())
+	_c.eq("linkbook photo surfaces", 1, photos.size())
 	# The whiteboard lives only as a hotspot on the team photo, never a card.
-	print("whiteboard is never a standalone post (expect null): ", _rtl_for(&"q2d_whiteboard"))
+	_c.ok("whiteboard is never a standalone post", _rtl_for(&"q2d_whiteboard") == null)
 	var wb_hs := _hotspot_for(&"q2d_whiteboard")
-	print("whiteboard has a photo hotspot (expect true): ", wb_hs != null)
+	_c.ok("whiteboard has a photo hotspot", wb_hs != null)
 	# Clicking the hotspot collects the find directly (no reveal step), and
 	# clicking again uncollects it. Deck is empty here.
 	if wb_hs != null:
 		wb_hs.emit_signal("clicked")
-	print("whiteboard collected via hotspot (expect 1): ", _recon.collected.size())
+	_c.eq("whiteboard collected via hotspot", 1, _recon.collected.size())
 	_hotspot_for(&"q2d_whiteboard").emit_signal("clicked")
-	print("whiteboard uncollected via second click (expect 0): ", _recon.collected.size())
+	_c.eq("whiteboard uncollected via second click", 0, _recon.collected.size())
 
 	# Collect via the embedded highlight (meta click), then uncollect.
 	# Marking is value-neutral now: no success glyph in the text.
 	_rtl_for(&"q2a_sonntags").meta_clicked.emit("q2a_sonntags")
-	print("collected via inline highlight (expect 1): ", _recon.collected.size(), " ", _recon.get_node("%DeckLabel").text)
-	print("no success glyph on collected good find (expect false): ", _rtl_for(&"q2a_sonntags").text.contains("✔"))
+	_c.eq("collected via inline highlight", 1, _recon.collected.size())
+	_c.eq("deck label after inline collect", "DECK 1/7", _recon.get_node("%DeckLabel").text)
+	_c.eq("no success glyph on collected good find", false, _rtl_for(&"q2a_sonntags").text.contains("✔"))
 	_rtl_for(&"q2a_sonntags").meta_clicked.emit("q2a_sonntags")
-	print("uncollected via second click (expect 0): ", _recon.collected.size())
+	_c.eq("uncollected via second click", 0, _recon.collected.size())
 
 	# Junk collects and marks exactly like a good find (no distinguishing glyph).
 	_rtl_for(&"q2c_katze").meta_clicked.emit("q2c_katze")
-	print("junk collected like any find (expect 1): ", _recon.collected.size())
-	print("no success glyph on collected junk (expect false): ", _rtl_for(&"q2c_katze").text.contains("✔"))
+	_c.eq("junk collected like any find", 1, _recon.collected.size())
+	_c.eq("no success glyph on collected junk", false, _rtl_for(&"q2c_katze").text.contains("✔"))
 	_rtl_for(&"q2c_katze").meta_clicked.emit("q2c_katze")
 
 	# Hover keeps text readable and shows the add affordance (+), no bgcolor tag.
 	var rtl := _rtl_for(&"q2b_neue_it")
 	rtl.meta_hover_started.emit("q2b_neue_it")
-	print("hover shows add affordance (expect true): ", rtl.text.contains("+"))
-	print("hover keeps highlight text (expect true): ", rtl.text.contains("Bit & Bürli GmbH"))
-	print("no raw bgcolor marking in text (expect false): ", rtl.text.contains("bgcolor"))
+	_c.eq("hover shows add affordance", true, rtl.text.contains("+"))
+	_c.eq("hover keeps highlight text", true, rtl.text.contains("Bit & Bürli GmbH"))
+	_c.eq("no raw bgcolor marking in text", false, rtl.text.contains("bgcolor"))
 	rtl.meta_hover_ended.emit("q2b_neue_it")
 
 	# Fill the deck to 7 via inline collection across tabs; every collectable
@@ -191,20 +197,21 @@ func _process(_delta: float) -> bool:
 	_rtl_for(&"q9_verein").meta_clicked.emit("q9_verein")
 	_tab("JobScout").pressed.emit()
 	_rtl_for(&"q3_stelle").meta_clicked.emit("q3_stelle")
-	print("deck filled (expect 7): ", _recon.collected.size(), " ", _recon.get_node("%DeckLabel").text)
+	_c.eq("deck filled", 7, _recon.collected.size())
+	_c.eq("deck label at capacity", "DECK 7/7", _recon.get_node("%DeckLabel").text)
 
 	# Full deck blocks any further inline collect.
 	_tab("Firmenwebsite").pressed.emit()
 	_rtl_for(&"q4_presse").meta_clicked.emit("q4_presse")
-	print("inline collect blocked at full deck (expect 7): ", _recon.collected.size())
+	_c.eq("inline collect blocked at full deck", 7, _recon.collected.size())
 
 	# Free a slot, then inline collect works again.
 	_tab("Google").pressed.emit()
 	_rtl_for(&"q9_verein").meta_clicked.emit("q9_verein")  # collected -> uncollect
-	print("after uncollect (expect 6): ", _recon.collected.size())
+	_c.eq("after uncollect", 6, _recon.collected.size())
 	_tab("LinkedIn").pressed.emit()
 	_rtl_for(&"q1_kontakt").meta_clicked.emit("q1_kontakt")
-	print("inline collect works again (expect 7): ", _recon.collected.size())
+	_c.eq("inline collect works again", 7, _recon.collected.size())
 
 	# Platform-distinct layout: Instasnap is an image-centric feed — each post
 	# carries its own image, unlike the text tabs. Kevin's selfie + badge photos
@@ -212,8 +219,9 @@ func _process(_delta: float) -> bool:
 	_tab("Instagram").pressed.emit()
 	var imgs: Array = []
 	_walk(_finds_container(), TextureRect, imgs)
-	print("instasnap posts are image-centric (expect >=2): ", imgs.size())
-	print("instasnap schema hotspot present (expect true): ", _hotspot_for(&"q5_schema") != null)
-	print("instasnap badge hotspot present (expect true): ", _hotspot_for(&"q5b_details") != null)
-	print("TEST DONE")
+	_c.ok("instasnap posts are image-centric (at least 2 images)", imgs.size() >= 2)
+	_c.ok("instasnap schema hotspot present", _hotspot_for(&"q5_schema") != null)
+	_c.ok("instasnap badge hotspot present", _hotspot_for(&"q5b_details") != null)
+
+	quit(_c.finish())
 	return true
