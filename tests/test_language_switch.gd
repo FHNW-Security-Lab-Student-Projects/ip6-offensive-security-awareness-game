@@ -10,11 +10,13 @@
 # Run:
 #   godot --headless --path . -s tests/test_language_switch.gd
 #
-# Every line prints the expected value next to the actual one; a run passes
-# when all "expect" values match and it ends with TEST DONE.
+# Every check compares an expected value against the actual one and prints
+# "ok" or "FAIL". The run ends with TEST DONE and exit code 0 when every check
+# passed, otherwise with the failure count and exit code 1.
 extends SceneTree
 
 const SETTINGS_PANEL_PATH := "res://scenes/settings_panel.gd"
+const Check := preload("res://tests/check.gd")
 
 var _step := 0
 var _restore_locale := "de"
@@ -26,6 +28,7 @@ var _restore_locale := "de"
 var _settings: Node
 var _game_state: Node
 var _aborted_events: Array = []
+var _c := Check.new()
 
 # Mirrors GameState.State, which is not reachable as a global type from here.
 const STATE_MENU := 0
@@ -85,8 +88,7 @@ func _process(_delta: float) -> bool:
 	_test_leave_to_title()
 
 	_settings.set_locale(_restore_locale)
-	print("TEST DONE")
-	quit()
+	quit(_c.finish())
 	return true
 
 
@@ -97,9 +99,9 @@ func _test_translation_tables() -> void:
 	var de_hint := tr("SETTINGS_LANGUAGE_MENU_ONLY")
 	_settings.set_locale("en")
 	var en_hint := tr("SETTINGS_LANGUAGE_MENU_ONLY")
-	print("hint key exists in German (expect true): ", de_hint != "SETTINGS_LANGUAGE_MENU_ONLY")
-	print("hint key exists in English (expect true): ", en_hint != "SETTINGS_LANGUAGE_MENU_ONLY")
-	print("hint actually differs per locale (expect true): ", de_hint != en_hint)
+	_c.ok("hint key exists in German", de_hint != "SETTINGS_LANGUAGE_MENU_ONLY")
+	_c.ok("hint key exists in English", en_hint != "SETTINGS_LANGUAGE_MENU_ONLY")
+	_c.ok("hint actually differs per locale", de_hint != en_hint)
 
 	# The mechanism the menu relies on: a raw key resolves at display time and
 	# follows the locale, which is why .tscn buttons switch and tr() does not.
@@ -109,7 +111,7 @@ func _test_translation_tables() -> void:
 	var shown_en := probe.atr(probe.text)
 	_settings.set_locale("de")
 	var shown_de := probe.atr(probe.text)
-	print("a raw key follows the locale (expect true): ", shown_en != shown_de)
+	_c.ok("a raw key follows the locale", shown_en != shown_de)
 	probe.queue_free()
 
 
@@ -117,19 +119,19 @@ func _test_translation_tables() -> void:
 
 func _test_menu_state_recovers() -> void:
 	_game_state.transition_to(STATE_MENU)
-	print("starts in the menu (expect true): ", _game_state.is_in_menu())
+	_c.eq("starts in the menu", true, _game_state.is_in_menu())
 
 	_game_state.transition_to(STATE_IN_SCENARIO)
-	print("not in menu while playing (expect false): ", _game_state.is_in_menu())
+	_c.eq("not in menu while playing", false, _game_state.is_in_menu())
 
 	# The bug this guards: nothing used to return the state to MENU, so after one
 	# scenario the language stayed locked for the rest of the session.
 	_game_state.transition_to(STATE_FEEDBACK)
-	print("not in menu on the debrief (expect false): ", _game_state.is_in_menu())
+	_c.eq("not in menu on the debrief", false, _game_state.is_in_menu())
 
 	var menu: Control = (load("res://scenes/LevelAuswahl.tscn") as PackedScene).instantiate()
 	root.add_child(menu)
-	print("scenario selection restores MENU (expect true): ", _game_state.is_in_menu())
+	_c.eq("scenario selection restores MENU", true, _game_state.is_in_menu())
 	menu.queue_free()
 
 
@@ -139,13 +141,13 @@ func _test_row_locked_in_scenario() -> void:
 	_game_state.transition_to(STATE_IN_SCENARIO)
 	var panel := _open_panel()
 	var buttons := _language_buttons(panel)
-	print("both languages offered (expect 2): ", buttons.size())
+	_c.eq("both languages offered", 2, buttons.size())
 	var all_disabled := true
 	for button in buttons:
 		if not button.disabled:
 			all_disabled = false
-	print("language locked mid-scenario (expect true): ", all_disabled)
-	print("lock is explained to the player (expect true): ", _has_hint(panel))
+	_c.eq("language locked mid-scenario", true, all_disabled)
+	_c.eq("lock is explained to the player", true, _has_hint(panel))
 	panel.queue_free()
 
 
@@ -157,14 +159,14 @@ func _test_row_unlocked_in_menu() -> void:
 	for button in buttons:
 		if button.disabled:
 			any_disabled = true
-	print("language switchable in the menu (expect false): ", any_disabled)
-	print("no lock hint shown in the menu (expect false): ", _has_hint(panel))
+	_c.eq("language switchable in the menu", false, any_disabled)
+	_c.eq("no lock hint shown in the menu", false, _has_hint(panel))
 
 	# Switching from the menu must actually take effect.
 	var before: String = _settings.locale
 	var target: String = "en" if before == "de" else "de"
 	_settings.set_locale(target)
-	print("switching applies the locale (expect true): ", TranslationServer.get_locale() == target)
+	_c.eq("switching applies the locale", target, TranslationServer.get_locale())
 	panel.queue_free()
 
 
@@ -191,7 +193,7 @@ func _test_leave_to_title() -> void:
 	var in_menu := _open_panel()
 	var menu_labels: Array = []
 	_buttons_in(in_menu, menu_labels)
-	print("no exit button on the title screen (expect false): ",
+	_c.eq("no exit button on the title screen", false,
 		tr("RESOLVE_HOME") in menu_labels)
 	in_menu.queue_free()
 
@@ -201,18 +203,18 @@ func _test_leave_to_title() -> void:
 	var in_run := _open_panel()
 	var run_labels: Array = []
 	_buttons_in(in_run, run_labels)
-	print("exit button offered during a run (expect true): ",
+	_c.eq("exit button offered during a run", true,
 		tr("RESOLVE_HOME") in run_labels)
 
 	var before: int = _aborted_events.size()
 	root.get_node("SettingsMenu").leave_to_title()
-	print("abort recorded (expect 1 more): ", _aborted_events.size() - before)
+	_c.eq("abort recorded", 1, _aborted_events.size() - before)
 	var abort: Dictionary = _aborted_events[-1]
-	print("abort names the scenario (expect bad_usb): ", abort["scenario_id"])
-	print("abort records the phase (expect LOBBY): ", abort["payload"].get("phase"))
-	print("abort stays ungraded (expect true): ", abort["is_correct"] == null)
+	_c.eq("abort names the scenario", "bad_usb", abort["scenario_id"])
+	_c.eq("abort records the phase", "LOBBY", abort["payload"].get("phase"))
+	_c.ok("abort stays ungraded", abort["is_correct"] == null)
 	# The overlay pauses the tree; leaving has to lift that or the fade freezes.
-	print("pause lifted on the way out (expect false): ", paused)
+	_c.eq("pause lifted on the way out", false, paused)
 
 	# The typewriter bed must not survive the screen that started it. It used to:
 	# stop_typing() was guarded on `playing`, which reads false on a paused tree,
@@ -221,6 +223,5 @@ func _test_leave_to_title() -> void:
 	sfx.start_typing()
 	root.get_node("SettingsMenu").open()
 	sfx.stop_typing()
-	print("typing stops even from a paused tree (expect false): ", sfx._typing.playing)
+	_c.eq("typing stops even from a paused tree", false, sfx._typing.playing)
 	root.get_node("SettingsMenu").close()
-

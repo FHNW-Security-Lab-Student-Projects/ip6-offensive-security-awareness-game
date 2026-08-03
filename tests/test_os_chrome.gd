@@ -6,12 +6,16 @@
 # Run:
 #   godot --headless --path . -s tests/test_os_chrome.gd
 #
-# Every line prints the expected value next to the actual one; a run passes
-# when all "expect" values match and it ends with TEST DONE.
+# Every check compares an expected value against the actual one and prints
+# "ok" or "FAIL". The run ends with TEST DONE and exit code 0 when every check
+# passed, otherwise with the failure count and exit code 1.
 extends SceneTree
+
+const Check := preload("res://tests/check.gd")
 
 var _chrome: Control
 var _done := false
+var _c := Check.new()
 
 
 func _initialize() -> void:
@@ -52,48 +56,48 @@ func _process(_delta: float) -> bool:
 
 	var turns: Label = _chrome.get_node("%TurnsLabel")
 	var target: Label = _chrome.get_node("%TargetLabel")
-	print("target from briefing (expect '· H. Zinsli · CEO'): ", target.text)
-	print("turns show full budget (expect true): ", turns.text.contains("8/8"))
-	print("turns green at full budget (expect true): ",
+	_c.eq("target from briefing", "· H. Zinsli · CEO", target.text)
+	_c.ok("turns show full budget", turns.text.contains("8/8"))
+	_c.ok("turns green at full budget",
 		turns.get_theme_color("font_color") == DarkMailPalette.GREEN)
 
 	# Stepper: three steps, two separators; highlight follows mission_phase.
 	var stepper: HBoxContainer = _chrome.get_node("%StepperRow")
-	print("stepper children (expect 5): ", stepper.get_child_count())
+	_c.eq("stepper children", 5, stepper.get_child_count())
 	var recon_label := _find_step_label(stepper, "Recon")
 	var mail_label := _find_step_label(stepper, "Mail")
-	print("no highlight during briefing (expect true): ",
+	_c.ok("no highlight during briefing",
 		recon_label.get_theme_color("font_color") == DarkMailPalette.TEXT_DIM)
 	gs.set_mission_phase(&"RECON")
-	print("recon highlighted after phase change (expect true): ",
+	_c.ok("recon highlighted after phase change",
 		recon_label.get_theme_color("font_color") == DarkMailPalette.GREEN_BRIGHT)
 	gs.set_mission_phase(&"MAIL")
-	print("highlight moved to mail (expect true): ",
+	_c.ok("highlight moved to mail",
 		mail_label.get_theme_color("font_color") == DarkMailPalette.GREEN_BRIGHT
 		and recon_label.get_theme_color("font_color") == DarkMailPalette.TEXT_DIM)
 
 	# Turn budget: down to the threshold -> amber + pulse, to zero -> red.
 	for i in 6:
 		gs.consume_mission_turn()
-	print("turns label at threshold (expect true): ", turns.text.contains("2/8"))
-	print("turns amber at <=2 (expect true): ",
+	_c.ok("turns label at threshold", turns.text.contains("2/8"))
+	_c.ok("turns amber at <=2",
 		turns.get_theme_color("font_color") == DarkMailPalette.WARN_AMBER)
 	gs.consume_mission_turn()
 	gs.consume_mission_turn()
-	print("turns red at 0 (expect true): ",
+	_c.ok("turns red at 0",
 		turns.get_theme_color("font_color") == DarkMailPalette.ALERT_RED)
 	gs.consume_mission_turn()
-	print("clamped at zero, no underflow (expect true): ", turns.text.contains("0/8"))
+	_c.ok("clamped at zero, no underflow", turns.text.contains("0/8"))
 
 	# Dossier: opens via the MISSION tag and carries the briefing facts.
 	var tag: Button = _chrome.get_node("%MissionTag")
 	var dossier: Control = _chrome.get_node("%Dossier")
 	tag.pressed.emit()
-	print("dossier opens on MISSION click (expect true): ", dossier.visible)
-	print("dossier shows mission text (expect true): ",
+	_c.eq("dossier opens on MISSION click", true, dossier.visible)
+	_c.ok("dossier shows mission text",
 		(_chrome.get_node("%DossierMission") as Label).text.contains(briefing.mission_text))
 	tag.pressed.emit()
-	print("dossier closes on second click (expect false): ", dossier.visible)
+	_c.eq("dossier closes on second click", false, dossier.visible)
 	# A scenario without a turn budget (bad_usb) must not show an empty readout.
 	# Both the counter and the reward line would otherwise render as "0/0" and
 	# "Belohnung:  · Zeitlimit: 0 Zuege".
@@ -103,13 +107,13 @@ func _process(_delta: float) -> bool:
 	bare.reward_text = "Fernzugriff auf einen Arbeitsplatz-Rechner"
 	bare.turn_budget = 0
 	_chrome.configure(bare, steps)
-	print("no turn counter without a budget (expect false): ",
+	_c.eq("no turn counter without a budget", false,
 		(_chrome.get_node("%TurnsLabel") as Label).visible)
 	# The reward still belongs on screen; only the time limit does not.
 	var reward_line := (_chrome.get_node("%DossierReward") as Label)
-	print("reward line still shown (expect true): ", reward_line.visible)
-	print("reward names the payoff (expect true): ", reward_line.text.contains("Fernzugriff"))
-	print("no time limit without a budget (expect false): ", reward_line.text.contains("Zeitlimit"))
+	_c.eq("reward line still shown", true, reward_line.visible)
+	_c.eq("reward names the payoff", true, reward_line.text.contains("Fernzugriff"))
+	_c.eq("no time limit without a budget", false, reward_line.text.contains("Zeitlimit"))
 
 	# With no reward at all the line disappears entirely.
 	var nothing := BriefingResource.new()
@@ -117,10 +121,10 @@ func _process(_delta: float) -> bool:
 	nothing.reward_text = ""
 	nothing.turn_budget = 0
 	_chrome.configure(nothing, steps)
-	print("no reward line without a reward (expect false): ",
+	_c.eq("no reward line without a reward", false,
 		(_chrome.get_node("%DossierReward") as Label).visible)
-	print("mission line still shown (expect true): ",
+	_c.eq("mission line still shown", true,
 		(_chrome.get_node("%DossierMission") as Label).text.contains(nothing.mission_text))
 
-	print("TEST DONE")
+	quit(_c.finish())
 	return true
