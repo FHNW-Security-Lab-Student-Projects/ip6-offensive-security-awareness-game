@@ -32,8 +32,11 @@ After a session:
 2. Turn the logs into tables:
 
    ```
-   python3 tools/analyze.py <log-folder> -o analysis
+   python tools/analyze.py <log-folder> -o analysis
    ```
+
+   On macOS/Linux the command is `python3`; on Windows only `python` resolves
+   (`python3` hits the Microsoft Store stub and does nothing).
 
    This writes `analysis/events.csv` (full trace, one row per event) and
    `analysis/summary.csv` (one row per session: error rate, decision times,
@@ -70,7 +73,7 @@ Plain headless scripts, no framework. Each file runs on its own:
 
 ```
 godot --headless --path . -s tests/test_mail_builder.gd
-python3 tools/test_analyze.py
+python tools/test_analyze.py
 ```
 
 Every check prints `ok` or `FAIL` with the expected value next to the actual
