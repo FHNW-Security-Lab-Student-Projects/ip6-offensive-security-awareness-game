@@ -24,7 +24,7 @@ func _launch_scenario(id: StringName) -> void:
 	if cfg == null:
 		push_error("LevelAuswahl: scenario '%s' missing from Config registry" % id)
 		return
-	SceneTransition.change_scene(cfg.scene_path)
+	SceneTransition.launch_scenario(cfg)
 
 
 

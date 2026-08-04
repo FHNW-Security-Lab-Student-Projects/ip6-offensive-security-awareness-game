@@ -60,6 +60,12 @@ func _process(_delta: float) -> bool:
 		return true
 	_done = true
 
+	# SceneTransition.launch_scenario does this in the game; a test loads the
+	# scene directly and has to start the lifecycle itself. Not in _initialize:
+	# add_child() defers the ready notification there, so the @onready node
+	# references _setup() needs would still be null.
+	_usb.start_scenario("bad_usb")
+
 	_test_grading()
 	_test_failure_counting()
 	_test_reception_paths()

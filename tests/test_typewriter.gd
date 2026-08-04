@@ -29,6 +29,9 @@ func _process(_delta: float) -> bool:
 	if _step == 1:
 		_usb = (load("res://scenarios/bad_usb/bad_usb.tscn") as PackedScene).instantiate()
 		root.add_child(_usb)
+		# SceneTransition.launch_scenario does this in the game; a test loads the
+		# scene directly and has to start the lifecycle itself.
+		_usb.start_scenario("bad_usb")
 		return false
 	if _step != 2:
 		return false

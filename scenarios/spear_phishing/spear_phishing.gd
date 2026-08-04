@@ -32,12 +32,6 @@ enum SubState { BRIEFING, RECON, MAIL, RESOLVE }
 var _current: SubState = SubState.BRIEFING
 var _initialised: bool = false
 
-# LevelAuswahl change_scene_to_file()s into this scene without calling
-# start_scenario, so we bootstrap here. Promote to ScenarioBase if/when
-# other scenarios need the same treatment.
-func _ready() -> void:
-	start_scenario(SCENARIO_ID)
-
 func _setup() -> void:
 	for state in _states.values():
 		state.visible = false
@@ -103,7 +97,7 @@ func _next_scenario() -> void:
 	if cfg == null:
 		push_error("%s: next scenario '%s' missing from Config" % [SCENARIO_ID, NEXT_SCENARIO_ID])
 		return
-	SceneTransition.change_scene(cfg.scene_path)
+	SceneTransition.launch_scenario(cfg)
 
 # "Back to Home": close this run, then return to the start screen.
 func _go_home() -> void:
@@ -120,7 +114,7 @@ func _replay() -> void:
 	if cfg == null:
 		push_error("%s: cannot replay, scenario missing from Config" % SCENARIO_ID)
 		return
-	SceneTransition.change_scene(cfg.scene_path)
+	SceneTransition.launch_scenario(cfg)
 
 func _change_substate(new_state: SubState) -> void:
 	var from_name: String = (

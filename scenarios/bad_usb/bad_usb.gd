@@ -136,9 +136,6 @@ var _world_music_host: Control
 # both choices are hidden during typing.
 var _second_choice_offered: bool = true
 
-func _ready() -> void:
-	start_scenario(SCENARIO_ID)
-
 func _setup() -> void:
 	_barrier_shape.disabled = false
 
@@ -964,4 +961,4 @@ func _on_debrief_replay() -> void:
 	if cfg == null:
 		push_error("%s: cannot replay, scenario missing from Config" % SCENARIO_ID)
 		return
-	SceneTransition.change_scene(cfg.scene_path)
+	SceneTransition.launch_scenario(cfg)
