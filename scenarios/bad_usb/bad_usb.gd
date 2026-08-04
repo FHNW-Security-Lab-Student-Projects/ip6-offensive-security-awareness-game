@@ -714,9 +714,6 @@ func _fail_run() -> void:
 	_dialogue_step = 0
 	SceneTransition.flash(_change_substate.bind(SubState.RESOLVE))
 
-func _on_action(_action_id: String) -> void:
-	pass
-
 # The base class owns scenario_complete; the run's summary row is emitted when
 # the debrief screen appears (see _emit_debrief), not here. That mirrors
 # scenario 1 and means one row exists as soon as the player reached the end of

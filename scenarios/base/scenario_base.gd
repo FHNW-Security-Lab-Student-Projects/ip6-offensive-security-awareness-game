@@ -1,13 +1,18 @@
 # Abstract base for all scenarios. Template Method pattern: the public
-# methods (start_scenario, submit_action, complete_scenario) own the
-# lifecycle and emit telemetry; subclasses MUST override the protected
-# hooks below to provide scenario-specific behaviour.
+# methods (start_scenario, complete_scenario) own the lifecycle and emit
+# telemetry; subclasses MUST override the protected hooks below to provide
+# scenario-specific behaviour.
 #
 # Subclass contract:
-#   MUST override: _on_start, _on_action, _on_complete
+#   MUST override: _on_start, _on_complete
 #   MAY  override: _setup
-# All four hooks default to push_error/no-op so missing overrides fail
+# All three hooks default to push_error/no-op so missing overrides fail
 # loudly during development instead of silently doing nothing.
+#
+# Player input is NOT routed through this class. Both scenarios wire their
+# own signals (buttons, Area2D triggers, dialogue choices) and emit through
+# EventBus at the interaction site — a single action_id string cannot carry
+# what a hotspot click or a card play needs to report.
 class_name ScenarioBase
 extends Node2D
 
@@ -34,9 +39,6 @@ func start_scenario(id: String) -> void:
 	_setup()
 	_on_start()
 
-func submit_action(action_id: String) -> void:
-	_on_action(action_id)
-
 func complete_scenario() -> void:
 	_on_complete()
 	var elapsed: int = Time.get_ticks_msec() - _started_at_ms
@@ -59,10 +61,6 @@ func _setup() -> void:
 # Required: scenario start logic.
 func _on_start() -> void:
 	push_error("ScenarioBase._on_start must be overridden by %s" % scenario_id)
-
-# Required: handle a player action. action_id is scenario-defined.
-func _on_action(action_id: String) -> void:
-	push_error("ScenarioBase._on_action must be overridden (action=%s)" % action_id)
 
 # Required: scenario end logic (cleanup, final emits).
 func _on_complete() -> void:

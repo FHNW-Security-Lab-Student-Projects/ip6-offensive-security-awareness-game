@@ -78,9 +78,6 @@ func _on_start() -> void:
 	else:
 		_change_substate(SubState.BRIEFING)
 
-func _on_action(_action_id: String) -> void:
-	pass
-
 func _on_complete() -> void:
 	pass
 
