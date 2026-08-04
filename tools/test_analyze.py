@@ -162,6 +162,74 @@ def read_csv(path: Path) -> list[dict]:
         return list(csv.DictReader(handle))
 
 
+# The fixture is a log the GAME wrote, not one this file made up. Everything
+# above builds its own dictionaries, so analyze.py and the fixtures could drift
+# away from the real event format together and every check would still pass.
+# This reads a recorded bad_usb run through the same pipeline and compares it
+# against an independent count of the file, which is what catches that drift.
+REAL_LOG = Path(__file__).resolve().parent.parent / "tests" / "fixtures" / "session_real_bad_usb.jsonl"
+
+# Contract from docs/event_schema.md; events.csv has to surface all of it.
+CANONICAL_COLUMNS = [
+    "session_uuid", "seq", "phase", "scenario_id", "action",
+    "is_correct", "latency_ms",
+]
+
+
+def test_real_log_roundtrip() -> None:
+    if not REAL_LOG.exists():
+        check(f"fixture present at {REAL_LOG.name}", True, False)
+        return
+
+    raw_lines = REAL_LOG.read_text(encoding="utf-8").splitlines()
+    parsed = []
+    for line in raw_lines:
+        line = line.strip()
+        if not line:
+            continue
+        try:
+            parsed.append(json.loads(line))
+        except json.JSONDecodeError:
+            pass  # analyze.py is allowed to drop these too; see junk_line above
+
+    with tempfile.TemporaryDirectory() as tmp:
+        logs = Path(tmp) / "logs"
+        logs.mkdir()
+        out = Path(tmp) / "analysis"
+        (logs / REAL_LOG.name).write_bytes(REAL_LOG.read_bytes())
+
+        sys.argv = ["analyze.py", str(logs), "-o", str(out)]
+        check("analyze reads a real game log", 0, analyze.main())
+
+        events = read_csv(out / "events.csv")
+        summary = read_csv(out / "summary.csv")
+
+        check("real log yields one session row", 1, len(summary))
+        # The point of the round trip: no event the game wrote gets lost on the
+        # way into the table.
+        check("every logged event reaches events.csv", len(parsed), len(events))
+
+        missing = [c for c in CANONICAL_COLUMNS if c not in (events[0] if events else {})]
+        check("events.csv carries the canonical columns", [], missing)
+
+        # Field values have to survive, not just the column headers.
+        check(
+            "scenario ids come through",
+            sorted({e.get("scenario_id") for e in parsed if e.get("scenario_id")}),
+            sorted({e["scenario_id"] for e in events if e["scenario_id"]}),
+        )
+        check(
+            "phases come through",
+            sorted({e.get("phase") for e in parsed if e.get("phase")}),
+            sorted({e["phase"] for e in events if e["phase"]}),
+        )
+        check(
+            "the run's debrief survives",
+            True,
+            any(e["phase"] == "scenario_debrief" for e in events),
+        )
+
+
 def main() -> int:
     with tempfile.TemporaryDirectory() as tmp:
         logs = Path(tmp) / "logs"
@@ -330,6 +398,8 @@ def main() -> int:
             e for e in events if e["session_uuid"] == uuid_c and e["phase"] == "scenario_start"
         ]
         check("run boundaries numbered", ["1", "2"], [e["attempt"] for e in starts])
+
+    test_real_log_roundtrip()
 
     print()
     if failures:
