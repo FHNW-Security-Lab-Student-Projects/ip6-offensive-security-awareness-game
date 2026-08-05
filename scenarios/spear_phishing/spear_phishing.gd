@@ -17,6 +17,7 @@ const BriefingState := preload("res://scenarios/spear_phishing/states/briefing.g
 # The mail turn budget is a MailBuilder balancing knob (Pool.TURN_BUDGET); the
 # briefing .tres mirrors the number for its display text.
 const MailPool := preload("res://scenarios/spear_phishing/data/mail_card_pool.gd")
+const RunState := preload("res://scenarios/spear_phishing/data/run_state.gd")
 
 enum SubState { BRIEFING, RECON, MAIL, RESOLVE }
 
@@ -32,9 +33,17 @@ enum SubState { BRIEFING, RECON, MAIL, RESOLVE }
 var _current: SubState = SubState.BRIEFING
 var _initialised: bool = false
 
+# The run's phase handoff. Owned here and created per scene load, so a replay
+# starts clean without wiping anything.
+var _run := RunState.new()
+
 func _setup() -> void:
 	for state in _states.values():
 		state.visible = false
+		# Handed over before any phase becomes visible; the sub-states build
+		# themselves on visibility_changed, not in _ready.
+		if state.has_method("configure_run"):
+			state.configure_run(_run)
 		# Phase progression (Briefing/Recon/Mail) rides advance_requested; Resolve
 		# does not emit it, so guard the connect. Resolve's three exits are its
 		# own intents, each connected where present.
@@ -104,9 +113,10 @@ func _go_home() -> void:
 	complete_scenario()
 	SceneTransition.change_scene(HOME_SCENE)
 
-# "Retry": wipe the per-run handoff state (GameState survives a scene reload),
-# then reload this scenario from the Config registry so every sub-state rebuilds
-# from scratch. The intro briefing is skipped on a retry — straight into Recon.
+# "Retry": reload this scenario from the Config registry so every sub-state
+# rebuilds from scratch. The phase handoff dies with the scene; reset_scenario
+# only clears the mission HUD counters, which live on the autoload. The intro
+# briefing is skipped on a retry — straight into Recon.
 func _replay() -> void:
 	GameState.reset_scenario()
 	GameState.replay_skip_briefing = true

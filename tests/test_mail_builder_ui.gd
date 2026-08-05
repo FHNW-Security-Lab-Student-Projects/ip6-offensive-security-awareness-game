@@ -12,10 +12,12 @@ extends SceneTree
 const Pool := preload("res://scenarios/spear_phishing/data/mail_card_pool.gd")
 const SCENE := "res://scenarios/spear_phishing/states/mail_builder.tscn"
 const Check := preload("res://tests/check.gd")
+const RunState := preload("res://scenarios/spear_phishing/data/run_state.gd")
 
 const OUTCOME_NAMES := ["NONE", "WIN", "SPAM", "KOLLEGEN_RUECKFRAGE", "IGNORIERT"]
 
 var _done := false
+var _run   # the RunState handed to the phase under test
 var _c := Check.new()
 
 
@@ -39,11 +41,14 @@ func _send(mb) -> void:
 
 func _build_mb(collected: Array[StringName], probe_done: bool, budget: int):
 	var gs := root.get_node("GameState")
-	gs.set_collected_finds(collected)
-	gs.probe_signature_obtained = probe_done
-	gs.mail_result = {}
 	gs.begin_mission(budget)
+	# The scenario shell hands the run over before the phase becomes visible;
+	# here the scene is visible on add_child, so configure_run comes first.
+	_run = RunState.new()
+	_run.set_collected_finds(collected)
+	_run.probe_done = probe_done
 	var mb = load(SCENE).instantiate()
+	mb.configure_run(_run)
 	root.add_child(mb)  # visible by default -> _ready runs _build()
 	return mb
 
@@ -96,8 +101,8 @@ func _process(_delta: float) -> bool:
 	_draft(mb, &"zugang_bestaetigen")
 	_send(mb)
 	_c.eq("payload mail wins", "WIN", OUTCOME_NAMES[mb._run.outcome])
-	var result := (root.get_node("GameState").mail_result as Dictionary)
-	_c.eq("mail_result handed to GameState", "WIN", result.get("outcome", ""))
+	var result := (_run.mail_result as Dictionary)
+	_c.eq("mail_result handed to the run", "WIN", result.get("outcome", ""))
 	_c.eq("mail_result carries per-mail history", 2, (result.get("history", []) as Array).size())
 	_c.eq("final reply appended before advance", 2, mb._preview.replies)
 	mb.queue_free()
@@ -120,7 +125,7 @@ func _process(_delta: float) -> bool:
 	_c.ok("q8 card absent before probe", _card_widget(mb3, &"abwesenheits_fenster") == null)
 	_draft(mb3, &"probe_ooo")
 	_send(mb3)
-	_c.eq("probe flag set on GameState", true, root.get_node("GameState").probe_signature_obtained)
+	_c.eq("probe flag set on the run", true, _run.probe_done)
 	_c.ok("q8 card swapped into the hand", _card_widget(mb3, &"abwesenheits_fenster") != null)
 	_c.ok("probe card consumed after it ran", _card_widget(mb3, &"probe_ooo") == null)
 	mb3.queue_free()

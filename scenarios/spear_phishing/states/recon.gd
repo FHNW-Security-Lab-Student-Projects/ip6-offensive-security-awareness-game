@@ -78,6 +78,13 @@ var _active_source: String = ""
 var _tabs: Dictionary = {}  # source(String) -> Button
 var _pages: Dictionary = {}  # source(String) -> SourcePage (cached)
 
+# The run's phase handoff, set by the scenario shell (RunState).
+var _scenario_run
+
+
+func configure_run(run) -> void:
+	_scenario_run = run
+
 # --- telemetry ---------------------------------------------------------------
 # Recon grades itself on junk: a junk find looks like a lead but carries nothing
 # usable, and the deck only holds DECK_LIMIT entries, so taking one is a real
@@ -593,7 +600,8 @@ func _on_advance_button_pressed() -> void:
 	for entry in collected:
 		ids.append(entry.id)
 	_emit_recon_summary(ids)
-	GameState.set_collected_finds(ids)
+	if _scenario_run != null:
+		_scenario_run.set_collected_finds(ids)
 	advance_requested.emit()
 
 

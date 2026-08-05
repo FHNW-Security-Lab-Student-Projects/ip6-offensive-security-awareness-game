@@ -67,6 +67,14 @@ var _hand_built_once := false
 # a turn's latency is the deliberation time and excludes the reveal animation.
 var _clock := PromptClock.new()
 
+# The run's phase handoff, set by the scenario shell (RunState). Distinct from
+# _run above, which is this phase's own MailRun engine.
+var _scenario_run
+
+
+func configure_run(run) -> void:
+	_scenario_run = run
+
 
 func _ready() -> void:
 	var music := ScreenMusic.new()
@@ -225,7 +233,8 @@ func _rebuild_hand() -> void:
 	for widget in _cards:
 		widget.queue_free()
 	_cards = []
-	var hand: Array = Pool.build_hand(GameState.collected_find_ids, _run.probe_done)
+	var collected: Array = _scenario_run.collected_find_ids if _scenario_run != null else []
+	var hand: Array = Pool.build_hand(collected, _run.probe_done)
 	for card in hand:
 		if not _consumed.has(card.id):
 			_add_card_widget(card)
@@ -470,7 +479,8 @@ func _hannes_reply_key() -> String:
 func _check_probe_flip() -> void:
 	if _run.probe_done and not _last_probe_done:
 		_last_probe_done = true
-		GameState.probe_signature_obtained = true
+		if _scenario_run != null:
+			_scenario_run.probe_done = true
 		_show_toast(tr("MAIL_TOAST_PROBE"))
 
 
@@ -524,14 +534,15 @@ func _refresh_controls() -> void:
 # there is no result popup here anymore — this just hands off.
 func _handle_outcome() -> void:
 	var name: String = MailRun.Outcome.keys()[_run.outcome]
-	GameState.set_mail_result({
-		"outcome": name,
-		"suspicion": _run.suspicion,
-		"pressure": _run.pressure,
-		"turns_used": _run.turns_used(),
-		"played": _run.played.duplicate(),
-		"history": _history.duplicate(true),
-	})
+	if _scenario_run != null:
+		_scenario_run.set_mail_result({
+			"outcome": name,
+			"suspicion": _run.suspicion,
+			"pressure": _run.pressure,
+			"turns_used": _run.turns_used(),
+			"played": _run.played.duplicate(),
+			"history": _history.duplicate(true),
+		})
 	var tween := create_tween()
 	tween.tween_interval(REPLY_HOLD)
 	tween.tween_callback(func() -> void: advance_requested.emit())

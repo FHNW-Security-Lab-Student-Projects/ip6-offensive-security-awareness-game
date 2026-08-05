@@ -1,4 +1,4 @@
-# Sub-state 4: the RESOLVE debrief. VIEW only — it reads GameState.mail_result
+# Sub-state 4: the RESOLVE debrief. VIEW only — it reads the run's mail_result
 # (written by the MailBuilder) and stages the closing feedback; it holds NO game
 # logic and never changes balancing. Three blocks build up ONE AFTER ANOTHER so
 # the ending lands with weight:
@@ -54,6 +54,13 @@ var _review_clock := PromptClock.new()
 var _review_opened := false
 var _built := false
 
+# The run's phase handoff, set by the scenario shell (RunState).
+var _scenario_run
+
+
+func configure_run(run) -> void:
+	_scenario_run = run
+
 
 func _ready() -> void:
 	var music := ScreenMusic.new()
@@ -84,7 +91,13 @@ func _build() -> void:
 # --- outcome mapping ---------------------------------------------------------
 
 func _outcome_name() -> String:
-	return str(GameState.mail_result.get("outcome", ""))
+	return str(_result().get("outcome", ""))
+
+
+# The finished mail run, handed over by the MailBuilder. Empty when the phase is
+# reached without one, which the fallback below covers.
+func _result() -> Dictionary:
+	return _scenario_run.mail_result if _scenario_run != null else {}
 
 
 # The RESOLVE_<KEY>_* infix for the current outcome, with a safe fallback so a
@@ -96,7 +109,7 @@ func _outcome_infix() -> String:
 # --- telemetry: the last datapoint per run -----------------------------------
 
 func _emit_debrief() -> void:
-	var r: Dictionary = GameState.mail_result
+	var r: Dictionary = _result()
 	var outcome: String = _outcome_name() if not _outcome_name().is_empty() else "UNKNOWN"
 	EventBus.generic_event.emit({
 		"phase": "scenario_debrief",
@@ -247,7 +260,9 @@ func _open_review() -> void:
 	review.close_requested.connect(review.queue_free)
 	add_child(review)
 	review.configure(
-		GameState.mail_result, GameState.collected_find_ids, GameState.probe_signature_obtained)
+		_result(),
+		_scenario_run.collected_find_ids if _scenario_run != null else [],
+		_scenario_run.probe_done if _scenario_run != null else false)
 
 
 # A second means they glanced, half a minute means they read it.

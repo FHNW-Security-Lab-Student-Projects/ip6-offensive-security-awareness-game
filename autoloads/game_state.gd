@@ -12,10 +12,9 @@ var current_scenario_id: String = ""
 var state: State = State.MENU
 
 # ---- Study participant code ----
-# Ties this session's telemetry to the participant's questionnaires. Free text;
-# only trimmed and capped so a stray space cannot split one participant into two
-# rows. NOT persisted: a code left over from the previous participant would
-# mislabel a whole session.
+# Joins this session's telemetry to the questionnaires. Trimmed and capped so a
+# stray space cannot split one participant into two rows. Not persisted: a code
+# left over from the previous participant would mislabel a whole session.
 const PARTICIPANT_CODE_MAX_LENGTH: int = 32
 
 var participant_code: String = ""
@@ -27,10 +26,8 @@ func set_participant_code(value: String) -> void:
 func _ready() -> void:
 	session_uuid = _generate_session_uuid()
 
-# True while the player sits in the title screen or the scenario selection, i.e.
-# outside a running scenario. Menu scenes announce themselves via transition_to
-# on _ready, so this stays accurate across a whole session and not just before
-# the first scenario.
+# Outside a running scenario. Menu scenes announce themselves via transition_to
+# on _ready, so this stays accurate for the whole session, not just the start.
 func is_in_menu() -> bool:
 	return state == State.MENU
 
@@ -53,11 +50,9 @@ func transition_to(new_state: State) -> void:
 		},
 	})
 
-# ---- Mission HUD state (presentation only) ----
-# Read by the OSChrome shell, written by scenario shells: begin_mission on
-# scenario start, set_mission_phase from the shell's advance routing, and
-# consume_mission_turn from the mail builder (Phase 4). Deliberately not part
-# of the session state machine above — it carries no game logic.
+# ---- Mission HUD state ----
+# Presentation only, no game logic: written by the scenario shells and the mail
+# builder, read by the OSChrome bar through the two signals below.
 
 signal mission_phase_changed(phase: StringName)
 signal mission_turns_changed(turns_left: int, turn_budget: int)
@@ -85,45 +80,13 @@ func consume_mission_turn() -> void:
 	mission_turns_left -= 1
 	mission_turns_changed.emit(mission_turns_left, mission_turn_budget)
 
-# ---- Recon → MailBuilder handoff ----
-# Recon writes the ids of the collected finds here on advance; the MailBuilder
-# reads them to build the hand (find id -> card). Carries no logic itself.
-var collected_find_ids: Array[StringName] = []
-
-# Set true once the mail-phase probe (out-of-office reply, bible Q8) has run.
-# Deferred to a future UI task; the MailBuilder catalog gates the Q8 cards on it.
-var probe_signature_obtained: bool = false
-
-func set_collected_finds(ids: Array[StringName]) -> void:
-	collected_find_ids = ids.duplicate()
-
-# ---- MailBuilder → Resolve handoff ----
-# The MailBuilder writes the finished run here (outcome name, final bars,
-# turns used, played card ids); the Resolve phase reads it to build its
-# debrief. Carries no logic itself.
-var mail_result: Dictionary = {}
-
-func set_mail_result(result: Dictionary) -> void:
-	mail_result = result.duplicate(true)
-
-# ---- Replay navigation hint ----
-# Set by the scenario shell right before a "Nochmal spielen" reload; read once
-# by the shell's _on_start to jump straight into the gameplay (skip the intro
-# briefing) and cleared on read. A one-shot flag, deliberately NOT touched by
-# reset_scenario (it is navigation, not per-run state).
+# One-shot flag for a replay: set before the reload, consumed by the shell's
+# _on_start to skip the intro briefing. Navigation, so reset_scenario leaves it.
 var replay_skip_briefing: bool = false
 
-# ---- Replay: wipe the per-run handoff state ----
-# GameState is an autoload, so a scene reload does NOT clear these fields. The
-# Resolve "Nochmal spielen" path calls this before reloading the scenario so a
-# second run starts clean (no stale recon finds, mail result or probe flag) —
-# critical for the user study, where mixed runs would poison the data. The
-# mission HUD counters are re-seeded by begin_mission on the fresh scene load;
-# zeroing them here just avoids a one-frame stale read.
+# Zeroes the HUD counters before a replay reload; begin_mission re-seeds them on
+# the fresh scene, so this only avoids a stale read in the frames between.
 func reset_scenario() -> void:
-	collected_find_ids = []
-	mail_result = {}
-	probe_signature_obtained = false
 	mission_phase = &""
 	mission_turn_budget = 0
 	mission_turns_left = 0

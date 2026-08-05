@@ -13,9 +13,11 @@ extends SceneTree
 
 const SCENE := "res://scenarios/spear_phishing/states/resolve.tscn"
 const Check := preload("res://tests/check.gd")
+const RunState := preload("res://scenarios/spear_phishing/data/run_state.gd")
 
 var _events: Array = []
 var _done := false
+var _run   # the RunState handed to the phase under test
 var _c := Check.new()
 
 
@@ -55,8 +57,10 @@ func _button_texts(node: Node, out: Array) -> void:
 
 
 func _build_resolve(outcome: String):
-	var gs := root.get_node("GameState")
-	gs.set_mail_result({
+	# The scenario shell hands the run over before the phase becomes visible;
+	# here the scene is visible on add_child, so configure_run comes first.
+	_run = RunState.new()
+	_run.set_mail_result({
 		"outcome": outcome,
 		"suspicion": 2,
 		"pressure": 8,
@@ -64,6 +68,7 @@ func _build_resolve(outcome: String):
 		"played": [],
 	})
 	var r = load(SCENE).instantiate()
+	r.configure_run(_run)
 	root.add_child(r)  # visible by default -> _ready runs _build()
 	return r
 
@@ -148,16 +153,17 @@ func _process(_delta: float) -> bool:
 	_c.ok("review overlay can close back", overlay.has_signal("close_requested"))
 	rb.queue_free()
 
-	# --- 5. reset_scenario() wipes the per-run handoff (clean replay) ---------
+	# --- 5. A fresh run starts clean, without an explicit wipe ----------------
+	# The handoff lives on a shell-owned RunState that dies with the scene, so a
+	# replay is clean by construction. Guards against moving it back onto the
+	# autoload, which would reintroduce the stale-state problem.
+	var run = RunState.new()
+	_c.eq("fresh run has no collected finds", 0, run.collected_find_ids.size())
+	_c.eq("fresh run has no mail result", 0, run.mail_result.size())
+	_c.eq("fresh run has the probe flag down", false, run.probe_done)
 	var gs := root.get_node("GameState")
-	var finds: Array[StringName] = [&"q4_presse", &"q2c_katze"]
-	gs.set_collected_finds(finds)
-	gs.set_mail_result({"outcome": "WIN", "suspicion": 2, "pressure": 8, "turns_used": 3, "played": []})
-	gs.probe_signature_obtained = true
-	gs.reset_scenario()
-	_c.eq("reset clears collected finds", 0, gs.collected_find_ids.size())
-	_c.eq("reset clears mail_result", 0, gs.mail_result.size())
-	_c.eq("reset clears probe flag", false, gs.probe_signature_obtained)
+	_c.ok("GameState carries no phase handoff", not gs.has_method("set_mail_result")
+		and not gs.has_method("set_collected_finds"))
 
 	quit(_c.finish())
 	return true
