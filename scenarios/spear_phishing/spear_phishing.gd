@@ -92,7 +92,9 @@ func _advance() -> void:
 			# Intro -> gameplay: a black fade acts as a "loading" beat.
 			SceneTransition.flash(_change_substate.bind(SubState.RECON))
 		SubState.RECON:
-			_change_substate(SubState.MAIL)
+			# Recon -> Mail is a change of screen like the intro, so it gets the
+			# same black beat instead of a hard cut.
+			SceneTransition.flash(_change_substate.bind(SubState.MAIL))
 		SubState.MAIL:
 			_change_substate(SubState.RESOLVE)
 

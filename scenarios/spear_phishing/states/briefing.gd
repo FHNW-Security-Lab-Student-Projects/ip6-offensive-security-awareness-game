@@ -50,6 +50,7 @@ func _ready() -> void:
 	_reward_label.visible = not _reward_label.text.is_empty()
 	_advance_button.visible = false
 	_dialog.lines_finished.connect(_on_lines_finished)
+	visibility_changed.connect(_on_visibility_changed)
 	_started_at_ms = Time.get_ticks_msec()
 	# The resource stores translation keys, not sentences, so the intro follows
 	# the selected language like the rest of the UI.
@@ -67,6 +68,20 @@ func _process(delta: float) -> void:
 
 func _on_lines_finished() -> void:
 	_advance_button.visible = true
+
+
+# The typewriter bed lives on the SfxPlayer autoload, so it outlives this
+# screen. Two cases: a replay skips the briefing, but _ready has already started
+# the dialog by the time the shell hides it — without this the bed kept running
+# for seconds over the next phase. And the shell hides every sub-state once in
+# _setup before showing this one, which must not leave the line typing silently.
+func _on_visibility_changed() -> void:
+	if _dialog == null or not _dialog.is_typing():
+		return
+	if visible:
+		SfxPlayer.start_typing()
+	else:
+		SfxPlayer.stop_typing()
 
 func _on_advance_button_pressed() -> void:
 	var elapsed: int = Time.get_ticks_msec() - _started_at_ms

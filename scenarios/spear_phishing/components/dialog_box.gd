@@ -37,6 +37,12 @@ func _ready() -> void:
 	_panel.gui_input.connect(_on_panel_input)
 	_clear()
 
+# True while a line is still being written out. The host screen uses it to keep
+# the typewriter bed in sync when it is hidden and shown again mid-line.
+func is_typing() -> bool:
+	return _typing
+
+
 func play(lines: PackedStringArray, speaker: String = "") -> void:
 	_lines = lines
 	_line_idx = 0
