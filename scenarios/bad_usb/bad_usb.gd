@@ -108,8 +108,8 @@ const PHASE_BY_SUBSTATE: Dictionary = {
 
 
 var _clock: PromptClock = PromptClock.new()
-# Blown covers so far. Every failure resets the player to the building entrance,
-# so this doubles as the retry counter for the run.
+# Blown cover. A cover blow ends the run on the spot (see _fail_run), so this is
+# 0 or 1 per run, not a retry counter. Goes into the debrief row as "failures".
 var _failure_count: int = 0
 # Dead-end attempts at the badge-protected elevator. Not a cover blower, but a
 # wrong turn worth counting for the usability analysis.
