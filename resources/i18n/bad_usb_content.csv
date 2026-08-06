@@ -39,7 +39,7 @@ BADUSB_BTN_ELEVATOR,Aufzug benutzen,Use the lift
 BADUSB_BTN_SNEAK,Durch schleichen,Slip through
 BADUSB_BTN_OPEN_DOOR,Tür Öffnen,Open door
 BADUSB_BRIEF_TITLE,Mission Infiltration,Mission Infiltration
-BADUSB_BRIEF_TEXT,Weil der Versuch das Unternemen mit einem Spear Phishing angriff zu besiegen fehlschlug ist nun die mission das Unternehmen physisch zu infiltrieren. Deine Mission ist es den USB Stick bis zu einem Arbeitsplatz an einen Rechner zu bringen und ein zu stecken. Los Gehts,"Since the attempt to beat the company with a spear phishing attack failed, the mission is now to infiltrate the company physically. Your mission is to carry the USB stick to a workstation and plug it in. Let's go."
+BADUSB_BRIEF_TEXT,"Weil der Versuch, das Unternehmen mit einem Spear-Phishing-Angriff zu besiegen, fehlschlug, ist nun die Mission, das Unternehmen physisch zu infiltrieren. Deine Mission ist es, den USB-Stick bis zu einem Arbeitsplatz an einen Rechner zu bringen und einzustecken. Los geht's!","Since the attempt to beat the company with a spear phishing attack failed, the mission is now to infiltrate the company physically. Your mission is to carry the USB stick to a workstation and plug it in. Let's go."
 BADUSB_BRIEF_START,Infiltration Starten,Start infiltration
 BADUSB_RESOLVE_TITLE,SIMULATION ABGESCHLOSSEN,SIMULATION COMPLETE
 BADUSB_BTN_NEXT,Weiter,Next
@@ -55,7 +55,7 @@ BADUSB_PHASE_OFFICE,Büro,Office
 BADUSB_PHASE_DEBRIEF,Debrief,Debrief
 BADUSB_FAIL_0_TITLE,Aufgeflogen,Blown
 BADUSB_FAIL_1_TITLE,Fazit: Nachfragen hat gereicht,Conclusion: asking was enough
-BADUSB_FAIL_1_TEXT,"Ein physischer Angriff steht und fällt mit der ersten Person, die ihn durchwinkt. Dein Gegenüber hat stattdessen nachgefragt, statt die Geschichte zu glauben. Mehr brauchte es nicht: Der USB-Stick kam nie in die Nähe eines Rechners.","A physical attack stands or falls with the first person who waves it through. The person in front of you asked questions instead of believing the story. That was all it took: the USB stick never got near a computer."
+BADUSB_FAIL_1_TEXT,"Ein physischer Angriff steht und fällt mit der ersten Person, die ihn durchwinkt. Dein Gegenüber hat stattdessen nachgefragt, statt die Geschichte zu glauben. Mehr brauchte es nicht: Der USB-Stick kam nie in die Nähe eines Rechners.",A physical attack stands or falls with the first person who waves it through. The person in front of you asked questions instead of believing the story. That was all it took: the USB stick never got near a computer.
 BADUSB_FAILURE_TEXT,Gescheitert: Deine Antworten haben aufsehen erregt und du wurdest zurückgewiesen.,Failed: your answers drew attention and you were turned away.
 BADUSB_BTN_RETRY,Erneut Versuchen,Try again
 BADUSB_BTN_GO_ELEVATOR,Zum Aufzug gehen,Go to the lift
