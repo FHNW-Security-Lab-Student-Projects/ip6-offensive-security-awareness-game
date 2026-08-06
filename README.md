@@ -48,8 +48,11 @@ After a session:
    and pass it with `-p`. Sessions sort chronologically by uuid, which makes
    that reconstruction straightforward.
 
-See [docs/event_schema.md](docs/event_schema.md) for what is logged and which
-events count towards the error rate.
+Every event carries the same flat set of fields: `phase`, `scenario_id`,
+`action`, `is_correct`, `latency_ms`, `payload`, plus `seq`, `timestamp_ms`,
+`session_uuid` and `participant_code` stamped by `Telemetry`. Only events with
+`is_correct` set to a real bool count towards the error rate; `EventBus.emit_action`
+forces it to `null` for interactions that have no right answer.
 
 ## Folder layout
 
@@ -89,9 +92,12 @@ a study session. Clear it before handing the machine to a participant.
 
 ## Adding a scenario
 
-See [docs/scenarios-howto.md](docs/scenarios-howto.md) for the contract
-(three files: `.gd` extending `ScenarioBase`, `.tscn` with Node2D root,
-`.tres` config) and the hooks you need to override.
+Three new files: a `.gd` extending `ScenarioBase`, a `.tscn` with a Node2D
+root, and a `.tres` config under `resources/scenarios/` that `Config` picks up
+on its startup scan. Override `_on_start` and `_on_complete`, optionally
+`_setup`. The scenario is started by `SceneTransition.launch_scenario(cfg)`;
+it must not start itself. To reach it from the menu, add a button in
+`scenes/LevelAuswahl.tscn` and a handler in `scenes/levelAuswahl.gd`.
 
 ## Ownership
 

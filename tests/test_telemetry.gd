@@ -14,7 +14,7 @@ extends SceneTree
 const PromptClock := preload("res://scenarios/base/prompt_clock.gd")
 const Check := preload("res://tests/check.gd")
 
-# Contract from docs/event_schema.md: these keys must exist on EVERY event, or
+# Event contract: these keys must exist on EVERY event, or
 # the post-hoc analysis cannot read the file as one table.
 const CANONICAL_KEYS := [
 	"phase", "scenario_id", "action", "is_correct", "latency_ms", "payload",
@@ -135,7 +135,7 @@ func _process(_delta: float) -> bool:
 
 # --- schema conformance ------------------------------------------------------
 
-# Guards the contract in docs/event_schema.md across every event this run
+# Guards the event contract across every event this run
 # produced, so a new emit site cannot quietly ship a half-filled event.
 func _test_schema() -> void:
 	var missing := 0

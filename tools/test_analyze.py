@@ -169,7 +169,7 @@ def read_csv(path: Path) -> list[dict]:
 # against an independent count of the file, which is what catches that drift.
 REAL_LOG = Path(__file__).resolve().parent.parent / "tests" / "fixtures" / "session_real_bad_usb.jsonl"
 
-# Contract from docs/event_schema.md; events.csv has to surface all of it.
+# The canonical event fields; events.csv has to surface all of them.
 CANONICAL_COLUMNS = [
     "session_uuid", "seq", "phase", "scenario_id", "action",
     "is_correct", "latency_ms",
