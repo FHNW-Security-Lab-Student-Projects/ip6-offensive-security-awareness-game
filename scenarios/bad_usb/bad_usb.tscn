@@ -369,8 +369,8 @@ texture = ExtResource("10_skyq6")
 centered = false
 
 [node name="Sprite2D3" type="Sprite2D" parent="BadUSBScenario/InsideBuilding/Background/Background" unique_id=1024562891]
-position = Vector2(4302.4, 857.525)
-scale = Vector2(0.905, 0.909)
+position = Vector2(4299, 874)
+scale = Vector2(0.785, 0.789)
 texture = ExtResource("17_cw631")
 
 [node name="CloserBackground" type="ParallaxLayer" parent="BadUSBScenario/InsideBuilding/Background" unique_id=1681990461]
