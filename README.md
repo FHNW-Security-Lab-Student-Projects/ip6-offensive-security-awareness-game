@@ -98,22 +98,3 @@ on its startup scan. Override `_on_start` and `_on_complete`, optionally
 `_setup`. The scenario is started by `SceneTransition.launch_scenario(cfg)`;
 it must not start itself. To reach it from the menu, add a button in
 `scenes/LevelAuswahl.tscn` and a handler in `scenes/levelAuswahl.gd`.
-
-## Ownership
-
-| Area | Owner |
-|---|---|
-| `autoloads/`, `scenarios/`, `resources/`, `tests/` | Person A (engine + scenarios) |
-| `scenes/ui/`, `scenes/shared/` | Person B (title screen + scenario select) |
-| `assets/`, `project.godot` (autoloads section) | Shared — coordinate before edits |
-
-`project.godot`'s `[autoload]` section is shared territory: ping before
-adding/removing/reordering an autoload.
-
-## Branching
-
-- `main` — protected, only merged work lands here.
-- `feat/<topic>` — feature branches (e.g. `feat/engine-foundation`).
-
-Conventional commit prefixes: `feat`, `fix`, `chore`, `refactor`, `docs`,
-`test`, `perf`, `ci`.
