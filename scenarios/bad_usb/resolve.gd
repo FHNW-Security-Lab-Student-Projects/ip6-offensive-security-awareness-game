@@ -1,12 +1,4 @@
+# Placeholder only. The RESOLVE phase is built by debrief.gd, which owns its own
+# full-screen layout; this node stays hidden and exists so the level file keeps
+# opening in the editor.
 extends Control
-
-signal advance_requested
-
-# Called when the node enters the scene tree for the first time.
-func _ready() -> void:
-	pass # Replace with function body.
-
-
-# Called every frame. 'delta' is the elapsed time since the previous frame.
-func _process(delta: float) -> void:
-	pass

@@ -1,16 +1,8 @@
+# Placeholder only. bad_usb.gd frees this node at startup and instantiates
+# scenario 1's briefing screen in its place; the button below never fires.
 extends Control
 
 signal advance_requested
-
-
-# Called when the node enters the scene tree for the first time.
-func _ready() -> void:
-	pass # Replace with function body.
-
-
-# Called every frame. 'delta' is the elapsed time since the previous frame.
-func _process(delta: float) -> void:
-	pass
 
 
 func _on_button_pressed() -> void:

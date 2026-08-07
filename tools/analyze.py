@@ -11,21 +11,16 @@ folder of those files and produces:
 Standard library only, so it runs on any Python 3.9+ without installing
 anything.
 
-Usage:
+Run:
     python3 tools/analyze.py <log-folder> [-o out] [-p participants.csv]
 
-    <log-folder>        folder holding session_*.jsonl (copy them off the
-                        study machines first)
-    -o / --out          output folder, default "analysis"
-    -p / --participants optional CSV mapping sessions to participant codes,
-                        so the game data can be joined to the pre/post
-                        questionnaires. Two columns, with header:
+See --help for the flags. The participants file passed to -p joins the game data
+to the pre and post questionnaires and has two columns:
 
-                            session_uuid,participant_code
-                            20260727_141833_a3f1,P07
+    session_uuid,participant_code
+    20260727_141833_a3f1,P07
 
-                        Sessions sort chronologically by uuid, which makes
-                        filling this in after a study day straightforward.
+Sessions sort chronologically by uuid, so it can be filled in after a study day.
 """
 
 from __future__ import annotations
@@ -450,7 +445,9 @@ def main() -> int:
         description="Build events.csv and summary.csv from the session logs."
     )
     parser.add_argument("logs", type=Path, help="folder containing session_*.jsonl")
-    parser.add_argument("-o", "--out", type=Path, default=Path("analysis"))
+    parser.add_argument(
+        "-o", "--out", type=Path, default=Path("analysis"), help="output folder"
+    )
     parser.add_argument(
         "-p",
         "--participants",
