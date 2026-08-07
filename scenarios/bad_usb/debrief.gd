@@ -1,16 +1,14 @@
-# The bad_usb closing screen, built to match scenario 1's RESOLVE: full screen,
-# DarkMail look, fading content, click to hurry the text, same exits.
+# The closing screen, built to match scenario 1's RESOLVE: full screen, DarkMail
+# look, fading content, click to hurry the text, the same exits.
 #
-# Unlike scenario 1 the stages are shown one at a time rather than stacked: five
-# images on one surface would need scrolling, and a debrief that scrolls is a
-# debrief nobody finishes.
+# Unlike scenario 1 the stages come one at a time instead of stacked: five images
+# on one surface would need scrolling, and a debrief that scrolls is a debrief
+# nobody finishes.
 #
-# VIEW only, no game logic and no routing. The scenario shell decides what each
-# exit means.
+# VIEW only. The shell decides what each exit means.
 extends Control
 
-# The player is done reading a stage. dwell_ms is the time the finished text
-# stood on screen, which is the debrief-attention measure for the study.
+# dwell_ms is how long the finished text stood, which is the attention measure.
 signal stage_advanced(index: int, dwell_ms: int)
 signal levels_requested
 signal home_requested
@@ -21,16 +19,16 @@ const SkipHint := preload("res://scenarios/base/skip_hint.gd")
 const PromptClock := preload("res://scenarios/base/prompt_clock.gd")
 const ScreenMusic := preload("res://scenarios/base/components/screen_music.gd")
 
-# The track scenario 1 closes on, so both levels end on the same note.
+# Scenario 1 closes on this too, so both levels end on the same note.
 const DEBRIEF_MUSIC := preload("res://assets/audio/terminal_echo_drift.wav")
 
 const FADE_TIME: float = 0.45
 const IMAGE_HEIGHT: int = 300
 const CHARS_PER_SECOND: float = 45.0
-# A full-width line of mono text is too long to track back to the next line.
+# A full-width line of mono text is too long to track back to the next.
 const BODY_WIDTH: int = 900
 const SIDE_MARGIN: int = 80
-# Clears the 80px OS bar, the same y >= 96 contract scenario 1's screens follow.
+# Clears the OS bar, the same contract scenario 1's screens follow.
 const TOP_MARGIN: int = 96
 const BOTTOM_MARGIN: int = 40
 
@@ -62,9 +60,8 @@ func _process(delta: float) -> void:
 	_typer.advance(delta)
 
 
-# stages: [{title, text, image}], already translated.
-# accent colours the headings; scenario 1 uses ALERT_RED for a losing outcome so
-# the result reads before a single word does.
+# stages is already translated. accent colours the headings; a losing outcome
+# gets red, so the result reads before a single word does.
 func configure(stages: Array, accent: Color = DarkMailPalette.GREEN) -> void:
 	_stages = stages.duplicate()
 	_index = 0
@@ -75,15 +72,14 @@ func configure(stages: Array, accent: Color = DarkMailPalette.GREEN) -> void:
 # --- layout -------------------------------------------------------------------
 
 func _build() -> void:
-	# Opaque, not a dim over the level: the closing screen takes the whole
-	# display the way scenario 1's Resolve does, so the debrief is the only
-	# thing left to look at. Same colour as its Background rect.
+	# Opaque, not a dim over the level: the debrief should be the only thing left
+	# to look at.
 	_panel = ColorRect.new()
 	(_panel as ColorRect).color = DarkMailPalette.BG_PANEL
 	_panel.anchor_right = 1.0
 	_panel.anchor_bottom = 1.0
-	# The whole screen is the click target, the way scenario 1's reveal catcher
-	# is: the hint in the corner advertises it, but it is not the only way in.
+	# The whole screen is the click target; the corner hint advertises it but is
+	# not the only way in.
 	_panel.mouse_filter = Control.MOUSE_FILTER_STOP
 	_panel.gui_input.connect(_on_click)
 	add_child(_panel)
@@ -100,12 +96,12 @@ func _build() -> void:
 	column.mouse_filter = Control.MOUSE_FILTER_IGNORE  # clicks fall through
 	add_child(column)
 
-	# One node for everything that changes per stage, so a stage change is one
-	# fade instead of three that can drift apart.
+	# One node for everything that changes per stage, so a stage change is a
+	# single fade instead of three that can drift apart.
 	_stage_box = VBoxContainer.new()
 	(_stage_box as VBoxContainer).add_theme_constant_override("separation", 22)
-	# Without this the container defaults to STOP and eats every click that lands
-	# on the text, so only the bare background stayed clickable.
+	# Containers default to STOP and would eat every click landing on the text,
+	# leaving only the bare background clickable.
 	_stage_box.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	column.add_child(_stage_box)
 
@@ -133,13 +129,13 @@ func _build() -> void:
 	column.add_child(_buttons)
 
 
-# Scenario 1's exits minus "next scenario": bad_usb is last in the registry.
+# Scenario 1's exits minus "next scenario": this level is last in the registry.
 func _build_buttons() -> Control:
 	var row := HBoxContainer.new()
 	row.alignment = BoxContainer.ALIGNMENT_CENTER
 	row.add_theme_constant_override("separation", 20)
 	# Same reason: the gaps between the buttons must not swallow clicks. The
-	# buttons themselves sit on top and still receive their own.
+	# buttons sit on top and still get their own.
 	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_add_button(row, "RESOLVE_LEVELS", func() -> void: levels_requested.emit())
 	_add_button(row, "RESOLVE_HOME", func() -> void: home_requested.emit())
@@ -174,8 +170,8 @@ func _show_stage() -> void:
 	_title.text = String(stage.get("title", ""))
 	var texture = stage.get("image")
 	_image.texture = texture
-	# Hidden until the text has landed, so the image is a reward for reading
-	# rather than a distraction beside it.
+	# Hidden until the text has landed, so it rewards reading instead of
+	# competing with it.
 	_image.visible = false
 	_buttons.visible = false
 	_hint.set_active(true)
@@ -212,8 +208,8 @@ func _is_last_stage() -> bool:
 	return _index >= _stages.size() - 1
 
 
-# A click hurries the running text, and once it stands it turns the page. The
-# last stage is left to its buttons so a stray click cannot leave the screen.
+# A click hurries the running text, then turns the page. The last stage is left
+# to its buttons, so a stray click cannot leave the screen.
 func _on_click(event: InputEvent) -> void:
 	if not (event is InputEventMouseButton):
 		return
@@ -228,7 +224,7 @@ func _on_click(event: InputEvent) -> void:
 	advance()
 
 
-# Public so the headless test can drive the sequence without synthesising input.
+# Public so the headless test can drive the sequence without faking input.
 func advance() -> void:
 	if _is_last_stage():
 		return

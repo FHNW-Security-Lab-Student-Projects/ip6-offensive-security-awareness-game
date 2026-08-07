@@ -9,23 +9,21 @@ const FIELD_PADDING_Y := 6
 
 
 func _ready() -> void:
-	# Nothing else returns the session state to MENU. Without this it stays on
+	# Nothing else returns the session to MENU. Without it the state stays on
 	# FEEDBACK for the rest of the run and the language stays locked.
 	GameState.transition_to(GameState.State.MENU)
-	# The menu music lives in the persistent MusicPlayer autoload so it carries
-	# over to the scenario selection; resume it in case a scenario stopped it.
+	# On the autoload, so it carries over to the scenario selection. Resume in
+	# case a scenario stopped it.
 	MusicPlayer.play_menu_music()
-	# Arcade slabs in the artwork's warm accent; the play button is the primary
-	# one, so it is brighter and larger.
+	# The play button is the primary one, so it is brighter and larger.
 	MenuStyle.style_menu_button($Monitorbereich/ButtonListe/BtnLevels, true)
 	MenuStyle.style_menu_button($Monitorbereich/ButtonListe/BtnEinstellungen)
 	MenuStyle.style_menu_button($Monitorbereich/ButtonListe/BtnBeenden)
 	_build_participant_field()
 
 
-# The study's participant code. In the corner rather than the menu column: it is
-# an operator control for the study lead, not something the player acts on.
-# Optional, so ordinary play is unaffected.
+# In the corner rather than the menu column: an operator control for the study
+# lead, not something the player acts on. Optional, so play is unaffected.
 func _build_participant_field() -> void:
 	var holder := PanelContainer.new()
 	holder.name = "ParticipantRow"
@@ -54,13 +52,12 @@ func _build_participant_field() -> void:
 
 	var field := LineEdit.new()
 	field.name = "ParticipantCode"
-	# Survives returning to the title screen, since GameState outlives the scene.
+	# Survives a return to the title screen, since GameState outlives the scene.
 	field.text = GameState.participant_code
 	field.max_length = GameState.PARTICIPANT_CODE_MAX_LENGTH
 	field.custom_minimum_size = Vector2(200, 44)
 	field.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	# Identical padding on both states so the text does not shift when the field
-	# takes focus.
+	# The same padding on both, so the text does not shift on focus.
 	field.add_theme_stylebox_override("normal", _field_box(MenuStyle.PANEL_ALT))
 	field.add_theme_stylebox_override("focus", _field_box(MenuStyle.PANEL_FILL))
 	field.add_theme_font_override("font", MenuStyle.FONT_MONO)
@@ -73,8 +70,8 @@ func _build_participant_field() -> void:
 	add_child(holder)
 
 
-# MenuStyle.flat_box carries no content margins, which would leave the text and
-# caret sitting directly on the border.
+# flat_box carries no content margins, which would leave the text and the caret
+# sitting on the border.
 func _field_box(fill: Color) -> StyleBoxFlat:
 	var box := MenuStyle.flat_box(fill)
 	box.content_margin_left = FIELD_PADDING_X
@@ -84,14 +81,13 @@ func _field_box(fill: Color) -> StyleBoxFlat:
 	return box
 
 
-# The select blip is wired automatically for every button by the SfxPlayer
-# autoload, so the handlers below only do navigation.
+# SfxPlayer wires the select blip for every button, so these only navigate.
 func _on_btn_levels_pressed() -> void:
 	get_tree().change_scene_to_file("res://scenes/LevelAuswahl.tscn")
 
 
 func _on_btn_einstellungen_pressed() -> void:
-	# The same overlay Escape opens, so there is one instance and one code path.
+	# The same overlay Escape opens: one instance, one code path.
 	SettingsMenu.open()
 
 

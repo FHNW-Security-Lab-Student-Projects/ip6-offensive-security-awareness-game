@@ -1,14 +1,10 @@
-# Single source of truth for the Recon browser look: palette, spacing, radii,
-# fonts and StyleBox factories. The Slice 5 visual contract lives here so the
-# later rollout to the other tabs reuses the exact same values.
+# The Recon browser look: palette, spacing, radii, fonts and StyleBox factories.
 #
 # Two layers, deliberately split:
-#   - The browser FRAME (title bar, url bar, tab strip, footer) wears the
-#     DarkMail OS skin (dark chrome section below, palette from
-#     DarkMailPalette) so the tool reads as part of the terminal.
-#   - The PAGE CONTENT (card_box/post_box and everything inside) stays a
-#     bright, clean, realistic surface. That realism is didactically
-#     load-bearing — the player must recognise leaks in real-looking posts —
+#   - The FRAME (title bar, url bar, tabs, footer) wears the DarkMail skin, so
+#     the tool reads as part of the terminal.
+#   - The PAGE CONTENT stays bright and realistic. That realism is didactically
+#     load-bearing - the player has to recognise leaks in real-looking posts -
 #     so the terminal look must never bleed into it.
 class_name ReconBrowserStyle
 extends RefCounted
@@ -28,10 +24,9 @@ const COLOR_CARD_HOVER := Color("f0f6ff")
 const COLOR_CARD_COLLECTED := Color("eafaf0")
 const COLOR_ACCENT := Color("2f6bd8")          # link/active blue
 const COLOR_CHECK := Color("1f9d55")           # lock icon only (not a marking)
-# Marking for collected finds, tied to the DarkMail terminal green ("inter-
-# cepted / in deck"). Still value-neutral: junk and good finds look IDENTICAL
-# on purpose — the marking never says "correct", only "collected". Filled
-# highlighter look (no border) so wrapped lines do not read as a framed box.
+# Marking for collected finds. Value-neutral on purpose: junk and good finds
+# look IDENTICAL, the marking says "collected", never "correct". Filled, not
+# bordered, so wrapped lines do not read as a framed box.
 const COLOR_MARK_HOVER := Color(DarkMailPalette.GREEN, 0.18)  # pre-collect glow
 const COLOR_MARK_DECK := Color(DarkMailPalette.GREEN, 0.42)   # collected fill
 const COLOR_TEXT := Color("1c2530")
@@ -104,21 +99,19 @@ static func card_box(collected: bool, hover: bool) -> StyleBoxFlat:
 	return _flat(bg, border, RADIUS, 1)
 
 
-# A neutral feed-post container: white surface, subtle border, no collected or
-# hover state (the interaction lives on the embedded highlight, not the card).
+# Feed post. No collected or hover state: the interaction lives on the embedded
+# highlight, not on the card.
 static func post_box() -> StyleBoxFlat:
 	return _flat(COLOR_CARD, COLOR_CARD_BORDER, RADIUS, 1)
 
 
-# A borderless search-result container: results sit directly on the page with
-# no card outline, just padding — the classic search-engine look.
+# Search result: no outline, just padding, the classic search-engine look.
 static func search_card_box() -> StyleBoxFlat:
 	return _flat(COLOR_PAGE, Color(0, 0, 0, 0), 0, 0)
 
 
-# A tab body: rounded top, square bottom. The active tab drops its bottom
-# border and carries the page colour so it merges into the content area below,
-# the way a real browser tab connects to its page.
+# The active tab drops its bottom border and takes the page colour, so it merges
+# into the content area the way a real browser tab does.
 static func _tab_box_bg(bg: Color, bottom_border: bool) -> StyleBoxFlat:
 	var sb := _flat(bg, COLOR_CHROME_BORDER, RADIUS_SMALL, 1)
 	sb.content_margin_left = 18
@@ -133,18 +126,16 @@ static func _tab_box_bg(bg: Color, bottom_border: bool) -> StyleBoxFlat:
 
 
 static func tab_box(active: bool) -> StyleBoxFlat:
-	# Active = page colour, open bottom (connects to the page). Inactive = a
-	# calmer grey that sits back on the tab strip with a full outline.
+	# Active connects to the page; inactive sits back with a full outline.
 	return _tab_box_bg(COLOR_PAGE if active else COLOR_TAB_INACTIVE, not active)
 
 
-# Inactive tab under the cursor: only the background lifts a step, text unchanged.
+# Inactive tab under the cursor: background lifts a step, text unchanged.
 static func tab_box_hover() -> StyleBoxFlat:
 	return _tab_box_bg(COLOR_TAB_HOVER, true)
 
 
-# Applies the sans font and a base color to any Control that has font overrides
-# (Label / Button). Keeps the per-node theme overrides in one place.
+# Keeps the per-node font overrides in one place.
 static func apply_label(label: Label, size: int = FONT_SIZE_BODY, color: Color = COLOR_TEXT, bold: bool = false) -> void:
 	label.add_theme_font_override("font", FONT_BOLD if bold else FONT_REGULAR)
 	label.add_theme_font_size_override("font_size", size)
@@ -160,26 +151,23 @@ static func _btn_box(bg: Color, border: Color, radius: int) -> StyleBoxFlat:
 	return sb
 
 
-# All the browser buttons override the global terminal theme explicitly, so the
-# green terminal button look never bleeds into the bright browser surface.
+# Overrides the global terminal theme explicitly, so the green button look never
+# bleeds into the bright browser surface.
 static func _set_button_fonts(btn: Button, size: int, color: Color, bold: bool) -> void:
 	btn.add_theme_font_override("font", FONT_BOLD if bold else FONT_REGULAR)
 	btn.add_theme_font_size_override("font_size", size)
-	# font_hover_pressed_color matters for toggle tabs: hovering an active
-	# (pressed) tab uses this state, and without it the terminal theme's near
-	# white bleeds in and the label disappears.
+	# Hovering an active tab uses hover_pressed; without it the terminal theme's
+	# near white bleeds in and the label disappears.
 	for state in ["font_color", "font_hover_color", "font_pressed_color", "font_focus_color", "font_hover_pressed_color"]:
 		btn.add_theme_color_override(state, color)
 
 
 static func style_tab(btn: Button, active: bool) -> void:
-	# Three distinct states, text stays COLOR_TEXT in all of them:
-	# active (white, bold), inactive (calm), inactive+hover (a step lighter).
+	# Three states, text stays COLOR_TEXT in all of them.
 	btn.add_theme_stylebox_override("normal", tab_box(active))
 	btn.add_theme_stylebox_override("hover", tab_box(true) if active else tab_box_hover())
 	btn.add_theme_stylebox_override("pressed", tab_box(true))
-	# hover_pressed is the state of an active tab under the cursor: keep it the
-	# active look so the text never drops out.
+	# An active tab under the cursor: keep the active look so text never drops out.
 	btn.add_theme_stylebox_override("hover_pressed", tab_box(true))
 	btn.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
 	_set_button_fonts(btn, FONT_SIZE_SMALL, COLOR_TEXT, active)
@@ -205,10 +193,8 @@ static func style_primary(btn: Button) -> void:
 
 
 # --- dark chrome (DarkMail OS skin) ------------------------------------------
-# Everything below styles the browser FRAME only. Hard corners, 2px borders,
-# phosphor green on near-black — palette and metrics from DarkMailPalette so
-# the chrome cannot drift from the terminal theme. The bright page factories
-# above stay untouched.
+# Frame only. Palette and metrics come from DarkMailPalette, so the chrome cannot
+# drift from the terminal theme. The bright page factories above stay untouched.
 
 const FONT_MONO: Font = DarkMailPalette.FONT_MONO
 
@@ -260,8 +246,7 @@ static func footer_box_dark() -> StyleBoxFlat:
 	return sb
 
 
-# Dark tab: flat dark body, hard corners. The active tab carries the green
-# underline; inactive tabs sit back on the strip and lift slightly on hover.
+# The active tab carries the green underline, inactive ones lift on hover.
 static func _tab_box_dark(bg: Color, underline: bool) -> StyleBoxFlat:
 	var sb := DarkMailPalette.flat_box(bg)
 	sb.content_margin_left = 18
@@ -301,8 +286,7 @@ static func style_tab_dark(btn: Button, active: bool) -> void:
 		DarkMailPalette.GREEN if active else DarkMailPalette.TEXT_DIM)
 
 
-# Terminal-styled action button for the dark chrome; mirrors the button look
-# of secret_ops_theme.tres via the shared palette.
+# Mirrors the button look of secret_ops_theme.tres through the shared palette.
 static func style_terminal_button(btn: Button) -> void:
 	var normal := DarkMailPalette.flat_box(
 		DarkMailPalette.BG_FIELD, DarkMailPalette.GREEN, DarkMailPalette.BORDER_WIDTH)
@@ -327,7 +311,6 @@ static func style_terminal_button(btn: Button) -> void:
 	btn.add_theme_color_override("font_focus_color", DarkMailPalette.GREEN)
 
 
-# Mono label for dark chrome areas (window title, url, footer readout).
 # Sizes must stay on the Departure Mono 11px grid (see DarkMailPalette).
 static func apply_mono_label(label: Label, size: int = DarkMailPalette.FONT_SIZE_MONO, color: Color = DarkMailPalette.TEXT_GREEN) -> void:
 	DarkMailPalette.apply_mono_label(label, size, color)

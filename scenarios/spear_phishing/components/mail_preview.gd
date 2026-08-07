@@ -1,15 +1,12 @@
-# The mail thread: the exchange between the player and Hannes. A static
-# Von/An/Betreff header sits above a scrollable list of message bubbles —
-# outgoing (your drafted/sent mails, green) and incoming (Hannes' replies,
-# amber). The bottom bubble is the live DRAFT: fragments type themselves in as
-# cards are slotted (skippable), then it is sealed on send and a reply is
-# appended. Purely visual: fragment text is each card's <ID>_FRAG i18n key, the
-# reply text is passed in. No logic, no thresholds.
+# The mail thread: a fixed header above a scrollable list of bubbles, outgoing
+# and incoming. The bottom bubble is the live DRAFT — fragments type themselves
+# in as cards are slotted, then it is sealed on send and a reply is appended.
+# Purely visual; every string comes in from outside.
 extends PanelContainer
 
 const MailCard := preload("res://scenarios/spear_phishing/data/mail_card.gd")
 
-# Writing speed of the draft typewriter, in characters per second. Tuning knob.
+# Draft typewriter speed, in characters per second.
 const TYPE_CPS := 45.0
 
 var replies: int = 0  # test/inspection: how many Hannes replies are in the thread
@@ -78,7 +75,7 @@ func _header_row(label_key: String, value_key: String) -> HBoxContainer:
 
 # --- message bubbles ---------------------------------------------------------
 
-# Builds a bubble (sender label + empty body) and returns its body container.
+# Returns the new bubble's body container.
 func _make_bubble(sender_key: String, accent: Color) -> VBoxContainer:
 	var bubble := PanelContainer.new()
 	var box := DarkMailPalette.flat_box(DarkMailPalette.BG_FIELD, accent, DarkMailPalette.BORDER_WIDTH)
@@ -129,7 +126,7 @@ func begin_new_draft() -> void:
 	_draft_body.add_child(_draft_placeholder)
 
 
-# Appends one fragment to the draft; types it in when animate is set.
+# Types the fragment in when animate is set.
 func add_draft_fragment(card, animate: bool) -> void:
 	if _draft_body == null:
 		return
@@ -143,7 +140,7 @@ func add_draft_fragment(card, animate: bool) -> void:
 		_typewriter(line)
 
 
-# Rebuilds the draft body from scratch (used on unslot; no typewriter).
+# Used on unslot; no typewriter.
 func rebuild_draft(cards: Array) -> void:
 	finish_typing()
 	if _draft_body == null:
@@ -162,7 +159,7 @@ func rebuild_draft(cards: Array) -> void:
 		_draft_body.add_child(_body_line(tr("MAIL_%s_FRAG" % String(card.id).to_upper())))
 
 
-# Freezes the current draft: it stays in the thread as a sent mail.
+# Freezes the draft, which stays in the thread as a sent mail.
 func seal_draft() -> void:
 	finish_typing()
 	_draft_body = null
@@ -193,7 +190,7 @@ func _typewriter(label: Label) -> void:
 	_typing_tween.tween_callback(_clear_typing)
 
 
-# Completes any running typewriter at once — never blocking.
+# Finishes any running typewriter at once, without blocking.
 func finish_typing() -> void:
 	if _typing_tween != null and _typing_tween.is_valid():
 		_typing_tween.kill()

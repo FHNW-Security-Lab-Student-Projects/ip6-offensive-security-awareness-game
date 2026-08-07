@@ -5,10 +5,6 @@
 #
 # Run:
 #   godot --headless --path . -s tests/test_bad_usb_telemetry.gd
-#
-# Every check compares an expected value against the actual one and prints
-# "ok" or "FAIL". The run ends with TEST DONE and exit code 0 when every check
-# passed, otherwise with the failure count and exit code 1.
 extends SceneTree
 
 const Check := preload("res://tests/check.gd")

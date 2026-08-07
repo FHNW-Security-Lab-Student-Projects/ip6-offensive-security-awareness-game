@@ -4,20 +4,12 @@
 #   Line 1 (status):  DarkMail OS · <target> · ● SECURE · HH:MM
 #   Line 2 (mission): [MISSION] <goal>   Recon ▸ Mail ▸ Resolve   ZÜGE n/m
 #
-# Single source of truth, nothing hardcoded here:
-#   - goal text, target name, reward and turn budget come from the
-#     BriefingResource passed to configure(),
-#   - the active phase and the live turn count come from the GameState
-#     autoload (mission_phase_changed / mission_turns_changed), which the
-#     scenario shell drives from its existing advance_requested routing.
+# Nothing hardcoded: the mission facts come from the BriefingResource passed to
+# configure(), the live phase and turn count from GameState. Purely
+# presentational, this node never writes game state.
 #
-# Clicking the MISSION tag re-opens the full briefing as a dossier overlay.
-# Purely presentational: this node never writes game state.
-#
-# Layout contract: the bar is 80px tall (34 + 46, set in OSChrome.tscn).
-# Scenario scenes that instance this shell start their own content at
-# y >= 96 (briefing.tscn ChannelWindow, recon.tscn Window) — keep those in
-# sync if the bar height ever changes.
+# Layout contract: the bar is 80px tall (set in OSChrome.tscn) and scenario
+# scenes start their content at y >= 96. Keep both in sync.
 class_name OSChrome
 extends Control
 
@@ -65,28 +57,24 @@ func _ready() -> void:
 	_refresh_from_state()
 
 
-# Called once by the scenario shell. briefing supplies the static mission
-# facts; steps supplies the phase stepper as [{"id": StringName, "label":
-# String}, ...] in play order (ids must match what the shell later passes to
-# GameState.set_mission_phase for the highlight to track).
+# Called once by the scenario shell. steps is [{"id", "label"}, ...] in play
+# order; the ids must match what the shell passes to GameState.set_mission_phase,
+# or the highlight stops tracking.
 func configure(briefing: BriefingResource, steps: Array[Dictionary]) -> void:
 	if briefing == null:
 		push_error("OSChrome.configure: briefing is null")
 		return
 	_briefing = briefing
 	_steps = steps.duplicate()
-	# A scenario without a turn budget (bad_usb) has nothing to count down, and
-	# an empty readout would sit there permanently at "0/0" in alert red. The
-	# resource already carries the answer, the same way briefing.gd reads
-	# reward_text to decide whether to show a reward line at all.
+	# Without a turn budget (bad_usb) the readout would sit at "0/0" in alert red
+	# forever. The resource already carries the answer.
 	_shows_turns = briefing.turn_budget > 0
 	_turns_label.visible = _shows_turns
 	_target_label.text = "" if briefing.target_name.is_empty() else "· %s" % tr(briefing.target_name)
 	_goal_label.text = tr(briefing.mission_text)
 	_dossier_mission.text = tr("BRIEFING_MISSION_LINE") % tr(briefing.mission_text)
-	# The resource decides the shape of this line: it drops the time limit for a
-	# scenario without a turn budget and comes back empty when there is no
-	# reward at all, so this screen and the briefing cannot drift apart.
+	# The resource owns the shape of this line, so this screen and the briefing
+	# cannot drift apart.
 	_dossier_reward.text = briefing.reward_line()
 	_dossier_reward.visible = not _dossier_reward.text.is_empty()
 	_build_stepper()
@@ -224,8 +212,7 @@ func _on_turns_changed(turns_left: int, turn_budget: int) -> void:
 	_set_pulsing(turns_left <= LOW_TURNS_THRESHOLD and turn_budget > 0)
 
 
-# A quiet pulse on the turn budget once it runs low: opacity breathing, no
-# movement, so it draws the eye without shifting layout.
+# Opacity breathing, no movement: draws the eye without shifting layout.
 func _set_pulsing(on: bool) -> void:
 	if on and _pulse_tween == null:
 		_pulse_tween = create_tween().set_loops()

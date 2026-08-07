@@ -1,6 +1,5 @@
-# kmunu: an employer-review list. Each card leads with a drawn star rating and
-# a reviewer line, then the review title and the review body (which carries the
-# leak). Star count comes from the RECON_<id>_STARS content key.
+# kmunu: an employer-review list — star rating, reviewer line, title, then the
+# body (which carries the leak). The star count is a content key.
 extends "res://scenarios/spear_phishing/components/source_pages/source_page.gd"
 
 const Style := preload("res://scenarios/spear_phishing/data/recon_browser_style.gd")

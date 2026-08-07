@@ -1,7 +1,5 @@
-# A drawn 5-star rating. Font-independent (NotoSans has no star glyphs), so it
-# renders identically everywhere — same reasoning as lock_icon.gd. Purely
-# presentational: shows `filled` of `total` stars, no interaction.
-# Referenced by path (preload) from review_page, not via a global class name.
+# A drawn 5-star rating. Drawn, not a glyph: NotoSans has no stars, so this
+# renders identically everywhere. Same reasoning as lock_icon.gd.
 @tool
 extends Control
 

@@ -1,6 +1,5 @@
-# Typed data for Scenario 1's boss briefing. One .tres per scenario
-# under resources/scenarios/<scenario>/. Edit copy in the Godot
-# inspector; no code changes needed.
+# Boss briefing data, one .tres per scenario under resources/scenarios/<id>/.
+# Edited in the inspector; the shared briefing screen takes any of them.
 class_name BriefingResource
 extends Resource
 
@@ -13,9 +12,8 @@ extends Resource
 @export var turn_budget: int = 8
 
 
-# The reward line for the briefing screen and the OS dossier. Lives here because
-# the shape depends on these fields: no time limit without a turn budget, and
-# empty without a reward.
+# Lives here because the shape depends on these fields: no time limit without a
+# turn budget, empty without a reward.
 func reward_line() -> String:
 	if reward_text.is_empty():
 		return ""

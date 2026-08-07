@@ -1,14 +1,9 @@
 # Headless unit tests for the MailBuilder core: bar application, the four
 # outcomes, the payload gate, legendary unlocking, the "Keiner fragt nach"
-# amplifier, trap cards landing in the hand, and telemetry emission. Plain
-# SceneTree script, no framework (like tests/test_recon.gd).
+# amplifier, trap cards landing in the hand, and telemetry emission.
 #
 # Run:
 #   godot --headless --path . -s tests/test_mail_builder.gd
-#
-# Every check compares an expected value against the actual one and prints
-# "ok" or "FAIL". The run ends with TEST DONE and exit code 0 when every check
-# passed, otherwise with the failure count and exit code 1.
 extends SceneTree
 
 const MailCard := preload("res://scenarios/spear_phishing/data/mail_card.gd")

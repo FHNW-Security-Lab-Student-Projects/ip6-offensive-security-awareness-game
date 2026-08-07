@@ -1,6 +1,5 @@
-# Goggle: a classic search-results list — a blue title line, a green URL/result
-# line, then the snippet (which carries the leak). Results sit on the page with
-# no card outline, the way a search engine renders them.
+# Goggle: blue title, green URL, then the snippet (which carries the leak).
+# No card outline, the way a search engine renders results.
 extends "res://scenarios/spear_phishing/components/source_pages/source_page.gd"
 
 const Style := preload("res://scenarios/spear_phishing/data/recon_browser_style.gd")

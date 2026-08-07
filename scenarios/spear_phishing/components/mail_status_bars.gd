@@ -1,10 +1,8 @@
-# The two target bars (Misstrauen, Handlungsdruck) at the top of the MailBuilder.
-# Pure view: update(run) reads the live values, targets and the spam threshold
-# straight off MailRun / MailCardPool. Nothing here decides game state; the bars
-# only translate numbers the engine owns into a segmented terminal readout.
+# The two target bars. Pure view: values, targets and the spam threshold are read
+# straight off the run, nothing is decided here.
 #
-# The Ist-Wert IS shown as a number (it is state, not a hidden card effect); only
-# the card effects downstream are numberless.
+# The current value IS shown as a number — it is state, not a hidden card effect.
+# Only the card effects themselves stay numberless.
 extends VBoxContainer
 
 const Pool := preload("res://scenarios/spear_phishing/data/mail_card_pool.gd")
@@ -17,8 +15,7 @@ var _sus_cells: Array[Panel] = []
 var _pre_cells: Array[Panel] = []
 var _sus_value: Label
 var _pre_value: Label
-# Last painted values, so the notification blip fires only when a bar actually
-# moves (not on the initial paint or a repaint with unchanged numbers).
+# Last painted values, so the blip fires only when a bar actually moves.
 var _last_suspicion := -1
 var _last_pressure := -1
 
@@ -35,8 +32,8 @@ func _ready() -> void:
 		"%s%d" % [tr("MAIL_BAR_TARGET_HIGH"), Pool.PRESSURE_TARGET], _pre_value)
 
 
-# Builds one labelled bar: NAME [cells] value  target-hint. Returns the cells so
-# update() can recolour them. The target cell carries a bright top border notch.
+# Returns the cells so update() can recolour them. The target cell carries a
+# bright top border notch.
 func _add_bar_row(name_text: String, cell_count: int, target: int, target_hint: String,
 		value_label: Label) -> Array[Panel]:
 	var row := HBoxContainer.new()
@@ -89,15 +86,15 @@ func _cell_box(fill: Color, is_target: bool) -> StyleBoxFlat:
 	return sb
 
 
-# Recolour both bars from the run's committed state.
+# Repaints both bars from the run's committed state.
 func update(run) -> void:
 	show_values(run.suspicion, run.pressure)
 
 
-# Displays explicit bar values. Used both for the committed state and, during the
-# staggered reveal, for the intermediate per-card snapshots. Suspicion fills
-# green up to its target, amber in the tolerated zone, red past the spam
-# threshold; pressure fills amber while building and green once the gate is open.
+# Takes explicit values, because the staggered reveal paints the intermediate
+# per-card snapshots through here too. Suspicion fills green up to its target,
+# amber in the tolerated zone, red past the spam threshold; pressure fills amber
+# while building and green once the gate is open.
 func show_values(suspicion: int, pressure: int) -> void:
 	_paint_suspicion(suspicion)
 	_paint_pressure(pressure)
@@ -108,8 +105,8 @@ func show_values(suspicion: int, pressure: int) -> void:
 		"font_color",
 		DarkMailPalette.GREEN if pressure >= Pool.PRESSURE_TARGET else DarkMailPalette.WARN_AMBER)
 
-	# Rising suspicion means the card backfired: it gets its own warning sound
-	# INSTEAD of the neutral bar blip, never both.
+	# Rising suspicion means the card backfired: its own warning sound INSTEAD of
+	# the neutral blip, never both.
 	var had_previous: bool = _last_suspicion != -1
 	var moved: bool = had_previous \
 		and (suspicion != _last_suspicion or pressure != _last_pressure)

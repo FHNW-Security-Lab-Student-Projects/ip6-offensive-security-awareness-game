@@ -1,17 +1,13 @@
-# Data structure for a single recon find. Pure structure, no display text:
-# the pool declares which finds exist and how they behave; every visible
-# string (title, author, body, reveal label) is a translation key derived
-# from the id and resolved via tr() at render time. Content lives in
-# resources/i18n/recon_content.csv, one column per language.
+# One recon find: structure only, no display text. Every visible string is a
+# translation key derived from the id, resolved at render time.
 #
-# The leak inside a body is marked inline with ⟦…⟧ (see parse_leak) instead of
-# a separate substring field, so the "leak is inside the body" invariant holds
-# per language by construction — a translation carries its own marker.
+# The leak is marked inline with the delimiters below instead of a separate
+# substring field, so "the leak is inside the body" holds per language by
+# construction: a translation carries its own marker.
 class_name ReconFind
 extends Resource
 
-# Inline leak delimiters (U+27E6 / U+27E7). Chosen so they survive the BBCode
-# escaping in the renderer (they are not "[") and are unlikely to occur in copy.
+# Chosen so they survive BBCode escaping (not "[") and never occur in copy.
 const LEAK_OPEN := "⟦"
 const LEAK_CLOSE := "⟧"
 
@@ -19,16 +15,14 @@ const LEAK_CLOSE := "⟧"
 @export var source: String
 @export var is_hidden: bool = false
 @export var is_junk: bool = false
-# Non-collectable stage dressing: renders like a real find but carries no leak
-# marker and never enters the deck (guaranteed by this flag, not by content).
+# Stage dressing: renders like a find but never enters the deck. Guaranteed by
+# this flag, not by the content.
 @export var is_noise: bool = false
-# Optional surface find this hidden find is attached to. Empty = standalone.
-# One parent->child level only, no deeper nesting.
+# The surface find this one hangs off. One level only, no deeper nesting.
 @export var parent_id: StringName = &""
 @export var kind: StringName = &"post"  # "post" | "profile" | "photo"
-# Normalised (0..1) clickable region on the PARENT photo. A hidden find with a
-# hotspot is revealed by clicking that region on the photo instead of a button.
-# Empty (no area) = fall back to a reveal button. Presentation only.
+# Normalised region on the PARENT photo; clicking it collects this find.
+# Empty falls back to a reveal button.
 @export var hotspot: Rect2 = Rect2()
 
 
@@ -45,13 +39,11 @@ static func create(p_id: StringName, p_source: String,
 	return find
 
 
-# True if this find is revealed by a clickable region on its parent photo.
 func has_hotspot() -> bool:
 	return hotspot.has_area()
 
 
-# Factory for a styled LinkBook feed item (profile/post/photo). All display
-# text is keyed off the id; the body carries its leak as a ⟦…⟧ marker.
+# A styled feed item (profile/post/photo).
 static func create_post(p_id: StringName, p_source: String, p_kind: StringName,
 		p_is_junk: bool = false) -> ReconFind:
 	var find := ReconFind.new()
@@ -62,8 +54,7 @@ static func create_post(p_id: StringName, p_source: String, p_kind: StringName,
 	return find
 
 
-# Factory for a noise find: renders in the platform card but is never
-# collectable and carries no leak marker (its body key resolves to plain copy).
+# Noise: renders like a find, never collectable, carries no leak marker.
 static func create_noise(p_id: StringName, p_source: String) -> ReconFind:
 	var find := ReconFind.new()
 	find.id = p_id
@@ -77,8 +68,8 @@ static func create_noise(p_id: StringName, p_source: String) -> ReconFind:
 func _qid() -> String:
 	return String(id).to_upper()
 
-# Generic key builder: RECON_<QID>_<SUFFIX>. The named helpers below are the
-# common cases; platform cards use key("URL"/"STARS"/…) for their extra fields.
+# RECON_<QID>_<SUFFIX>. The helpers below cover the common cases; platform
+# cards call key() directly for their extra fields.
 func key(suffix: String) -> String:
 	return "RECON_%s_%s" % [_qid(), suffix]
 
@@ -97,15 +88,12 @@ func reveal_key() -> String:
 
 # --- leak marker parsing ----------------------------------------------------
 
-# Splits a resolved (already translated) body into the visible text plus the
-# leak span. Returns { text, start, len } where text is the body without the
-# ⟦…⟧ delimiters and start/len are the span position in CODEPOINTS of that
-# visible text (what RichTextLabel.get_parsed_text and HighlightMarker measure).
+# Splits an already translated body into visible text plus leak span, as
+# { text, start, len }. start/len count CODEPOINTS of the visible text, which is
+# what RichTextLabel and HighlightMarker measure.
 #
-# No marker → { text, start = -1, len = 0 } (a post without a leak, e.g. a
-# photo caption). A malformed marker (not exactly one well-formed pair) is a
-# content error: it is logged and the body renders unmarked rather than showing
-# stray delimiters.
+# No marker gives start = -1. A malformed marker is a content error: logged, and
+# the body renders unmarked rather than showing stray delimiters.
 static func parse_leak(resolved_body: String) -> Dictionary:
 	var opens := resolved_body.count(LEAK_OPEN)
 	var closes := resolved_body.count(LEAK_CLOSE)

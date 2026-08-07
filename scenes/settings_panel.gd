@@ -1,8 +1,9 @@
-# Settings overlay for the title screen: volume sliders (master / music / SFX),
-# a fullscreen checkbox and a reset. Built in code in the MENU look (white field,
-# black pixel frame, mono font) so it matches the title screen buttons rather
-# than the in-scenario terminal style. Reads and writes the Settings autoload,
-# which applies each change to the audio buses immediately and persists it.
+# The settings overlay: volume sliders, a fullscreen checkbox, a reset. Built in
+# code in the MENU look rather than the in-scenario terminal style, so it matches
+# the title screen it opens over.
+#
+# Reads and writes the Settings autoload, which applies each change to the audio
+# buses at once and persists it.
 extends Control
 
 signal closed
@@ -63,7 +64,7 @@ func _build() -> void:
 	var buttons := HBoxContainer.new()
 	buttons.alignment = BoxContainer.ALIGNMENT_CENTER
 	buttons.add_theme_constant_override("separation", 20)
-	# Nothing to leave on the title screen.
+	# Nothing to leave when we are already on the title screen.
 	if not GameState.is_in_menu():
 		buttons.add_child(_button("RESOLVE_HOME", SettingsMenu.leave_to_title))
 	buttons.add_child(_button("SETTINGS_RESET", _on_reset))
@@ -126,9 +127,10 @@ func _checkbox_row(key: String, pressed: bool) -> Control:
 
 # One button per language; switching rebuilds this panel so its labels flip.
 #
-# Menu only: a Control re-translates its text at draw time only if the stored
-# text is a key, and the scenarios resolve theirs through tr() at build time, so
-# switching mid-scenario would leave the running screen in the old language.
+# Offered in the menu only. A Control re-translates itself at draw time only if
+# its stored text IS a key, and the scenarios resolve theirs through tr() when
+# they build, so switching mid-scenario would leave that screen in the old
+# language.
 func _language_row() -> Control:
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 16)
@@ -187,8 +189,8 @@ func _button(key: String, on_press: Callable) -> Button:
 	return button
 
 
-# Black-on-white pixel slider: a thin dark track, a solid filled part and a
-# chunky square grabber, matching the hard-edged menu buttons.
+# A thin dark track, a solid filled part and a chunky square grabber, matching
+# the hard-edged menu buttons.
 func _style_slider(slider: HSlider) -> void:
 	var track := MenuStyle.flat_box(MenuStyle.PANEL_FILL, MenuStyle.INK, 2)
 	track.content_margin_top = 5

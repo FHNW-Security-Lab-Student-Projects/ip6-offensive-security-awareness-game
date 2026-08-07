@@ -1,11 +1,8 @@
-# Shared DarkMail OS palette: the single GDScript source for the terminal
-# green, dark backgrounds, border width and the mono UI font. Consumed by
-# OSChrome, CRTOverlay defaults, HudBrackets and the dark browser chrome in
-# ReconBrowserStyle, so the frame elements cannot drift apart.
+# The DarkMail OS palette: terminal green, dark backgrounds, border width and
+# the mono font, shared by every in-scenario frame element.
 #
-# NOTE: res://resources/theme/secret_ops_theme.tres cannot reference GDScript
-# constants, so it mirrors these values as literals. If you change a colour
-# here, update the theme .tres to match (and vice versa):
+# CAUTION: secret_ops_theme.tres cannot reference GDScript constants and mirrors
+# these values as literals. Change one, change the other:
 #   GREEN        <-> border/font green   Color(0.27, 1, 0.45)
 #   TEXT_GREEN   <-> Label font color    Color(0.78, 0.96, 0.84)
 #   BG_PANEL     <-> Panel bg            Color(0.027, 0.055, 0.039)
@@ -40,8 +37,7 @@ const FONT_SIZE_MONO := 22             # default UI text (theme default size)
 const FONT_SIZE_MONO_LARGE := 33       # headlines (e.g. dossier mission line)
 
 
-# Hard-cornered flat box in DarkMail style. The zero radius is deliberate:
-# the terminal frame never rounds its corners.
+# Zero radius is deliberate: the terminal frame never rounds its corners.
 static func flat_box(bg: Color, border: Color = Color(0, 0, 0, 0), border_w: int = 0) -> StyleBoxFlat:
 	var sb := StyleBoxFlat.new()
 	sb.bg_color = bg
@@ -51,15 +47,13 @@ static func flat_box(bg: Color, border: Color = Color(0, 0, 0, 0), border_w: int
 	return sb
 
 
-# The shared terminal button look: hard 2px green frame, dark fill, mono font.
-# Used by the menus so they read as the same system as the briefing and the
+# The shared terminal button look, so dialogs read as the same system as the
 # scenario screens.
 static func style_button(button: Button, padding_x: int = 20, padding_y: int = 10) -> void:
 	var normal := flat_box(BG_FIELD, GREEN, BORDER_WIDTH)
 	var hover := flat_box(Color(GREEN, 0.22), GREEN_BRIGHT, BORDER_WIDTH)
 	var disabled := flat_box(BG_FIELD, TEXT_DIM, BORDER_WIDTH)
-	# All three need the SAME padding, otherwise the button changes size the
-	# moment it is greyed out.
+	# Same padding in all three, or the button resizes when greyed out.
 	for sb in [normal, hover, disabled]:
 		sb.content_margin_left = padding_x
 		sb.content_margin_right = padding_x
@@ -77,7 +71,6 @@ static func style_button(button: Button, padding_x: int = 20, padding_y: int = 1
 	button.add_theme_color_override("font_disabled_color", TEXT_DIM)
 
 
-# Applies the mono font, a size and a colour to a Label in one call.
 static func apply_mono_label(label: Label, size: int, color: Color) -> void:
 	label.add_theme_font_override("font", FONT_MONO)
 	label.add_theme_font_size_override("font_size", size)

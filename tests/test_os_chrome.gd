@@ -1,14 +1,10 @@
 # Headless test for the OSChrome shell: configure() from a BriefingResource,
 # stepper highlight follows GameState.mission_phase, the turn budget label
-# recolours at the low threshold and clamps at zero, dossier opens/holds the
-# mission text. Plain SceneTree script, no test framework.
+# recolours at the low threshold and clamps at zero, dossier opens and holds the
+# mission text.
 #
 # Run:
 #   godot --headless --path . -s tests/test_os_chrome.gd
-#
-# Every check compares an expected value against the actual one and prints
-# "ok" or "FAIL". The run ends with TEST DONE and exit code 0 when every check
-# passed, otherwise with the failure count and exit code 1.
 extends SceneTree
 
 const Check := preload("res://tests/check.gd")

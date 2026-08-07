@@ -1,21 +1,16 @@
-# Scenario 1: Phishing (Phase 1 sub-state shell).
-#
-# Owns four sub-states (Briefing -> Recon -> MailBuilder -> Resolve) and
-# the advance wiring between them. Each sub-state scene is a Control
-# child of CanvasLayer; only one is visible at a time. The real UI for
-# each sub-state arrives in later phases — this file is the plumbing.
+# Scenario 1: spear phishing. The shell over four phases (Briefing -> Recon ->
+# MailBuilder -> Resolve), each a Control child of the CanvasLayer, one visible
+# at a time. It owns the routing and the run handoff; the phases own their
+# screens and stay ignorant of what comes before or after them.
 extends ScenarioBase
 
 const SCENARIO_ID: String = "spear_phishing"
-# Resolve's exit routing (shell owns "what comes next"). The next scenario is
-# resolved through the Config registry; home is the start screen.
+# Resolve's exits. The next scenario comes from the Config registry.
 const NEXT_SCENARIO_ID: StringName = &"bad_usb"
 const HOME_SCENE: String = "res://scenes/StartScreen.tscn"
 
-# Single source for the briefing resource path (defined by the briefing state).
 const BriefingState := preload("res://scenarios/spear_phishing/states/briefing.gd")
-# The mail turn budget is a MailBuilder balancing knob (Pool.TURN_BUDGET); the
-# briefing .tres mirrors the number for its display text.
+# For TURN_BUDGET, which the briefing .tres mirrors in its display text.
 const MailPool := preload("res://scenarios/spear_phishing/data/mail_card_pool.gd")
 const RunState := preload("res://scenarios/spear_phishing/data/run_state.gd")
 
@@ -33,20 +28,19 @@ enum SubState { BRIEFING, RECON, MAIL, RESOLVE }
 var _current: SubState = SubState.BRIEFING
 var _initialised: bool = false
 
-# The run's phase handoff. Owned here and created per scene load, so a replay
-# starts clean without wiping anything.
+# The phase handoff, created per scene load: a replay starts clean by
+# construction, without anything having to be reset.
 var _run := RunState.new()
 
 func _setup() -> void:
 	for state in _states.values():
 		state.visible = false
-		# Handed over before any phase becomes visible; the sub-states build
-		# themselves on visibility_changed, not in _ready.
+		# Handed over before any phase becomes visible, because the phases build
+		# themselves on visibility_changed rather than in _ready.
 		if state.has_method("configure_run"):
 			state.configure_run(_run)
-		# Phase progression (Briefing/Recon/Mail) rides advance_requested; Resolve
-		# does not emit it, so guard the connect. Resolve's three exits are its
-		# own intents, each connected where present.
+		# Progression rides advance_requested, which Resolve does not emit; its
+		# three exits are separate intents. Hence the guards.
 		if state.has_signal("advance_requested"):
 			state.advance_requested.connect(_advance)
 		if state.has_signal("next_requested"):
@@ -57,8 +51,7 @@ func _setup() -> void:
 			state.replay_requested.connect(_replay)
 	_setup_os_chrome()
 
-# Feeds the persistent OS shell: mission facts from the BriefingResource,
-# live phase / turn budget via GameState. Presentation wiring only.
+# Mission facts from the BriefingResource, live phase and turns via GameState.
 func _setup_os_chrome() -> void:
 	var briefing := load(BriefingState.BRIEFING_PATH) as BriefingResource
 	if briefing == null:
@@ -73,8 +66,7 @@ func _setup_os_chrome() -> void:
 	_os_chrome.configure(briefing, steps)
 
 func _on_start() -> void:
-	# A replay skips the intro and drops straight into Recon; a normal launch
-	# opens on the briefing. The one-shot hint is consumed here.
+	# A replay drops straight into Recon. The one-shot hint is consumed here.
 	if GameState.replay_skip_briefing:
 		GameState.replay_skip_briefing = false
 		_change_substate(SubState.RECON)
@@ -84,24 +76,21 @@ func _on_start() -> void:
 func _on_complete() -> void:
 	pass
 
-# Sub-states emit advance_requested when the player wants to move on.
-# Routing lives here so sub-states stay ignorant of what comes next.
+# The routing lives here so the phases stay ignorant of what comes next.
 func _advance() -> void:
 	match _current:
 		SubState.BRIEFING:
-			# Intro -> gameplay: a black fade acts as a "loading" beat.
+			# Both of these change the screen, so they get a black beat instead of
+			# a hard cut. Mail -> Resolve stays on the same screen.
 			SceneTransition.flash(_change_substate.bind(SubState.RECON))
 		SubState.RECON:
-			# Recon -> Mail is a change of screen like the intro, so it gets the
-			# same black beat instead of a hard cut.
 			SceneTransition.flash(_change_substate.bind(SubState.MAIL))
 		SubState.MAIL:
 			_change_substate(SubState.RESOLVE)
 
-# --- Resolve exits: three routes, all owned by the shell ---------------------
+# --- Resolve exits -----------------------------------------------------------
 
-# "Next Scenario": close this run (telemetry + FEEDBACK state), then load the
-# next scenario from the Config registry.
+# Closes this run, then loads the next scenario.
 func _next_scenario() -> void:
 	complete_scenario()
 	var cfg: ScenarioConfig = Config.get_scenario(NEXT_SCENARIO_ID)
@@ -110,15 +99,14 @@ func _next_scenario() -> void:
 		return
 	SceneTransition.launch_scenario(cfg)
 
-# "Back to Home": close this run, then return to the start screen.
+# Closes this run, then returns to the start screen.
 func _go_home() -> void:
 	complete_scenario()
 	SceneTransition.change_scene(HOME_SCENE)
 
-# "Retry": reload this scenario from the Config registry so every sub-state
-# rebuilds from scratch. The phase handoff dies with the scene; reset_scenario
-# only clears the mission HUD counters, which live on the autoload. The intro
-# briefing is skipped on a retry — straight into Recon.
+# Reloads the scenario, so every phase rebuilds from scratch and the handoff
+# dies with the scene. reset_scenario only clears the HUD counters, which live
+# on the autoload and would otherwise survive.
 func _replay() -> void:
 	GameState.reset_scenario()
 	GameState.replay_skip_briefing = true
@@ -137,7 +125,7 @@ func _change_substate(new_state: SubState) -> void:
 	_states[new_state].visible = true
 	_current = new_state
 	_initialised = true
-	# Drive the OSChrome phase stepper; ids match the configure() steps.
+	# Drives the OSChrome stepper; the ids match the configure() steps.
 	GameState.set_mission_phase(StringName(SubState.keys()[new_state]))
 	EventBus.generic_event.emit({
 		"phase": "substate_change",

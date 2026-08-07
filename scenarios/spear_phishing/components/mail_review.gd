@@ -1,12 +1,10 @@
-# Optional post-run review overlay: a turn-by-turn debrief of the player's
-# decisions, opened from the Resolve screen. VIEW + pure derivation only — it
-# reads the recorded mail history and the collected finds, judges each card by
-# its TYPE (a rule, not per card), and flags legendary combinations whose
-# ingredients were collected but never played (via the Pool's EXISTING unlock
-# rules, asked in reverse). No game logic, no balancing, no telemetry.
+# The optional turn-by-turn review, opened from Resolve. VIEW plus pure
+# derivation: it reads the recorded mail history and the collected finds, judges
+# each card by its TYPE, and flags legendaries whose ingredients were collected
+# but never played — the Pool's own unlock rules, asked in reverse.
 #
-# Full-screen child of Resolve; the Back button emits close_requested so the
-# owner can free it. Runs under the persistent OSChrome bar (y >= 96).
+# A full-screen child of Resolve; the Back button emits close_requested so the
+# owner can free it.
 extends Control
 
 const Pool := preload("res://scenarios/spear_phishing/data/mail_card_pool.gd")
@@ -16,8 +14,7 @@ signal close_requested
 
 const BODY_WIDTH := 860
 
-# Missed-legendary card id -> its explanation key. The four ids come straight
-# from Pool.LEGENDARIES; the texts are inherently per combination.
+# The ids come straight from Pool.LEGENDARIES; the texts are per combination.
 const MISSED_KEYS := {
 	&"perfekter_absender": "REVIEW_MISSED_PERFEKTER_ABSENDER",
 	&"echter_vorwand": "REVIEW_MISSED_ECHTER_VORWAND",
@@ -31,8 +28,7 @@ var _missed: Array = []         # missed legendary ids shown; read by tests
 
 # --- pure derivation (unit-tested, no UI) ------------------------------------
 
-# One verdict per card TYPE, not per card. EPIC and LEGENDARY share the positive
-# verdict; the rest map one to one.
+# One verdict per card TYPE, not per card. EPIC and LEGENDARY share one.
 static func verdict_key(card_type: int) -> String:
 	match card_type:
 		MailCard.Type.STANDARD:
@@ -45,8 +41,8 @@ static func verdict_key(card_type: int) -> String:
 			return "REVIEW_VERDICT_EPIC"
 
 
-# Legendaries whose ingredients were collected (the EXISTING Pool unlock rule)
-# but which were never played. The reverse of the unlock question, same rules.
+# The unlock question in reverse, against the same Pool rules: which legendaries
+# could have been built from what was collected, but never were.
 static func missed_legendary_ids(collected: Array, played: Array, probe_done: bool) -> Array:
 	var missed: Array = []
 	for lid in Pool.unlocked_legendary_ids(collected, probe_done):
@@ -76,9 +72,8 @@ func configure(mail_result: Dictionary, collected: Array, probe_done: bool) -> v
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	col.add_child(title)
 
-	# Everything below the fixed title scrolls, and the Back button rides at the
-	# end of that content instead of pinned to the bottom, so a short debrief has
-	# no dead gap before it.
+	# The Back button rides at the end of the scrolled content instead of being
+	# pinned, so a short debrief has no dead gap before it.
 	var scroll := ScrollContainer.new()
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -130,7 +125,7 @@ func _build_turn_card(number: int, entry: Dictionary) -> Control:
 	vb.add_child(_make_label(
 		tr("REVIEW_TURN") % number, DarkMailPalette.FONT_SIZE_MONO, DarkMailPalette.GREEN_BRIGHT))
 
-	# One "name: verdict" line per card in the mail, judged by its type.
+	# One line per card in the mail, judged by its type.
 	for id in entry.get("card_ids", []):
 		var card = Pool.card_for_id(id)
 		if card == null:
@@ -162,9 +157,8 @@ func _signed(delta: int) -> String:
 	return "±0"
 
 
-# Colour by decision quality: SCHROTT is the clear mistake (red); STANDARD and
-# the PAYLOAD are neutral/cautionary (amber); recon-backed EPIC/LEGENDARY are
-# the good plays (green).
+# By decision quality: SCHROTT is the clear mistake, STANDARD and the payload are
+# neutral, the recon-backed types are the good plays.
 func _verdict_color(card_type: int) -> Color:
 	match card_type:
 		MailCard.Type.SCHROTT:

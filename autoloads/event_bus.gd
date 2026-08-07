@@ -1,16 +1,11 @@
-# Global signal hub. All scenarios emit telemetry events through here;
-# Telemetry subscribes and persists. Keeping the schema flat (single
-# Dictionary payload) avoids signal-explosion as scenarios grow.
+# Global signal hub for telemetry. One flat Dictionary instead of a signal per
+# event type, so the signal count does not grow with the scenarios.
 extends Node
 
 signal generic_event(payload: Dictionary)
 
-# Convenience helper for the most common event type: a player decision.
-# Always populates the canonical fields; extra goes into payload.payload.
-#
-# is_correct is what the study's error rate (Fehlerquote) is computed from, so
-# only pass a decision that is genuinely right or wrong here. Branches that are
-# merely different (not better or worse) belong in emit_action.
+# A graded decision. is_correct feeds the study's error rate, so only pass a
+# choice that is genuinely right or wrong — merely different belongs in emit_action.
 func emit_decision(
 	scenario_id: String,
 	action: String,
@@ -27,11 +22,7 @@ func emit_decision(
 		"payload": extra,
 	})
 
-# Ungraded counterpart to emit_decision: an interaction that is recorded for the
-# behavioural trace but carries no notion of correctness (navigation, opening a
-# document, advancing a debrief page). is_correct stays null so these events
-# cannot skew the error rate, while latency_ms still captures how long the
-# player took.
+# Ungraded interaction. is_correct stays null so it cannot skew the error rate.
 func emit_action(
 	scenario_id: String,
 	action: String,

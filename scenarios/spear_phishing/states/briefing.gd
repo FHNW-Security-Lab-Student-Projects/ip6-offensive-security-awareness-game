@@ -1,7 +1,5 @@
-# Sub-state 1: boss briefing, framed as a secure video call inside the
-# player's terminal. Loads BriefingResource, drives the dialog box,
-# gates the Akzeptieren button until all intro lines have been clicked
-# through, then emits advance_requested (handled by the scenario shell).
+# Phase 1: the boss briefing, framed as a secure video call. The advance button
+# stays hidden until every intro line has been clicked through.
 extends Control
 
 signal advance_requested
@@ -9,16 +7,13 @@ signal advance_requested
 const BRIEFING_PATH: String = "res://resources/scenarios/spear_phishing/briefing.tres"
 const REC_BLINK_INTERVAL: float = 0.6
 
-# Shared briefing-intro music (Scenario 1 and 2). Tied to this screen's
-# visibility, so it plays while the briefing is shown and stops on advance /
-# when a replay skips the intro.
+# Shared by both scenarios. Tied to this screen's visibility.
 const BRIEFING_MUSIC := preload("res://assets/audio/cipher_briefing.wav")
 const BRIEFING_VOLUME_DB := -6.0
 const ScreenMusic := preload("res://scenarios/base/components/screen_music.gd")
 
-# Which BriefingResource to show. Defaults to Scenario 1's; another scenario
-# (e.g. bad_usb) reuses this same screen by setting its own path before the node
-# enters the tree. The spear_phishing shell still reads the const above.
+# Which BriefingResource to show. Another scenario reuses this whole screen by
+# setting its own path before the node enters the tree.
 @export var briefing_path: String = BRIEFING_PATH
 
 @onready var _dialog: DialogBox = $ChannelWindow/DialogBox as DialogBox
@@ -44,16 +39,14 @@ func _ready() -> void:
 		return
 	_channel_title.text = tr("BRIEFING_CHANNEL_TITLE") % tr(_briefing.speaker_name)
 	_mission_label.text = tr("BRIEFING_MISSION_LINE") % tr(_briefing.mission_text)
-	# The resource owns the wording: no time limit for a scenario without a turn
-	# budget, and an empty line when it offers no reward at all.
+	# The resource owns the wording, including whether there is a line at all.
 	_reward_label.text = _briefing.reward_line()
 	_reward_label.visible = not _reward_label.text.is_empty()
 	_advance_button.visible = false
 	_dialog.lines_finished.connect(_on_lines_finished)
 	visibility_changed.connect(_on_visibility_changed)
 	_started_at_ms = Time.get_ticks_msec()
-	# The resource stores translation keys, not sentences, so the intro follows
-	# the selected language like the rest of the UI.
+	# The resource stores keys, not sentences, so the intro follows the locale.
 	var lines := PackedStringArray()
 	for key in _briefing.intro_lines:
 		lines.append(tr(key))
@@ -70,11 +63,10 @@ func _on_lines_finished() -> void:
 	_advance_button.visible = true
 
 
-# The typewriter bed lives on the SfxPlayer autoload, so it outlives this
-# screen. Two cases: a replay skips the briefing, but _ready has already started
-# the dialog by the time the shell hides it — without this the bed kept running
-# for seconds over the next phase. And the shell hides every sub-state once in
-# _setup before showing this one, which must not leave the line typing silently.
+# The typewriter bed lives on an autoload and outlives this screen. Two cases:
+# a replay skips the briefing after _ready already started the dialog (the bed
+# would run on over the next phase), and _setup hides every sub-state once before
+# showing this one (the line must not end up typing silently).
 func _on_visibility_changed() -> void:
 	if _dialog == null or not _dialog.is_typing():
 		return

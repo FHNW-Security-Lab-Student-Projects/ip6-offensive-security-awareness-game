@@ -1,11 +1,8 @@
-# A clickable region on a photo that collects an embedded find directly. Hover
-# brightens the corner brackets (and shows a hint bar, driven by Recon on the
-# parent image); a click collects or uncollects the find. No reveal step and no
-# standalone card: the find lives only here, on its parent photo.
+# A clickable region on a photo that collects the find embedded there. No reveal
+# step and no standalone card: that find lives only here, on its parent photo.
 #
-# Drawn, not textured (font-independent, like lock_icon / hud_brackets): faint
-# corner brackets that brighten on hover, a green fill with a check when
-# collected. Referenced by path (preload) from Recon, not via a class name.
+# Drawn, not textured: faint corner brackets that brighten on hover, a green fill
+# with a check once collected.
 extends Control
 
 signal clicked
@@ -49,8 +46,7 @@ func _draw() -> void:
 	var h := size.y
 	if w <= 0.0 or h <= 0.0:
 		return
-	# Only the collected state fills; hover just brightens the brackets so the
-	# photo is not washed green.
+	# Only the collected state fills, so hover does not wash the photo green.
 	if collected:
 		draw_rect(Rect2(Vector2.ZERO, size), Color(GREEN, 0.28), true)
 		_draw_check(Vector2(w * 0.5, h * 0.5), min(w, h) * 0.2)

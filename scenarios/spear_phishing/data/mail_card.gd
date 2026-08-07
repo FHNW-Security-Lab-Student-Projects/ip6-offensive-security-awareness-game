@@ -1,8 +1,6 @@
-# A single MailBuilder card: two bar deltas plus a persuasion-principle tag for
-# the thesis telemetry. Pure data, no i18n text stored — name_key()/text_key()
-# derive the translation keys from the id (like ReconFind). Referenced by path
-# (preload), not a global class name, so headless tests run without an editor
-# import.
+# One MailBuilder card: two bar deltas plus a persuasion-principle tag for the
+# telemetry. No text stored - the translation keys derive from the id.
+# Preload, no class_name: a bare `godot -s` run has no global class cache.
 extends RefCounted
 
 enum Type { EPIC, STANDARD, PAYLOAD, SCHROTT, LEGENDARY }

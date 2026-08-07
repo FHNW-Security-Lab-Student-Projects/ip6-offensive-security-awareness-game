@@ -1,19 +1,15 @@
-# Headless test for the scenario launch path: SceneTransition.launch_scenario
-# loads the scene AND starts its lifecycle. Nothing else does — a scenario no
-# longer bootstraps itself in _ready().
+# Headless test for the launch path: SceneTransition.launch_scenario loads the
+# scene AND starts its lifecycle. Nothing else does — a scenario no longer
+# bootstraps itself in _ready().
 #
-# Guards a regression the other tests cannot see, because they instantiate the
+# It guards a regression the other tests cannot see, because they instantiate the
 # scenario scene directly instead of going through the launcher:
-# change_scene_to_file is deferred, so current_scene still points at the old
+# change_scene_to_file is deferred, so current_scene still points at the OLD
 # scene one frame later. Reading it too early silently skipped start_scenario,
 # which left the menu music running and the turn budget at 0/0.
 #
 # Run:
 #   godot --headless --path . -s tests/test_scenario_launch.gd
-#
-# Every check compares an expected value against the actual one and prints
-# "ok" or "FAIL". The run ends with TEST DONE and exit code 0 when every check
-# passed, otherwise with the failure count and exit code 1.
 extends SceneTree
 
 const Check := preload("res://tests/check.gd")

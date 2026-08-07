@@ -1,25 +1,21 @@
-# Sub-state 2: Recon. Slice 5: visual contract on the LinkedIn tab only.
-# Browser chrome (title bar, url bar, fantasy tabs) plus an embedded, styled
-# LinkedIn page. Other tabs stay bare in this slice. The look hangs off the
-# existing logic (collect/uncollect/reveal/guard/deck limit) unchanged; the
-# same functions are called, only the presentation differs.
+# Phase 2: the OSINT sweep, staged as a browser. Chrome (title bar, url bar,
+# tabs) wears the DarkMail skin; the pages inside stay bright and realistic on
+# purpose — the player has to read them as real posts.
 #
-# Chrome wears the dark DarkMail OS skin (ReconBrowserStyle dark section);
-# the page content inside stays bright and realistic on purpose.
-# Emits advance_requested when the player finishes recon.
+# This screen owns the collect logic; the per-platform layouts live in
+# SourcePage subclasses and call back through the build_* host API below.
 extends Control
 
 signal advance_requested
 
-# Max finds the player can carry into the mail builder. One place to tune.
+# Max finds the player can carry into the mail builder.
 const DECK_LIMIT := 7
 
-# Recon-phase music (plays while this screen is visible, stops on advance).
+# Tied to this screen's visibility.
 const RECON_MUSIC := preload("res://assets/audio/terminal_stalk.wav")
 const ScreenMusic := preload("res://scenarios/base/components/screen_music.gd")
 
-# Centred photo box (feed photos). Landscape-ish so the placeholder reads as a
-# normal photo, not a stretched strip; hotspot rects map onto this box.
+# The photo box hotspot rects are normalised against.
 const PHOTO_W := 520
 const PHOTO_H := 340
 
@@ -27,8 +23,7 @@ const Style := preload("res://scenarios/spear_phishing/data/recon_browser_style.
 const LockIconScene := preload("res://scenarios/spear_phishing/components/lock_icon.gd")
 const PhotoHotspot := preload("res://scenarios/spear_phishing/components/photo_hotspot.gd")
 
-# Per-find photos (res://assets/sprites/recon/<id>.png). Finds without an entry
-# fall back to a neutral desk image. New image = drop a file named by find id.
+# Finds without an entry fall back to a neutral desk image.
 const RECON_PHOTOS := {
 	&"q2d_teamfoto": preload("res://assets/sprites/recon/q2d_teamfoto.png"),
 	&"q5_praktikant": preload("res://assets/sprites/recon/q5_praktikant.png"),
@@ -38,8 +33,7 @@ const RECON_PHOTOS := {
 }
 const RECON_PHOTO_DEFAULT: Texture2D = preload("res://assets/sprites/recon/office_default.png")
 
-# Fantasy platform names for the visible tab labels. Logic uses the source
-# StringName, never these labels.
+# Visible tab labels only. The logic keys on the source, never on these.
 const TAB_LABELS := {
 	"LinkedIn": "LinkBook",
 	"Instagram": "Instasnap",
@@ -58,9 +52,8 @@ const TAB_DOMAINS := {
 }
 const TEAM_PHOTO_ID := &"q2d_teamfoto"
 
-# Platform layouts (SourcePage subclasses). New platform = new subclass + a
-# case in _page_for, no new scene. Referenced by path so headless runs work
-# without the editor's global class cache.
+# Platform layouts. New platform = new subclass + a case in _page_for, no new
+# scene. Preloaded, not class_name: headless runs have no global class cache.
 const SourcePage := preload("res://scenarios/spear_phishing/components/source_pages/source_page.gd")
 const FeedPage := preload("res://scenarios/spear_phishing/components/source_pages/feed_page.gd")
 const PhotoFeedPage := preload("res://scenarios/spear_phishing/components/source_pages/photo_feed_page.gd")
@@ -69,8 +62,7 @@ const ReviewPage := preload("res://scenarios/spear_phishing/components/source_pa
 const ListingPage := preload("res://scenarios/spear_phishing/components/source_pages/listing_page.gd")
 const PressPage := preload("res://scenarios/spear_phishing/components/source_pages/press_page.gd")
 
-# Collected finds, deduplicated by id. Later interface to the MailBuilder;
-# stays local to Recon in this slice (no GameState writes).
+# Deduplicated by id. Read by the shell on advance, never written to GameState.
 var collected: Array[ReconFind] = []
 
 var _finds: Array[ReconFind] = []
@@ -86,18 +78,17 @@ func configure_run(run) -> void:
 	_scenario_run = run
 
 # --- telemetry ---------------------------------------------------------------
-# Recon grades itself on junk: a junk find looks like a lead but carries nothing
-# usable, and the deck only holds DECK_LIMIT entries, so taking one is a real
-# mistake with a real cost. Noise is not collectable at all and therefore never
-# graded. Decision time is measured from the moment the current tab was opened,
-# which is the span the player actually spent reading that page.
+# Graded on junk: a junk find looks like a lead but carries nothing usable, and
+# the deck holds only DECK_LIMIT entries, so taking one has a real cost. Noise is
+# not collectable and therefore never graded. Decision time runs from the moment
+# the current tab was opened.
 const SCENARIO_ID := "spear_phishing"
 const PromptClock := preload("res://scenarios/base/prompt_clock.gd")
 
 var _clock := PromptClock.new()
 var _phase_started_at_ms: int = 0
-# Set of sources the player actually opened, for the sweep-coverage measure.
-# Distinct from _tabs, which holds every tab that exists whether visited or not.
+# Sources actually opened, for the coverage measure. Not _tabs, which holds
+# every tab whether visited or not.
 var _visited_sources: Dictionary = {}
 
 @onready var _tab_bar: HBoxContainer = %TabBar
@@ -134,8 +125,8 @@ func collect(find: ReconFind) -> void:
 	if is_collected(find):
 		return
 	if collected.size() >= DECK_LIMIT:
-		# Hitting the ceiling is a usability signal, not a wrong answer: the
-		# player wanted one more lead than the deck allows.
+		# A usability signal, not a wrong answer: the player wanted one more lead
+		# than the deck allows.
 		EventBus.emit_action(
 			SCENARIO_ID,
 			"recon_deck_full",
@@ -170,8 +161,7 @@ func uncollect(find: ReconFind) -> void:
 		if entry.id != find.id:
 			updated.append(entry)
 	collected = updated
-	# Ungraded on purpose: reconsidering is not an error, but the correction
-	# itself is worth seeing in the trace.
+	# Ungraded: reconsidering is not an error, but it belongs in the trace.
 	EventBus.emit_action(
 		SCENARIO_ID,
 		"recon_find_uncollected",
@@ -213,7 +203,7 @@ func _style_chrome() -> void:
 	%UrlField.add_theme_stylebox_override("panel", Style.url_field_box_dark())
 	%TabStrip.add_theme_stylebox_override("panel", Style.tab_strip_box_dark())
 
-	# The page itself stays bright and realistic — that is the learning goal.
+	# The page stays bright and realistic — that is the learning goal.
 	var page_box := Style._flat(Style.COLOR_PAGE, Style.COLOR_CHROME_BORDER, 0, 0)
 	%Page.add_theme_stylebox_override("panel", page_box)
 
@@ -292,9 +282,8 @@ func _build_tabs(sources: Array[String]) -> void:
 
 
 func _on_tab_pressed(source: String) -> void:
-	# Switching tabs costs no deck slot, but which platforms a player opens (and
-	# how long they linger) is the coverage measure for the OSINT sweep, so the
-	# switch is recorded with the dwell time on the page being left.
+	# Which platforms a player opens, and how long they linger, is the coverage
+	# measure, so the switch carries the dwell time on the page being left.
 	EventBus.emit_action(
 		SCENARIO_ID,
 		"recon_tab_opened",
@@ -315,9 +304,8 @@ func _on_tab_pressed(source: String) -> void:
 
 # --- finds view -------------------------------------------------------------
 
-# Rebuilds the finds column for the active source. Each platform arranges its
-# own finds through its SourcePage; the collect/reveal/leak interaction is the
-# same everywhere (provided by the build_* host methods below).
+# Each platform arranges its own finds; the collect interaction is the same
+# everywhere, provided by the build_* host methods below.
 func _rebuild_finds() -> void:
 	for child in _finds_container.get_children():
 		child.queue_free()
@@ -329,8 +317,7 @@ func _rebuild_finds() -> void:
 	_page_for(_active_source).build(self, _finds_container, finds_for_source)
 
 
-# Registry: source -> platform layout. New platform = new SourcePage subclass
-# plus a case here, no new scene. Pages are stateless and cached per source.
+# Pages are stateless and cached per source.
 func _page_for(source: String) -> SourcePage:
 	if not _pages.has(source):
 		var page: SourcePage
@@ -347,11 +334,9 @@ func _page_for(source: String) -> SourcePage:
 
 # --- host API for SourcePages (collect logic stays here) --------------------
 
-# The shared, ONLY path to collecting: a body carrying the leak span, wired to
-# the collect handler. Every platform card embeds this; nothing else collects.
-# The leak is marked inline in the translated body with ⟦…⟧ (parsed to a span)
-# and rendered as an inline clickable region via RichTextLabel meta — clicking
-# that region collects, so a card never advertises where the leak sits.
+# The ONLY path to collecting: every platform card embeds this body, nothing
+# else collects. The leak is marked inline in the translated text and rendered as
+# a clickable region, so a card never advertises where the leak sits.
 func build_leak_body(find: ReconFind) -> RichTextLabel:
 	var body := RichTextLabel.new()
 	body.set_meta("find_id", find.id)
@@ -368,18 +353,17 @@ func build_leak_body(find: ReconFind) -> RichTextLabel:
 	body.add_theme_font_size_override("normal_font_size", Style.FONT_SIZE_BODY)
 	body.add_theme_color_override("default_color", Style.COLOR_TEXT)
 
-	# Noise is stage dressing: plain, non-clickable text — no leak span and no
-	# collect wiring, so it can never enter the deck (also guarded in collect()).
+	# Noise gets no leak span and no collect wiring, so it can never enter the
+	# deck. collect() guards it a second time.
 	if find.is_noise:
 		body.text = ReconFind.parse_leak(tr(find.body_key())).get("text", "").replace("[", "[lb]")
 		return body
 
-	# Resolve + parse the leak once; the demarked text and span position are
-	# stashed on the body so _render_post_text/_apply_post_state stay stateless.
+	# Parsed once and stashed on the body, so the render helpers stay stateless.
 	var leak := ReconFind.parse_leak(tr(find.body_key()))
 	body.set_meta("leak", leak)
 
-	# Rounded neutral marking drawn behind the leak span.
+	# The neutral marking drawn behind the leak span.
 	var marker := HighlightMarker.new()
 	body.add_child(marker)
 	marker.setup(body, Style.FONT_REGULAR, Style.FONT_SIZE_BODY)
@@ -396,10 +380,9 @@ func build_leak_body(find: ReconFind) -> RichTextLabel:
 	return body
 
 
-# Overlays a collectable hotspot on `image` (a TextureRect) for every find that
-# carries a hotspot rect and points at `parent_find`. The find lives only here:
-# hovering shows a hint of what is in the image, clicking collects it directly
-# (no separate reveal step, no standalone card).
+# Overlays a hotspot for every find that hangs off `parent_find` and carries a
+# rect. Those finds live only here: hovering hints, clicking collects, and there
+# is no standalone card for them anywhere.
 func attach_hotspots(parent_find: ReconFind, image: Control) -> void:
 	image.mouse_filter = Control.MOUSE_FILTER_PASS
 	var bar := _build_hint_bar()
@@ -431,9 +414,7 @@ func attach_hotspots(parent_find: ReconFind, image: Control) -> void:
 		image.add_child(bar)
 
 
-# A hover-hint bar overlaid on the bottom edge of a photo (Instagram caption
-# style): dark terminal panel, full image width, hidden until a hotspot is
-# hovered. Shared by all hotspots on the image.
+# Hidden until a hotspot is hovered, and shared by all hotspots on the image.
 func _build_hint_bar() -> PanelContainer:
 	var bar := PanelContainer.new()
 	bar.visible = false
@@ -463,16 +444,14 @@ func _on_hotspot_hover(bar: Control, label: Label, hint: String, entered: bool) 
 	bar.visible = entered
 
 
-# Renders the body text for the current state and drives the neutral marker.
-# rest = plain text, no marking; hover = light glow plus a "+" (add) affordance;
-# collected = filled neutral marking, hover adds a "–" (remove) affordance.
-# Text colour never changes, so the text stays readable in every state.
+# Three states: rest is plain, hover adds a glow and a "+", collected is filled
+# and offers a "–". The text colour never changes, so it stays readable in all
+# three.
 func _apply_post_state(body: RichTextLabel, marker: HighlightMarker, find: ReconFind) -> void:
 	var hovered: bool = body.get_meta("hovered", false)
 	var leak: Dictionary = body.get_meta("leak", {})
 	body.text = _render_post_text(find, leak, hovered)
-	# Fill only, no border: a border makes wrapped highlights read as a framed
-	# box (leftover vertical edges left and right). Highlighter look instead.
+	# Fill only: a border makes wrapped highlights read as a framed box.
 	var fill := Color(0, 0, 0, 0)
 	if is_collected(find):
 		fill = Style.COLOR_MARK_DECK
@@ -481,10 +460,8 @@ func _apply_post_state(body: RichTextLabel, marker: HighlightMarker, find: Recon
 	marker.set_fill(fill, Color(0, 0, 0, 0))
 
 
-# Builds the BBCode for a post from the parsed leak. The span position is on
-# the demarked text (== visible text), so we split there first, THEN escape
-# each part ("[" -> "[lb]") and wrap the span in the clickable url. A post with
-# no leak (start < 0, e.g. a photo caption) renders plain.
+# The span position is on the demarked text, so split there FIRST and escape the
+# parts afterwards. A post with no leak renders plain.
 func _render_post_text(find: ReconFind, leak: Dictionary, hovered: bool) -> String:
 	var text: String = leak.get("text", "")
 	var start: int = leak.get("start", -1)
@@ -504,13 +481,9 @@ func _render_post_text(find: ReconFind, leak: Dictionary, hovered: bool) -> Stri
 	return before + wrapped + after
 
 
-# A photo find: a viewable image surface with author + caption. Not collectable
-# itself; the finds embedded in it are collected by clicking a hotspot on the
-# image (see attach_hotspots). Returned to the calling SourcePage.
-#
-# The image sits in a centred, fixed-size box (not full-width) so it reads as a
-# normal photo instead of a stretched strip, and COVERED fills that box so the
-# normalised hotspot rects map onto the visible image.
+# The photo itself is not collectable; the finds embedded in it are, via
+# attach_hotspots. The image sits in a fixed-size box and COVERED fills it, so
+# the normalised hotspot rects map onto what is actually visible.
 func build_photo_card(find: ReconFind) -> Control:
 	var card := PanelContainer.new()
 	card.set_meta("photo_id", find.id)
@@ -528,12 +501,12 @@ func build_photo_card(find: ReconFind) -> Control:
 	var caption := Label.new()
 	Style.apply_label(caption, Style.FONT_SIZE_BODY, Style.COLOR_TEXT)
 	caption.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	# Caption has no leak; parse_leak strips any stray markers defensively.
+	# The caption has no leak; parse_leak strips stray markers defensively.
 	caption.text = ReconFind.parse_leak(tr(find.body_key())).get("text", "")
 	col.add_child(caption)
 
-	# No clip_contents: COVERED already crops the image to its rect, and clipping
-	# here would cut off a hotspot's hover hint at the image edge.
+	# No clip_contents: COVERED already crops, and clipping would cut off a
+	# hotspot's hover hint at the image edge.
 	var photo := TextureRect.new()
 	photo.texture = photo_texture(find)
 	photo.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
@@ -558,16 +531,14 @@ func _on_highlight_clicked(_meta: Variant, find: ReconFind) -> void:
 
 
 func _on_highlight_hover(_meta: Variant, body: RichTextLabel, marker: HighlightMarker, find: ReconFind, entered: bool) -> void:
-	# Hover shows the add/remove affordance and the pre-collect glow; the
-	# collected marking underneath is unaffected.
+	# The collected marking underneath is unaffected.
 	body.set_meta("hovered", entered)
 	_apply_post_state(body, marker, find)
 
 
 # --- interaction handlers (route to collect logic) --------------------------
 
-# Clicking a photo hotspot collects (or uncollects) the embedded find directly,
-# the same toggle as an inline leak span, just triggered from the image.
+# The same toggle as an inline leak span, triggered from the image.
 func _on_hotspot_clicked(find: ReconFind) -> void:
 	if is_collected(find):
 		uncollect(find)
@@ -595,7 +566,7 @@ func _update_deck_label() -> void:
 
 
 func _on_advance_button_pressed() -> void:
-	# Hand the collected finds to the MailBuilder phase (find id -> card there).
+	# Hand the collected finds on; the MailBuilder maps each id to a card.
 	var ids: Array[StringName] = []
 	for entry in collected:
 		ids.append(entry.id)
@@ -613,9 +584,8 @@ func _phase_elapsed_ms() -> int:
 	return Time.get_ticks_msec() - _phase_started_at_ms
 
 
-# Closing datapoint for the phase: what the player walked away with. Keeps the
-# deck composition in one event so the summary table does not have to replay the
-# whole collect/uncollect stream to reconstruct it.
+# What the player walked away with, in ONE event, so the summary table does not
+# have to replay the whole collect/uncollect stream to reconstruct the deck.
 func _emit_recon_summary(ids: Array[StringName]) -> void:
 	var junk_count: int = 0
 	var collected_ids := PackedStringArray()

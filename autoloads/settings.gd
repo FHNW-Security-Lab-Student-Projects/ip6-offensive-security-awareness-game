@@ -1,10 +1,6 @@
-# Autoload: player settings, persisted to user://settings.cfg and applied to the
-# audio buses / window on load. Volumes are stored as 0..1 linear values (what a
-# slider shows) and converted to dB for the bus, so a slider at 50% sounds like
-# half volume instead of following the dB curve.
-#
-# Buses: Master -> Music, SFX (see default_bus_layout.tres). The music players
-# route to "Music", the SFX player to "SFX", so each slider only moves its own.
+# Player settings, persisted to user://settings.cfg and applied on load.
+# Volumes are stored linear 0..1 (what the slider shows) and converted to dB, so
+# 50 percent sounds like half. Buses: Master -> Music, SFX, one slider each.
 extends Node
 
 signal settings_changed
@@ -30,9 +26,8 @@ func _ready() -> void:
 	_apply_bus(MUSIC_BUS, music_volume)
 	_apply_bus(SFX_BUS, sfx_volume)
 	_apply_locale()
-	# The window mode is left alone at boot unless fullscreen was saved: forcing
-	# it here would fight the project's own default window mode, and touching the
-	# window this early errors out ("parent busy setting up children").
+	# Only if saved: touching the window this early errors out, and forcing it
+	# would fight the default window mode from the project settings.
 	if fullscreen:
 		_apply_fullscreen.call_deferred()
 
@@ -63,10 +58,8 @@ func set_fullscreen(value: bool) -> void:
 	_after_change()
 
 
-# Switching the language re-translates every node that keeps its key in `text`
-# (menus, scene labels) right away. Screens that resolved their strings through
-# tr() while building show the new language the next time they are built, so a
-# change mid-scenario lands from the next screen onwards.
+# Menus keep the key in their text property and re-translate at once. Screens
+# that resolved through tr() at build time only change on their next build.
 func set_locale(value: String) -> void:
 	if not LOCALES.has(value):
 		return
@@ -96,8 +89,7 @@ func apply_all() -> void:
 	_apply_locale()
 
 
-# A linear 0..1 slider mapped to dB; 0 mutes the bus outright (linear_to_db(0)
-# is -inf, which some drivers dislike).
+# 0 mutes outright: linear_to_db(0) is -inf, which some drivers dislike.
 func _apply_bus(bus_name: StringName, linear: float) -> void:
 	var idx := AudioServer.get_bus_index(String(bus_name))
 	if idx < 0:

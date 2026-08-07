@@ -1,10 +1,8 @@
-# Autoload: a full-screen black fade used as a loading transition. Owns its own
-# CanvasLayer (above everything) so it renders over any scene and survives a
-# scene swap. Three entry points:
-#   change_scene(path)     fade to black -> change_scene_to_file -> fade back in
+# Full-screen black fade on its own CanvasLayer, above everything and surviving
+# a scene swap. Three entry points, all re-entrancy guarded:
+#   change_scene(path)     fade -> swap scene -> fade back
 #   launch_scenario(cfg)   same, plus start_scenario() on the loaded scene
-#   flash(swap)            fade out -> run a callable (e.g. swap sub-states) -> in
-# All are re-entrancy guarded so a double click cannot start two fades.
+#   flash(swap)            fade -> run a callable in place -> fade back
 extends CanvasLayer
 
 const FADE_TIME := 0.35
@@ -21,20 +19,17 @@ func _ready() -> void:
 	_rect.color = Color(0, 0, 0, 0.0)
 	_rect.anchor_right = 1.0
 	_rect.anchor_bottom = 1.0
-	# STOP swallows input while a fade is on screen (prevents double triggers);
-	# hidden by default, so it never blocks the live game.
+	# STOP swallows clicks during a fade; hidden by default, so it never blocks play.
 	_rect.mouse_filter = Control.MOUSE_FILTER_STOP
 	_rect.visible = false
 	add_child(_rect)
 
 
-# Fade to black, swap the scene, fade back in. Safe to call from any scene.
 func change_scene(path: String) -> void:
 	await _swap(path, &"")
 
 
-# Loads a scenario and starts its lifecycle. The id comes from the
-# ScenarioConfig, so a scenario never bootstraps itself.
+# The id comes from the ScenarioConfig: a scenario never bootstraps itself.
 func launch_scenario(cfg: ScenarioConfig) -> void:
 	await _swap(cfg.scene_path, cfg.id)
 
@@ -43,8 +38,7 @@ func _swap(path: String, scenario_id: StringName) -> void:
 	if _busy:
 		return
 	_busy = true
-	# Safety net: a looping typewriter bed must never survive the screen that
-	# started it.
+	# A looping typewriter bed must not survive the screen that started it.
 	SfxPlayer.stop_typing()
 	await _fade(1.0)
 	var previous_id: int = 0
@@ -78,8 +72,7 @@ func _start_scenario(id: StringName) -> void:
 		push_error("SceneTransition: scene for '%s' is not a ScenarioBase" % id)
 
 
-# Fade out, run `swap` (no scene change: e.g. toggle intro -> gameplay), fade
-# back in. Use for in-scene "loading" beats.
+# In-scene "loading" beat: no scene change, just a callable between the fades.
 func flash(swap: Callable) -> void:
 	if _busy:
 		return

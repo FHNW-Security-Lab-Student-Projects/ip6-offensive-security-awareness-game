@@ -1,13 +1,8 @@
-# Headless test for the Recon sub-state: pool shape, embedded LinkBook posts,
-# tab navigation, deck limit, collect/uncollect/reveal logic. Plain SceneTree
-# script, no test framework.
+# Headless test for the Recon phase: pool shape, embedded LinkBook posts, tab
+# navigation, deck limit, collect/uncollect/reveal logic.
 #
 # Run:
 #   godot --headless --path . -s tests/test_recon.gd
-#
-# Every check compares an expected value against the actual one and prints
-# "ok" or "FAIL". The run ends with TEST DONE and exit code 0 when every check
-# passed, otherwise with the failure count and exit code 1.
 extends SceneTree
 
 const Check := preload("res://tests/check.gd")

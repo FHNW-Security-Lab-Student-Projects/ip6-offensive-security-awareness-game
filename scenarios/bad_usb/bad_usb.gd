@@ -1,3 +1,12 @@
+# Scenario 2: bad USB. The shell over eight sub-states, from the street to the
+# planted drive. Unlike scenario 1, whose phases are separate screens, these are
+# locations inside one .tscn: each is a world node that is shown while the others
+# are hidden, and every change of location fades through black so the worlds do
+# not snap over each other.
+#
+# The level itself (worlds, sprites, NPC movement) lives in bad_usb.tscn. This
+# file owns the routing, the conversation flow and the telemetry; the terminal
+# look is applied over the scene by bad_usb_style.gd.
 extends ScenarioBase
 
 const SCENARIO_ID: String = "bad_usb"
@@ -65,9 +74,8 @@ var _current: SubState = SubState.BRIEFING
 var _initialised: bool = false
 
 # --- telemetry ---------------------------------------------------------------
-# The study evaluates decisions, error rates and decision times. Which answer is
-# right, and which pretext a step belongs to, lives in dialogue.gd next to the
-# lines themselves.
+# Which answer is right, and which pretext a step belongs to, lives in
+# dialogue.gd next to the lines themselves.
 
 const PromptClock := preload("res://scenarios/base/prompt_clock.gd")
 const Typewriter := preload("res://scenarios/base/typewriter.gd")
@@ -80,10 +88,8 @@ const ScreenMusic := preload("res://scenarios/base/components/screen_music.gd")
 # Reused from scenario 1's Recon phase. One continuous track across every
 # playable phase, hung off a dedicated holder rather than the world nodes:
 # ScreenMusic follows its parent's visibility, so swapping worlds would restart
-# it at every doorway.
+# the track at every doorway.
 const WORLD_MUSIC := preload("res://assets/audio/terminal_stalk.wav")
-# Every change of location fades through black; without it the worlds snap over
-# each other. SceneTransition swallows input during the fade.
 
 # --- OS shell -----------------------------------------------------------------
 # The eight sub-states are too fine-grained for a stepper, so they are grouped
@@ -91,9 +97,8 @@ const WORLD_MUSIC := preload("res://assets/audio/terminal_stalk.wav")
 const OS_CHROME_SCENE := "res://scenarios/base/components/OSChrome.tscn"
 const BRIEFING_RESOURCE := "res://resources/scenarios/bad_usb/briefing.tres"
 
-# The bar belongs to the terminal screens; over the pixel-art world it reads as
-# a foreign overlay. Scenario 1 keeps it up throughout because every one of its
-# phases IS such a screen.
+# The bar belongs to the terminal screens; over the pixel-art world it reads as a
+# foreign overlay. Scenario 1 keeps it up because every phase there IS one.
 const CHROME_SUBSTATES: Array[int] = [SubState.BRIEFING, SubState.RESOLVE]
 
 const PHASE_BY_SUBSTATE: Dictionary = {
@@ -108,32 +113,27 @@ const PHASE_BY_SUBSTATE: Dictionary = {
 
 
 var _clock: PromptClock = PromptClock.new()
-# Blown cover. A cover blow ends the run on the spot (see _fail_run), so this is
-# 0 or 1 per run, not a retry counter. Goes into the debrief row as "failures".
+# A blown cover ends the run on the spot, so this is 0 or 1, not a retry counter.
 var _failure_count: int = 0
-# Dead-end attempts at the badge-protected elevator. Not a cover blower, but a
-# wrong turn worth counting for the usability analysis.
+# Attempts at the badge-protected elevator. Not fatal, but a wrong turn.
 var _restricted_attempts: int = 0
 # Pretext the player last opened the reception conversation with.
 var _reception_path: String = ""
-# True once a blown cover has ended the run. Decides both which debrief is shown
-# and which outcome the study data records, so a failed run can never be
-# reported as a planted stick.
+# Decides both which debrief is shown and which outcome the data records, so a
+# failed run can never be reported as a planted stick.
 var _run_failed: bool = false
 
 # --- flowing text -------------------------------------------------------------
 var _dialogue_typer := Typewriter.new()
-# "▼ klicken für weiter", shown only while the question is still running.
+# Shown only while the question is still typing.
 var _dialogue_hint: Label
 # The closing screen, built on demand when the level reaches RESOLVE.
 var _debrief: Control
 # The shared DarkMail OS bar, instanced in _setup.
 var _os_chrome: Control
-# Invisible holder whose visibility drives the world music: shown exactly while
-# the player is in a playable phase.
+# Its visibility drives the world music: shown exactly during a playable phase.
 var _world_music_host: Control
-# Whether the step currently on screen offers a second option, remembered while
-# both choices are hidden during typing.
+# Remembered while both choices are hidden during typing.
 var _second_choice_offered: bool = true
 
 func _setup() -> void:
@@ -199,7 +199,7 @@ func _setup() -> void:
 	if not _btn_choice2.pressed.is_connected(_on_dialog_choice_2_pressed):
 		_btn_choice2.pressed.connect(_on_dialog_choice_2_pressed)
 	
-	# Left in the scene but never shown: the fail screen replaced it.
+	# Left in the scene but never shown; the fail screen replaced it.
 	_ui_failure_popup.visible = false
 	
 	var corridor_zone = $BadUSBScenario/InsideBuilding/CorridorZone
@@ -266,12 +266,11 @@ func _process(delta: float) -> void:
 	_dialogue_typer.advance(delta)
 
 
-# Click reveals the rest of the line, as in the intro. In _unhandled_input so a
-# click on a button is consumed by that button first, and only marked handled
-# while text is running.
+# In _unhandled_input so a click on a button is consumed by that button first,
+# and only marked handled while text is actually running.
 #
-# Catches clicks OUTSIDE the boxes only: the panels have mouse_filter STOP and
-# swallow their own clicks, which _on_dialogue_box_clicked handles.
+# This catches clicks OUTSIDE the boxes; the panels swallow their own, which
+# _on_dialogue_box_clicked handles.
 func _unhandled_input(event: InputEvent) -> void:
 	if not _is_left_click(event):
 		return
@@ -301,8 +300,7 @@ func _on_dialogue_box_clicked(event: InputEvent) -> void:
 
 
 
-# Puts the level into the DarkMail terminal look of scenario 1. Explicit lists
-# rather than a tree walk on purpose: the briefing is an instanced scene that
+# Explicit lists rather than a tree walk: the briefing is an instanced scene that
 # styles itself and must not be restyled from here.
 func _style_ui() -> void:
 	for button: Button in [
@@ -314,8 +312,8 @@ func _style_ui() -> void:
 	]:
 		Style.style_button(button)
 
-	# The choices wrap inside a fixed column; left to itself a Button demands the
-	# width of its whole line, which pushed them past the dialogue box edges.
+	# Left to itself a Button demands the width of its whole line, which pushes
+	# the choices past the dialogue box edges.
 	for choice: Button in [_btn_choice1, _btn_choice2]:
 		Style.style_choice(choice)
 	Style.layout_choice_column(_ui_dialogue_box.get_node("VBoxContainer"))
@@ -328,9 +326,8 @@ func _style_ui() -> void:
 	_dialogue_hint = SkipHint.new()
 	Style.place_skip_hint(_dialogue_hint, _ui_dialogue_box)
 	_dialogue_hint.set_active(false)
-	# The whole speech box is the click target, not just the hint in its corner.
-	# The panel has mouse_filter STOP, so the click never reaches
-	# _unhandled_input and has to be taken here.
+	# The panel has mouse_filter STOP, so its clicks never reach _unhandled_input
+	# and have to be taken here.
 	if not _ui_dialogue_box.gui_input.is_connected(_on_dialogue_box_clicked):
 		_ui_dialogue_box.gui_input.connect(_on_dialogue_box_clicked)
 
@@ -339,9 +336,8 @@ func _style_ui() -> void:
 	Style.style_body(_ui_tailgate_locked.get_node("MissingBadgeUI"))
 	Style.style_body(_ui_npc_speech.get_node("NPCSpeechUI"))
 
-# The same OS bar scenario 1 runs under. Instanced in code so bad_usb.tscn stays
-# untouched. The briefing resource carries turn_budget = 0, so OSChrome hides its
-# counter.
+# Instanced in code so bad_usb.tscn stays untouched. The briefing resource
+# carries turn_budget = 0, so the bar hides its counter.
 func _setup_os_chrome() -> void:
 	var briefing := load(BRIEFING_RESOURCE) as BriefingResource
 	if briefing == null:
@@ -349,8 +345,8 @@ func _setup_os_chrome() -> void:
 		return
 	_os_chrome = (load(OS_CHROME_SCENE) as PackedScene).instantiate()
 	$BadUSBScenario/CanvasLayer.add_child(_os_chrome)
-	# Stays in front: the briefing and the debrief both cover the whole screen,
-	# and the bar is meant to frame them, not to disappear behind them.
+	# Briefing and debrief both cover the whole screen, and the bar is meant to
+	# frame them rather than disappear behind them.
 	_keep_chrome_on_top()
 	var steps: Array[Dictionary] = [
 		{"id": &"ARRIVAL", "label": tr("BADUSB_PHASE_ARRIVAL")},
@@ -362,8 +358,7 @@ func _setup_os_chrome() -> void:
 	_os_chrome.configure(briefing, steps)
 
 
-# One row per run for the study's summary table, mirroring the scenario_debrief
-# that spear_phishing emits from its resolve screen. Fires once, when the
+# One row per run, mirroring scenario 1's scenario_debrief. Fires once, when the
 # debrief is built.
 func _emit_debrief() -> void:
 	var outcome: String = "COVER_BLOWN" if _run_failed else "USB_PLANTED"
@@ -382,8 +377,8 @@ func _emit_debrief() -> void:
 	})
 
 
-# The briefing and the debrief bring their own track, so the world bed follows
-# the inverse of the OS bar's rule.
+# Briefing and debrief bring their own track, so the world bed follows the
+# inverse of the OS bar's rule.
 func _setup_world_music() -> void:
 	_world_music_host = Control.new()
 	_world_music_host.name = "WorldMusicHost"
@@ -411,9 +406,8 @@ func _swap_in_briefing() -> void:
 	canvas.add_child(_ui_briefing)
 
 func _on_start() -> void:
-	# A replay drops straight into the street: the player has just read the
-	# briefing and sitting through it again is pure friction. Same one-shot flag
-	# scenario 1 uses, consumed here.
+	# A replay drops straight into the street; sitting through the briefing again
+	# is pure friction. The one-shot flag is consumed here.
 	if GameState.replay_skip_briefing:
 		GameState.replay_skip_briefing = false
 		_change_substate(SubState.STREET)
@@ -470,8 +464,8 @@ func _on_locked_door_exited(body: Node2D) -> void:
 		_ui_tailgate_locked.visible = false
 
 func _on_tailgate_trigger_pressed() -> void:
-	# Waiting at the locked door for someone with a badge is the tailgating
-	# technique this level teaches, so it is graded as the intended move.
+	# Waiting for someone with a badge IS the technique this level teaches, so it
+	# is graded as the intended move.
 	EventBus.emit_decision(scenario_id, "tailgate_wait", true, _clock.take())
 	_btn_tailgate_trigger.visible = false
 	_ui_tailgate_locked.visible = true
@@ -482,7 +476,6 @@ func _start_npc_walk_event() -> void:
 	var door_position = Vector2(5534, _npc_tailgate.position.y) 
 	
 	_npc_tailgate.flip_h = true
-	# Start walking animation
 	_npc_tailgate.play("walk")
 	
 	var tween = create_tween()
@@ -514,8 +507,7 @@ func _on_restricted_exited(body: Node2D) -> void:
 		_ui_missing_badge.visible = false
 
 func _on_restricted_btn_pressed() -> void:
-	# The badge-protected elevator is a dead end. Taking it is not fatal, but it
-	# is the wrong route, so it counts against the error rate.
+	# A dead end: not fatal, but the wrong route, so it counts as an error.
 	_restricted_attempts += 1
 	EventBus.emit_decision(
 		scenario_id,
@@ -602,7 +594,7 @@ func _on_pc_zone_exited(body: Node2D) -> void:
 		_ui_dialogue_box.visible = false
 
 func _on_usb_btn_pressed() -> void:
-	# Planting the drive is the objective of the level: the attack succeeded.
+	# The objective of the level: the attack succeeded.
 	EventBus.emit_decision(scenario_id, "usb_inserted", true, _clock.take())
 	_ui_usb_btn.visible = false
 	SceneTransition.flash(_change_substate.bind(SubState.RESOLVE))
@@ -622,9 +614,8 @@ func _on_stressed_pressed() -> void:
 func _on_confident_pressed() -> void:
 	_start_reception_dialogue(20)
 
-# Both openings are viable pretexts rather than a right/wrong pair, so the
-# choice is recorded ungraded. Which one a player reaches for is still one of
-# the more interesting behavioural signals in this level.
+# Both openings are viable pretexts rather than a right/wrong pair, so this is
+# recorded ungraded. Which one a player reaches for is still worth seeing.
 func _start_reception_dialogue(step: int) -> void:
 	_reception_path = Dialogue.path_for(step)
 	EventBus.emit_action(
@@ -651,8 +642,7 @@ func _on_dialog_choice_1_pressed() -> void:
 		12, 22:
 			_ui_dialogue_box.visible = false
 			_barrier_shape.disabled = true
-			# The reception dialogue froze the player; release them again now
-			# that the barrier is open.
+			# The reception dialogue froze the player; the barrier is open now.
 			_world_inside.get_node("Player").set_physics_process(true)
 		32:
 			_ui_dialogue_box.visible = false
@@ -673,9 +663,8 @@ func _on_dialog_choice_2_pressed() -> void:
 		11, 21, 31:
 			_fail_run()
 
-# Grades and records the answer for the step the player is currently on. MUST
-# run before the handlers touch _dialogue_step, otherwise the event lands on the
-# following step and the graded outcome no longer matches the question asked.
+# MUST run before the handlers touch _dialogue_step, otherwise the event lands on
+# the FOLLOWING step and the verdict no longer matches the question asked.
 func _log_dialogue_choice(choice: int) -> void:
 	var blows_cover: bool = Dialogue.blows_cover(_dialogue_step, choice)
 	EventBus.emit_decision(
@@ -693,12 +682,9 @@ func _log_dialogue_choice(choice: int) -> void:
 	if blows_cover:
 		_failure_count += 1
 
-# A blown cover ends the run and goes straight to the fail screen, like a losing
-# outcome in scenario 1. Back in via "Nochmal spielen", which reloads the level.
-#
-# BADUSB_FAILURE_TEXT, formerly the popup notice, now opens that screen. The
-# in-run reset to the entrance is gone with the popup: a reload rebuilds it, and
-# a run now has exactly one outcome instead of silent retries.
+# A blown cover ends the run and goes straight to the fail screen; the way back
+# in is a reload. There is deliberately no in-run reset to the entrance, so a run
+# has exactly one outcome instead of silent retries.
 func _fail_run() -> void:
 	_run_failed = true
 	EventBus.emit_action(
@@ -711,10 +697,8 @@ func _fail_run() -> void:
 	_dialogue_step = 0
 	SceneTransition.flash(_change_substate.bind(SubState.RESOLVE))
 
-# The base class owns scenario_complete; the run's summary row is emitted when
-# the debrief screen appears (see _emit_debrief), not here. That mirrors
-# scenario 1 and means one row exists as soon as the player reached the end of
-# the level, whether or not they then clicked an exit.
+# The summary row is emitted when the debrief appears, not here, so a row exists
+# as soon as the player reached the end, whether or not they clicked an exit.
 func _on_complete() -> void:
 	pass
 
@@ -722,7 +706,6 @@ func _on_complete() -> void:
 func _advance() -> void:
 	match _current:
 		SubState.BRIEFING:
-			# Intro -> gameplay: black fade as a loading beat.
 			SceneTransition.flash(_change_substate.bind(SubState.STREET))
 		SubState.STREET:
 			_change_substate(SubState.FRONT)
@@ -813,10 +796,6 @@ func _change_substate(new_state: SubState) -> void:
 				_start_office_npc_approach()
 				
 		SubState.RESOLVE:
-			# The scene's own Resolve node stays hidden: the debrief is built by
-			# the Debrief component instead, which owns its own full-screen
-			# layout. The node is left in the scene so the level file keeps
-			# working in the editor.
 			# A blown cover must not end on the success chime.
 			if _run_failed:
 				SfxPlayer.play_fail()
@@ -827,7 +806,7 @@ func _change_substate(new_state: SubState) -> void:
 	_current = new_state
 	_initialised = true
 
-	# Drive the OS bar's phase stepper; ids match the configure() steps.
+	# Drives the OS bar's stepper; the ids match the configure() steps.
 	GameState.set_mission_phase(PHASE_BY_SUBSTATE.get(new_state, &""))
 	var on_terminal_screen: bool = CHROME_SUBSTATES.has(new_state)
 	if _os_chrome != null and is_instance_valid(_os_chrome):
@@ -857,8 +836,8 @@ func _update_dialogue_ui() -> void:
 	if _second_choice_offered:
 		_btn_choice2.text = tr(Dialogue.choice_key(_dialogue_step, 2))
 
-	# Hold both answers back while the question types itself out, so the player
-	# reads it before answering; _on_line_typed restores the decision above.
+	# Held back while the question types itself out, so the player reads it before
+	# answering. _on_line_typed restores the decision above.
 	_btn_choice1.visible = false
 	_btn_choice2.visible = false
 	SfxPlayer.start_typing()
@@ -871,15 +850,13 @@ func _on_line_typed() -> void:
 	_dialogue_hint.set_active(false)
 	_btn_choice1.visible = true
 	_btn_choice2.visible = _second_choice_offered
-	# Decision time starts when the options actually become clickable. Marking it
-	# when the line starts typing would fold the typewriter duration into every
-	# recorded latency and make fast readers look slow.
+	# Marked when the options become clickable. Marking it when the line starts
+	# typing would fold the typewriter duration into every recorded latency.
 	_clock.mark()
 
 # --- debrief ------------------------------------------------------------------
 
-# Two sets, because the success stages describe things a failed run never did
-# ("Du konntest den eingeschraenkten Bereich betreten").
+# Two sets: the success stages describe things a failed run never did.
 const DEBRIEF_STAGES_SUCCESS: Array[Dictionary] = [
 	{"title": "BADUSB_STORY_0_TITLE", "text": "BADUSB_STORY_0_TEXT",
 		"image": "res://assets/sprites/placeholder/storyImages/lobby_img.png"},
@@ -892,8 +869,7 @@ const DEBRIEF_STAGES_SUCCESS: Array[Dictionary] = [
 	{"title": "BADUSB_STORY_4_TITLE", "text": "BADUSB_STORY_4_TEXT", "image": ""},
 ]
 
-# Shorter on purpose: the run ended at the first checkpoint. Opens with
-# BADUSB_FAILURE_TEXT, the notice the popup used to carry.
+# Shorter on purpose: the run ended at the first checkpoint.
 const DEBRIEF_STAGES_FAILED: Array[Dictionary] = [
 	{"title": "BADUSB_FAIL_0_TITLE", "text": "BADUSB_FAILURE_TEXT",
 		"image": "res://assets/sprites/placeholder/storyImages/lobby_img.png"},
@@ -929,9 +905,8 @@ func _start_resolve_story() -> void:
 		stages, FAIL_ACCENT if _run_failed else DarkMailPalette.GREEN)
 
 
-# How long each debrief stage stood finished on screen before the player moved
-# on. Research question 3 is about whether the feedback lands, and this is the
-# only signal we have for whether it was read at all.
+# How long each stage stood finished before the player moved on — the only
+# signal we have for whether the feedback was read at all.
 func _on_debrief_stage_advanced(index: int, dwell_ms: int) -> void:
 	EventBus.emit_action(
 		scenario_id,
@@ -951,8 +926,8 @@ func _on_debrief_home() -> void:
 	SceneTransition.change_scene(HOME_SCENE)
 
 
-# Wipes the per-run handoff state (autoloads survive a scene reload) and loads
-# the level again, mirroring how scenario 1 handles its retry.
+# Wipes the per-run state, which lives on autoloads and would survive the
+# reload, then loads the level again.
 func _on_debrief_replay() -> void:
 	complete_scenario()
 	GameState.reset_scenario()

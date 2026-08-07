@@ -1,6 +1,5 @@
-# Typed configuration for a scenario, stored as a .tres resource.
-# One file per scenario under res://resources/scenarios/.
-# Loaded at startup by the Config autoload.
+# One .tres per scenario, top level of res://resources/scenarios/, picked up by
+# the Config autoload at startup. Only id and scene_path are read by the game.
 class_name ScenarioConfig
 extends Resource
 

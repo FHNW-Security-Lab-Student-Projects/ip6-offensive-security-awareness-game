@@ -1,6 +1,5 @@
-# Firmenseite: a plain corporate press page. A small dateline/source above a
-# headline, then the press body (which carries the leak). Deliberately sober —
-# no feed chrome, no avatars — so it reads as an official company page.
+# Firmenseite: dateline, headline, then the press body (which carries the leak).
+# Deliberately sober, no feed chrome, so it reads as an official company page.
 extends "res://scenarios/spear_phishing/components/source_pages/source_page.gd"
 
 const Style := preload("res://scenarios/spear_phishing/data/recon_browser_style.gd")

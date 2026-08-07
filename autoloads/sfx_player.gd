@@ -1,11 +1,6 @@
-# Autoload: one-shot UI sound effects. Lives outside the scene tree of any
-# screen, so a sound triggered by a button that immediately changes scene still
-# plays out instead of being cut off with its scene.
-#
-# Every BaseButton (Button, TextureButton, CheckBox, ...) is wired to the select
-# blip automatically as it enters the tree, so new buttons anywhere in the game
-# get the sound without touching their scene or script. Non-button clickables
-# (mail cards, recon hotspots) call play_select() themselves.
+# One-shot UI sounds. Outside any screen tree, so a sound survives the scene
+# change its button triggered. Every BaseButton is wired to the select blip
+# automatically on entering the tree; non-buttons call play_select() themselves.
 extends Node
 
 const SELECT_SFX := preload("res://assets/audio/menu_select.wav")
@@ -39,7 +34,7 @@ var _fail: AudioStreamPlayer
 
 
 func _ready() -> void:
-	# UI sounds must still fire while the tree is paused (settings overlay).
+	# Must still fire while the tree is paused (settings overlay).
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	_select = _make_player(SELECT_SFX, SELECT_VOLUME_DB)
 	_highlight = _make_player(HIGHLIGHT_SFX, HIGHLIGHT_VOLUME_DB)
@@ -50,8 +45,7 @@ func _ready() -> void:
 	_completion = _make_player(COMPLETION_SFX, COMPLETION_VOLUME_DB)
 	_suspicion = _make_player(SUSPICION_SFX, SUSPICION_VOLUME_DB)
 	_fail = _make_player(FAIL_SFX, FAIL_VOLUME_DB)
-	# The typing bed loops for as long as text is being written; looping needs an
-	# explicit region, since loop_mode alone leaves loop_end at 0 (silence).
+	# loop_mode alone leaves loop_end at 0, which is silence.
 	if _typing.stream is AudioStreamWAV:
 		var wav := _typing.stream as AudioStreamWAV
 		wav.loop_begin = 0
@@ -61,13 +55,10 @@ func _ready() -> void:
 	_wire_existing(get_tree().root)
 
 
-# The typewriter bed is the one continuous sound, so it has to follow the pause
-# state: the text stops being written while the game is paused, and the sound
-# must stop with it. One-shots are short enough to just finish. Mirrored every
-# frame so ANY pause source works, not just the settings overlay.
+# The bed is the only continuous sound, so it follows the pause state; one-shots
+# just finish. Mirrored per frame so any pause source works.
 func _process(_delta: float) -> void:
-	# Not guarded on `playing`: a paused stream reports playing == false, so
-	# guarding on it would pause the bed and never let it resume.
+	# No playing-guard: a paused stream reports false and would never resume.
 	if _typing != null:
 		var should_pause := get_tree().paused
 		if _typing.stream_paused != should_pause:
@@ -83,27 +74,25 @@ func _make_player(stream: AudioStream, volume_db: float) -> AudioStreamPlayer:
 	return player
 
 
-# Menu confirmation blip: auto-played on button presses, and callable directly
-# from custom clickables that are not BaseButtons.
+# Auto-played on button presses; callable from non-BaseButton clickables.
 func play_select() -> void:
 	if _select != null:
 		_select.play()
 
 
-# Softer blip for advancing text and for marking a find in the recon phase.
+# Advancing text, marking a recon find.
 func play_highlight() -> void:
 	if _highlight != null:
 		_highlight.play()
 
 
-# Fires when a status bar actually moves (mail suspicion / pressure).
+# A status bar actually moved.
 func play_notification() -> void:
 	if _notification != null:
 		_notification.play()
 
 
-# Typewriter bed: call while text is being written, stop when it is done or the
-# player skips ahead. Idempotent, so repeated starts do not restart the loop.
+# Idempotent: repeated starts do not restart the loop.
 func start_typing() -> void:
 	if _typing != null and not _typing.playing:
 		_typing.play()
@@ -112,37 +101,36 @@ func start_typing() -> void:
 func stop_typing() -> void:
 	if _typing == null:
 		return
-	# Unguarded on purpose: `playing` reads false while the tree is paused, so a
-	# `if playing` check skipped the stop when leaving through the pause menu and
-	# the loop resumed on unpause. stop() on an idle player is free.
+	# Unguarded on purpose: playing reads false while paused, so a guard let the
+	# bed resume after leaving through the pause menu. stop() on idle is free.
 	_typing.stop()
 
 
-# Something new became playable: a legendary appeared, or the payload gate opened.
+# Something new became playable (legendary, payload gate).
 func play_unlock() -> void:
 	if _unlock != null:
 		_unlock.play()
 
 
-# Incoming mail: the target answered in the thread.
+# The target answered in the mail thread.
 func play_reply() -> void:
 	if _reply != null:
 		_reply.play()
 
 
-# The scenario ended without reaching its goal.
+# Scenario ended without reaching its goal.
 func play_fail() -> void:
 	if _fail != null:
 		_fail.play()
 
 
-# The scenario is over and its debrief comes up (goal reached).
+# Goal reached, debrief comes up.
 func play_completion() -> void:
 	if _completion != null:
 		_completion.play()
 
 
-# The card backfired: suspicion went up. Replaces the neutral bar blip.
+# A card backfired: suspicion rose. Replaces the neutral bar blip.
 func play_suspicion() -> void:
 	if _suspicion != null:
 		_suspicion.play()

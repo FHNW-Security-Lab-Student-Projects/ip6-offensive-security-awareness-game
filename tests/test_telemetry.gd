@@ -1,14 +1,10 @@
 # Headless test for the study's data collection: the PromptClock that measures
 # decision times, the EventBus graded/ungraded helpers, the canonical event
-# schema every emitted event has to satisfy, and the Recon junk grading that the
-# error rate is computed from. Plain SceneTree script, no test framework.
+# schema every emitted event has to satisfy, and the Recon junk grading the error
+# rate is computed from.
 #
 # Run:
 #   godot --headless --path . -s tests/test_telemetry.gd
-#
-# Every check compares an expected value against the actual one and prints
-# "ok" or "FAIL". The run ends with TEST DONE and exit code 0 when every check
-# passed, otherwise with the failure count and exit code 1.
 extends SceneTree
 
 const PromptClock := preload("res://scenarios/base/prompt_clock.gd")

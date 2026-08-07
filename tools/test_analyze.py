@@ -2,8 +2,8 @@
 """Test for analyze.py. Builds a synthetic log folder, runs the analysis and
 checks the resulting tables.
 
-Plain script with printed expect/actual lines, matching the convention of the
-GDScript tests in tests/. No test framework needed.
+Same convention as the GDScript tests in tests/ (see tests/check.gd): printed
+expect/actual lines, no framework, the exit code carries the verdict.
 
 Run:
     python3 tools/test_analyze.py

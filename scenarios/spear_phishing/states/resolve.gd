@@ -1,17 +1,13 @@
-# Sub-state 4: the RESOLVE debrief. VIEW only — it reads the run's mail_result
-# (written by the MailBuilder) and stages the closing feedback; it holds NO game
-# logic and never changes balancing. Three blocks build up ONE AFTER ANOTHER so
-# the ending lands with weight:
-#   1. outcome-specific feedback (one of four, mapped from mail_result.outcome),
-#   2. the twist (ALWAYS, even on WIN),
-#   3. the closing statistic + its source line (ALWAYS).
-# The reveal is time-staggered; a click skips ahead to the buttons. Then three
-# choices — next scenario, back to home, retry — each emitted as an intent that
-# the scenario shell routes; the sub-state stays ignorant of what comes next.
+# Phase 4: the debrief. VIEW only, no game logic. Three blocks appear one after
+# another so the ending lands with weight:
+#   1. outcome-specific feedback, mapped from mail_result.outcome
+#   2. the twist, ALWAYS, even on a win
+#   3. the closing statistic and its source, ALWAYS
+# A click skips ahead. The three exits are emitted as intents; this screen stays
+# ignorant of what comes next.
 #
-# Runs under the persistent OSChrome bar (content starts at y >= 96), DarkMail
-# look. Telemetry: one scenario_debrief event fires when the screen builds (not
-# on a button), so it lands exactly once per run regardless of what comes next.
+# scenario_debrief fires when the screen BUILDS, not on a button, so it lands
+# exactly once per run whatever the player does afterwards.
 extends Control
 
 signal next_requested      # "Next Scenario": shell completes + loads the next
@@ -22,8 +18,7 @@ const MailReview := preload("res://scenarios/spear_phishing/components/mail_revi
 const ScreenMusic := preload("res://scenarios/base/components/screen_music.gd")
 const PromptClock := preload("res://scenarios/base/prompt_clock.gd")
 
-# Debrief music: covers the whole post-run screen, including the Spielbewertung
-# overlay (a child of this screen, so this stays visible underneath it).
+# Covers the review overlay too, which is a child of this screen.
 const RESOLVE_MUSIC := preload("res://assets/audio/terminal_echo_drift.wav")
 
 const SCENARIO_ID := "spear_phishing"
@@ -47,8 +42,7 @@ var _reveal_tween: Tween
 var _revealed := false
 
 # --- feedback attention (research question 3) --------------------------------
-# How long the finished debrief stood, and whether the optional review was
-# opened. Without it we know what the run did but not whether anyone read why.
+# Without this we know what the run did, but not whether anyone read why.
 var _screen_clock := PromptClock.new()
 var _review_clock := PromptClock.new()
 var _review_opened := false
@@ -94,14 +88,12 @@ func _outcome_name() -> String:
 	return str(_result().get("outcome", ""))
 
 
-# The finished mail run, handed over by the MailBuilder. Empty when the phase is
-# reached without one, which the fallback below covers.
+# Empty when the phase is reached without a run; the fallback below covers it.
 func _result() -> Dictionary:
 	return _scenario_run.mail_result if _scenario_run != null else {}
 
 
-# The RESOLVE_<KEY>_* infix for the current outcome, with a safe fallback so a
-# missing/garbled result still shows a coherent screen.
+# Falls back, so a missing or garbled result still shows a coherent screen.
 func _outcome_infix() -> String:
 	return OUTCOME_KEYS.get(_outcome_name(), FALLBACK_KEY)
 
@@ -127,9 +119,8 @@ func _emit_debrief() -> void:
 	})
 
 
-# Card ids of the whole run, flattened to plain strings so the JSONL stays
-# readable (StringName has no distinct JSON form) and the analysis can count
-# card usage without replaying the per-turn events.
+# Flattened to plain strings: StringName has no distinct JSON form, and the
+# analysis can count card usage without replaying the per-turn events.
 func _played_ids(result: Dictionary) -> PackedStringArray:
 	var ids := PackedStringArray()
 	for id in result.get("played", []):
@@ -170,9 +161,8 @@ func _build_layout() -> void:
 	_button_row.modulate.a = 0.0
 	col.add_child(_button_row)
 
-	# A transparent catcher over the whole screen turns any click during the
-	# staged reveal into a skip. It is freed the moment the buttons appear, so
-	# it never sits in front of them.
+	# Turns any click during the reveal into a skip. Freed the moment the buttons
+	# appear, so it never sits in front of them.
 	_click_catcher = Control.new()
 	_click_catcher.anchor_right = 1.0
 	_click_catcher.anchor_bottom = 1.0
@@ -220,9 +210,8 @@ func _build_stat_block() -> Control:
 
 
 func _build_buttons() -> Control:
-	# A centered wrapper shrinks the block to the width of the exit row; the
-	# review button then FILLS that width, so it spans exactly the three buttons
-	# combined and lines up with them.
+	# The wrapper shrinks to the exit row, the button fills it: that lines the
+	# review button up with the three buttons below.
 	var wrap := HBoxContainer.new()
 	wrap.alignment = BoxContainer.ALIGNMENT_CENTER
 
@@ -246,11 +235,9 @@ func _build_buttons() -> Control:
 	return wrap
 
 
-# Opens the optional turn-by-turn review as a full-screen overlay on top of the
-# debrief; its Back button frees it and returns here. Read-only, no flow change.
+# The optional turn-by-turn review, as an overlay. Read-only, no flow change.
 func _open_review() -> void:
-	# The most direct signal for research question 3: did anyone open the
-	# detailed feedback at all.
+	# The most direct signal for research question 3.
 	_review_opened = true
 	EventBus.emit_action(SCENARIO_ID, "review_opened", _screen_clock.elapsed())
 	_review_clock.mark()
@@ -343,8 +330,7 @@ func reveal_all() -> void:
 
 func _show_buttons() -> void:
 	_revealed = true
-	# Dwell starts once the debrief stands, so it measures reading and not the
-	# reveal animation.
+	# Starts once the screen stands, so it measures reading, not the animation.
 	_screen_clock.mark()
 	_button_row.modulate.a = 1.0
 	if is_instance_valid(_click_catcher):

@@ -1,8 +1,6 @@
-# The MailBuilder run: the pure logic core (no UI). Holds the two target bars,
-# the remaining turns and the played cards; play_card applies effects, spends a
-# turn and resolves outcomes. Emits telemetry through the existing EventBus on
-# every play and at the outcome. Referenced by path (preload), no global class
-# name.
+# The MailBuilder run: pure logic, no UI. Holds the two bars, the remaining
+# turns and the played cards, and emits its own telemetry.
+# Preload, no class_name: a bare `godot -s` run has no global class cache.
 extends RefCounted
 
 const MailCard := preload("res://scenarios/spear_phishing/data/mail_card.gd")
@@ -10,9 +8,8 @@ const Pool := preload("res://scenarios/spear_phishing/data/mail_card_pool.gd")
 
 const SCENARIO_ID := "spear_phishing"
 
-# Sentinel for "the caller had no clock". The engine measures no time itself, so
-# a turn played from a test (or from play_card) reports a null latency rather
-# than a fabricated zero.
+# The engine has no clock of its own. A turn played without one reports null,
+# not a fabricated zero.
 const UNKNOWN_LATENCY := -1
 
 enum Outcome { NONE, WIN, SPAM, KOLLEGEN_RUECKFRAGE, IGNORIERT }
@@ -23,8 +20,8 @@ var turns_left: int
 var outcome: Outcome = Outcome.NONE
 var played: Array[StringName] = []   # card ids in play order
 var probe_done: bool = false         # flipped once the probe card is played
-# Per-card snapshots of the most recent mail: [{id, suspicion, pressure}, ...] in
-# application order. The UI replays it to reveal the effect card by card.
+# Per-card snapshots of the last mail, in application order. The UI replays it
+# to reveal the effect card by card.
 var last_mail_steps: Array = []
 
 var _turn_budget: int
@@ -48,9 +45,9 @@ func turns_used() -> int:
 	return _turn_budget - turns_left
 
 
-# The payload becomes playable on pressure alone; suspicion decides the outcome
-# (win vs Kollegen-Rückfrage). The gate and the win test are the run's single
-# source of truth — the UI reads them, it never re-derives the thresholds.
+# The payload unlocks on pressure alone; suspicion decides how it ends. These
+# two are the run's single source of truth: the UI reads them and never
+# re-derives the thresholds.
 func payload_gate_open() -> bool:
 	return pressure >= Pool.PRESSURE_TARGET
 
@@ -59,14 +56,11 @@ func payload_would_win() -> bool:
 	return payload_gate_open() and suspicion <= Pool.SUSPICION_TARGET
 
 
-# Which cards may go into the current mail. The payload unlocks with its gate
-# (pressure alone). Everything else stays available until the attack would
-# actually WIN — only then does the run funnel the player into the send
-# decision. Locking on the open gate alone would strand a player whose pressure
-# is high but whose suspicion is still above target: they could neither repair
-# the suspicion nor win, and every remaining move would be a loss.
-# The UI reads this fact per card; play_mail itself stays tolerant of
-# hand-built input (tests drive it directly).
+# Everything stays playable until the attack would actually WIN; only then does
+# the run funnel the player into the send. Locking on the open gate alone would
+# strand a player with high pressure and too much suspicion: no repair, no win,
+# every remaining move a loss.
+# play_mail itself stays tolerant of hand-built input, so tests can drive it.
 func card_playable(card: MailCard) -> bool:
 	if is_over() or turns_left <= 0:
 		return false
@@ -75,20 +69,15 @@ func card_playable(card: MailCard) -> bool:
 	return not payload_would_win()
 
 
-# Hannes' reactive state, derived from the current bars (read-only, no effect on
-# the run). The UI reads it to pick his reply; the thresholds live in the Pool.
+# Read-only, no effect on the run. The UI reads it to pick the target's reply.
 func hannes_state() -> int:
 	return Pool.hannes_state(suspicion, pressure)
 
 
-# One mail = one turn. Applies the drafted cards' effects in slot order
-# (bundled), spends a SINGLE turn, then resolves on the SUMMED end state. Records
-# a per-card reveal trace in last_mail_steps so the UI can show the effect card
-# by card AFTER sending (never before). Returns the resulting Outcome. A payload
-# in the draft fires the attack once its gate is open on the current bars.
-# latency_ms is the player's deliberation time for this turn, supplied by the
-# view (the engine has no clock of its own). Defaults to UNKNOWN_LATENCY so the
-# engine stays callable from tests and from play_card without one.
+# One mail is one turn: the drafted cards apply in slot order, a SINGLE turn is
+# spent, and the outcome resolves on the SUMMED end state. The per-card trace in
+# last_mail_steps lets the UI reveal the effect card by card after sending,
+# never before. latency_ms comes from the view.
 func play_mail(cards: Array, latency_ms: int = UNKNOWN_LATENCY) -> Outcome:
 	last_mail_steps = []
 	if is_over() or turns_left <= 0:
@@ -123,15 +112,13 @@ func play_mail(cards: Array, latency_ms: int = UNKNOWN_LATENCY) -> Outcome:
 	return outcome
 
 
-# A single card is just a one-card mail: keeps the earlier per-card semantics
-# (and every existing boundary test) intact while the UI drafts multi-card mails.
+# A single card is a one-card mail, kept so the per-card boundary tests hold.
 func play_card(card: MailCard) -> Outcome:
 	return play_mail([card])
 
 
-# Applies one card's effect (bars, the "Keiner fragt nach" amplifier, the probe
-# flag) and logs it — WITHOUT spending a turn or resolving. play_mail owns the
-# turn and the outcome so effects bundle into a single mail.
+# Effect and log only. play_mail owns the turn and the outcome, so several cards
+# bundle into one mail.
 func _apply_card(card: MailCard) -> void:
 	var suspicion_before := suspicion
 	var pressure_before := pressure
@@ -155,8 +142,8 @@ func _find_payload(cards: Array) -> MailCard:
 	return null
 
 
-# Passing spends a turn without playing a card (telemetry logs it). Lets a
-# player run the budget down to IGNORIERT instead of being forced into SPAM.
+# Spends a turn without a card, so a player can run down to IGNORIERT instead of
+# being forced into SPAM.
 func pass_turn(latency_ms: int = UNKNOWN_LATENCY) -> Outcome:
 	if is_over() or turns_left <= 0:
 		return outcome
@@ -179,8 +166,8 @@ func pass_turn(latency_ms: int = UNKNOWN_LATENCY) -> Outcome:
 	return outcome
 
 
-# Resolves the payload against the final bars. The gate check and the turn are
-# owned by play_mail; here we only score win vs Kollegen-Rückfrage and finish.
+# Scores win vs Kollegen-Rueckfrage and finishes. The gate check and the turn
+# belong to play_mail.
 func _resolve_payload(card: MailCard) -> Outcome:
 	played.append(card.id)
 	var won := payload_would_win()
@@ -218,11 +205,8 @@ func _finish(result: Outcome) -> void:
 	})
 
 
-# Telemetry sink: the real EventBus autoload, resolved by node path (not the
-# global identifier, which a bare `-s` test script cannot compile). Present at
-# runtime in the game and under headless tests, so events reach Telemetry.
-# Keeps the schema's "int or null" contract for latency_ms: an unmeasured turn
-# must not look like an instant one in the analysis.
+# Keeps the int-or-null contract for latency_ms: an unmeasured turn must not
+# look like an instant one in the analysis.
 func _latency_or_null(latency_ms: int) -> Variant:
 	return null if latency_ms < 0 else latency_ms
 
@@ -237,8 +221,7 @@ func _emit(payload: Dictionary) -> void:
 		_bus.emit_signal("generic_event", payload)
 
 
-# Hannes' state after the mail, mirrored from the final bars. Additive telemetry;
-# it carries no game effect (he only reflects the bars the player already drove).
+# Additive telemetry, no game effect: it mirrors the bars the player drove.
 func _emit_hannes_state() -> void:
 	var state := Pool.hannes_state(suspicion, pressure)
 	_emit({
@@ -256,8 +239,7 @@ func _emit_hannes_state() -> void:
 	})
 
 
-# The mail unit: which cards went out together, on which turn, and the bar delta
-# for the whole mail. Complements the per-card mail_card_played events.
+# The mail as a unit, complementing the per-card events.
 func _emit_mail_sent(
 	card_ids: Array, suspicion_before: int, pressure_before: int, latency_ms: int
 ) -> void:
@@ -279,11 +261,9 @@ func _emit_mail_sent(
 	})
 
 
-# is_correct grades the card choice on SCHROTT, the one card type the game
-# itself calls a mistake (the post-run review renders REVIEW_VERDICT_SCHROTT for
-# it): it burns one of the three slots and buys nothing. Every other type is a
-# legitimate move whose merit only shows in the outcome, which mail_outcome and
-# mail_payload_attempt already grade.
+# Graded on SCHROTT, the one card type the game itself calls a mistake: it burns
+# a slot and buys nothing. Every other type is a legitimate move whose merit only
+# shows in the outcome, which the outcome events already grade.
 func _emit_card_played(card: MailCard, suspicion_before: int, pressure_before: int) -> void:
 	_emit({
 		"phase": "mail_card_played",

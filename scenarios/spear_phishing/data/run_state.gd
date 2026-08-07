@@ -1,14 +1,7 @@
-# The per-run handoff between the phases of scenario 1: Recon fills the
-# collected finds, the MailBuilder reads them and writes back the probe flag
-# and the finished mail, Resolve reads all three.
-#
-# Owned by the scenario shell and created per scene load, so a fresh run starts
-# clean on its own. The same three fields used to live on the GameState
-# autoload, which survives a scene change and therefore needed an explicit
-# wipe before every replay.
-#
-# Referenced by preload, no global class name: a bare `godot -s` test script
-# cannot compile one (same reason as mail_builder_state.gd).
+# The per-run handoff between the phases of scenario 1. Owned by the scenario
+# shell and created per scene load, so a replay starts clean without a wipe -
+# unlike an autoload, which survives the scene change.
+# Preload, no class_name: a bare `godot -s` run has no global class cache.
 extends RefCounted
 
 # Recon -> MailBuilder: ids of the finds the player collected.

@@ -1,21 +1,15 @@
-# Instasnap: an Instagram-style feed — a single centred column of fixed width,
-# each post a square image on top with the caption (carrying the leak) below.
-# Image-centric on purpose: the platform reads as a photo feed, not a list.
-#
-# Each find shows its own photo (host.photo_texture), falling back to a neutral
-# default for finds without a dedicated image.
+# Instasnap: one centred column, each post a square image with the caption (which
+# carries the leak) below. Image-centric on purpose, so the platform reads as a
+# photo feed rather than a list.
 extends "res://scenarios/spear_phishing/components/source_pages/source_page.gd"
 
 const Style := preload("res://scenarios/spear_phishing/data/recon_browser_style.gd")
 
-# Feed column width; the square image derives its height from it. Centred in the
-# page, so the tab reads as a narrow photo feed rather than a full-width list.
+# The square image derives its height from this.
 const COLUMN_W := 460
 
 
-# Photo finds render as this platform's own square image card (with hotspots),
-# not the generic feed photo card. Hotspot finds are skipped by super (they live
-# on their parent photo).
+# Photo finds get this platform's square card instead of the generic one.
 func _widget_for(host, find) -> Control:
 	if find.kind == &"photo" and not find.has_hotspot():
 		return build_card(host, find)
@@ -23,8 +17,8 @@ func _widget_for(host, find) -> Control:
 
 
 func build_card(host, find) -> Control:
-	# Centred, fixed-width card. Zero the panel's own margins so the image sits
-	# flush to the card edges; the caption below gets its own padding.
+	# Zero margins so the image sits flush to the card edges; the caption below
+	# gets its own padding.
 	var card := PanelContainer.new()
 	var box := Style.post_box()
 	box.content_margin_left = 0
@@ -35,27 +29,25 @@ func build_card(host, find) -> Control:
 	card.custom_minimum_size = Vector2(COLUMN_W, 0)
 	card.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	# No clip_contents: it would cut off a hotspot's hover hint at the card edge.
-	# COVERED already crops the image; the trade-off is square (not rounded) image
-	# corners, which is barely visible at this radius.
+	# COVERED already crops; the cost is square image corners, barely visible at
+	# this radius.
 
 	var col := VBoxContainer.new()
 	col.add_theme_constant_override("separation", 0)
 	card.add_child(col)
 
-	# Square image: fixed height == column width, cropped to fill by COVERED. A
-	# fixed custom_minimum_size avoids AspectRatioContainer reporting a zero
-	# min-height inside a VBox (which would let the image overlap the text).
+	# A fixed minimum size, not an AspectRatioContainer: that reports a zero
+	# min-height inside a VBox and lets the image overlap the text.
 	var img := TextureRect.new()
 	img.texture = host.photo_texture(find)
 	img.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	img.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
 	img.custom_minimum_size = Vector2(COLUMN_W, COLUMN_W)
 	col.add_child(img)
-	# Overlay any hotspots for hidden children pointing at this find (e.g. the
-	# mail schema on the screen behind Kevin). No-op for finds without children.
+	# No-op for finds without hotspot children.
 	host.attach_hotspots(find, img)
 
-	# Caption block, padded away from the flush image.
+	# Padded away from the flush image.
 	var pad := MarginContainer.new()
 	pad.add_theme_constant_override("margin_left", Style.PAD)
 	pad.add_theme_constant_override("margin_right", Style.PAD)

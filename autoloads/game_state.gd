@@ -1,6 +1,5 @@
-# Session-wide state: a stable session_uuid, the currently-running
-# scenario id, and a tiny state machine used by Main and ScenarioBase
-# to decide what scene should be on screen.
+# Session-wide state: session id, running scenario, and a three-value state
+# machine. The per-run handoff inside a scenario does NOT live here.
 extends Node
 
 enum State { MENU, IN_SCENARIO, FEEDBACK }
@@ -12,9 +11,9 @@ var current_scenario_id: String = ""
 var state: State = State.MENU
 
 # ---- Study participant code ----
-# Joins this session's telemetry to the questionnaires. Trimmed and capped so a
-# stray space cannot split one participant into two rows. Not persisted: a code
-# left over from the previous participant would mislabel a whole session.
+# Joins the telemetry to the questionnaires. Trimmed and capped so a stray space
+# cannot split one participant in two. Not persisted: a leftover code would
+# mislabel a whole session.
 const PARTICIPANT_CODE_MAX_LENGTH: int = 32
 
 var participant_code: String = ""
@@ -26,8 +25,7 @@ func set_participant_code(value: String) -> void:
 func _ready() -> void:
 	session_uuid = _generate_session_uuid()
 
-# Outside a running scenario. Menu scenes announce themselves via transition_to
-# on _ready, so this stays accurate for the whole session, not just the start.
+# Menu scenes announce themselves on _ready, so this stays accurate all session.
 func is_in_menu() -> bool:
 	return state == State.MENU
 
@@ -51,8 +49,7 @@ func transition_to(new_state: State) -> void:
 	})
 
 # ---- Mission HUD state ----
-# Presentation only, no game logic: written by the scenario shells and the mail
-# builder, read by the OSChrome bar through the two signals below.
+# Presentation only: written by the shells and the mail builder, read by OSChrome.
 
 signal mission_phase_changed(phase: StringName)
 signal mission_turns_changed(turns_left: int, turn_budget: int)
@@ -80,12 +77,12 @@ func consume_mission_turn() -> void:
 	mission_turns_left -= 1
 	mission_turns_changed.emit(mission_turns_left, mission_turn_budget)
 
-# One-shot flag for a replay: set before the reload, consumed by the shell's
-# _on_start to skip the intro briefing. Navigation, so reset_scenario leaves it.
+# Set before a replay reload, consumed by _on_start to skip the briefing. It has
+# to survive the reload, which is why it lives here and reset_scenario leaves it.
 var replay_skip_briefing: bool = false
 
-# Zeroes the HUD counters before a replay reload; begin_mission re-seeds them on
-# the fresh scene, so this only avoids a stale read in the frames between.
+# begin_mission re-seeds these on the fresh scene; this only avoids a stale read
+# in the frames between.
 func reset_scenario() -> void:
 	mission_phase = &""
 	mission_turn_budget = 0

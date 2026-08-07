@@ -1,21 +1,9 @@
-# Lightweight runtime loader for the game's CSV translation tables.
+# Reads the CSV translation tables at startup, one Translation per locale.
+# Deliberately not the editor's csv_translation importer: a runtime load keeps
+# the CSVs the single source of truth.
 #
-# Why not the editor's csv_translation importer: that pipeline puts
-# generated .translation files in .godot/imported (gitignored), or
-# requires hand-rolled .import sidecar files. A direct runtime load
-# keeps the CSVs as the single source of truth, no import dance.
-#
-# Two tables, merged by locale into one set of Translations:
-#   - strings.csv        UI microcopy (bars, buttons, dialog labels)
-#   - recon_content.csv  Recon find content (titles, authors, post bodies)
-# Splitting content from microcopy keeps long paragraphs out of the UI table.
-# Each file has its own locale columns; a locale present in several files
-# accumulates all its messages. Add a language = add a column (no code change);
-# add a content table = add a path to CONTENT_CSVS.
-#
-# CSV format:
-#   keys,de[,en[,fr...]]
-#   <KEY>,<german>[,<english>[,<french>...]]
+# Format: keys,de[,en,...] — one file per topic, merged by locale column.
+# New language = new column. New table = new path in CONTENT_CSVS.
 extends Node
 
 const STRINGS_CSV: String = "res://resources/i18n/strings.csv"
@@ -40,9 +28,8 @@ func _load_translations() -> void:
 		TranslationServer.add_translation(t)
 	print("I18n: loaded %d keys across %d locale(s)" % [total, translations.size()])
 
-# Loads one CSV table into the shared locale->Translation map and returns the
-# number of key rows read. Reuses an existing Translation for a locale so the
-# same locale can be filled from several files.
+# Fills the shared locale->Translation map from one file and returns the row
+# count. Reuses an existing Translation so several files feed the same locale.
 func _load_csv(path: String, translations: Dictionary) -> int:
 	var file: FileAccess = FileAccess.open(path, FileAccess.READ)
 	if file == null:

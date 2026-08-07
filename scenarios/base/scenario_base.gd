@@ -1,18 +1,14 @@
-# Abstract base for all scenarios. Template Method pattern: the public
-# methods (start_scenario, complete_scenario) own the lifecycle and emit
-# telemetry; subclasses MUST override the protected hooks below to provide
-# scenario-specific behaviour.
+# Base for all scenarios, Template Method: start_scenario and complete_scenario
+# own the lifecycle and the telemetry, subclasses fill the hooks.
+#   MUST override: _on_start, _on_complete   (default to push_error, so a
+#                                             missing override fails loudly)
+#   MAY  override: _setup                    (default no-op)
 #
-# Subclass contract:
-#   MUST override: _on_start, _on_complete
-#   MAY  override: _setup
-# All three hooks default to push_error/no-op so missing overrides fail
-# loudly during development instead of silently doing nothing.
+# Started by SceneTransition.launch_scenario, never by the scenario itself.
 #
-# Player input is NOT routed through this class. Both scenarios wire their
-# own signals (buttons, Area2D triggers, dialogue choices) and emit through
-# EventBus at the interaction site — a single action_id string cannot carry
-# what a hotspot click or a card play needs to report.
+# Player input does NOT route through here: the scenarios wire their own signals
+# and emit at the interaction site, because one action_id string cannot carry
+# what a hotspot click or a card play reports.
 class_name ScenarioBase
 extends Node2D
 
@@ -24,7 +20,7 @@ var _started_at_ms: int = 0
 func start_scenario(id: String) -> void:
 	scenario_id = id
 	_started_at_ms = Time.get_ticks_msec()
-	# Menu music belongs to the menus only; silence it once gameplay begins.
+	# Menu music belongs to the menus only.
 	MusicPlayer.stop_menu_music()
 	GameState.current_scenario_id = id
 	GameState.transition_to(GameState.State.IN_SCENARIO)
@@ -54,14 +50,11 @@ func complete_scenario() -> void:
 
 # ---- Protected hooks (override in subclasses) ----
 
-# Optional one-time setup before _on_start. Default: no-op.
 func _setup() -> void:
 	pass
 
-# Required: scenario start logic.
 func _on_start() -> void:
 	push_error("ScenarioBase._on_start must be overridden by %s" % scenario_id)
 
-# Required: scenario end logic (cleanup, final emits).
 func _on_complete() -> void:
 	push_error("ScenarioBase._on_complete must be overridden by %s" % scenario_id)

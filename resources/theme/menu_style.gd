@@ -1,15 +1,11 @@
-# The title-screen / menu look: chunky arcade slabs in the artwork's own warm
-# accent colours, with a hard offset shadow and the mono pixel font. The primary
-# entry (play) is brighter and larger so the eye lands on it first.
-#
-# Deliberately separate from DarkMailPalette (the in-scenario terminal look):
-# the menus live on a bright CRT, the scenarios inside a dark OS.
+# The menu look: arcade slabs with a hard offset shadow, the play button
+# brighter and larger. Deliberately separate from DarkMailPalette - the menus
+# live on a bright CRT, the scenarios inside a dark OS.
 extends RefCounted
 
 const FONT_MONO: Font = preload("res://assets/fonts/DepartureMono-Regular.otf")
 
-# Sampled from the title artwork (PC_Setup.png): the warm rust of the desk and
-# lamp is the scene's dominant accent, so the buttons belong to the picture.
+# Sampled from the title artwork, so the buttons belong to the picture.
 const PRIMARY := Color("e07a35")
 const PRIMARY_HOVER := Color("ff9a4d")
 const PRIMARY_PRESSED := Color("b75f2e")
@@ -51,14 +47,14 @@ static func apply_label(label: Label, size: int = FONT_SIZE, color: Color = INK)
 
 # --- arcade slab buttons ------------------------------------------------------
 
-# Main menu entry. `primary` marks the play button: brighter fill, bigger label.
+# primary marks the play button: brighter fill, bigger label.
 static func style_menu_button(button: Button, primary: bool = false) -> void:
 	button.custom_minimum_size = BUTTON_SIZE
 	button.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	_apply_slab(button, primary)
 
 
-# Smaller slab for dialogs (settings), same material, no fixed width.
+# Dialog slab: same material, no fixed width.
 static func style_button(button: Button, primary: bool = false) -> void:
 	_apply_slab(button, primary, 20, 12)
 
@@ -67,8 +63,7 @@ static func _apply_slab(button: Button, primary: bool, pad_x: int = 24, pad_y: i
 	var face := PRIMARY if primary else SECONDARY
 	var face_hover := PRIMARY_HOVER if primary else SECONDARY_HOVER
 	var face_pressed := PRIMARY_PRESSED if primary else SECONDARY_PRESSED
-	# Hover only brightens — moving the slab on hover reads as a glitch. The
-	# press does move, which is the one place a shift feels right.
+	# Hover only brightens; moving on hover reads as a glitch. The press moves.
 	button.add_theme_stylebox_override("normal", _slab(face, SHADOW_OFFSET, pad_x, pad_y, 0))
 	button.add_theme_stylebox_override("hover", _slab(face_hover, SHADOW_OFFSET, pad_x, pad_y, 0))
 	button.add_theme_stylebox_override("pressed", _slab(face_pressed, SHADOW_OFFSET_PRESSED, pad_x, pad_y, 3))
@@ -81,10 +76,9 @@ static func _apply_slab(button: Button, primary: bool, pad_x: int = 24, pad_y: i
 		button.add_theme_color_override(state, LABEL)
 
 
-# One slab: solid face, hard dark outline and a hard offset shadow. Built from a
-# StyleBoxFlat rather than a 9-sliced texture, because slicing a texture with a
-# baked-in shadow stretches the inner bands into visible seams. `shift` nudges
-# the label down while pressed, so the key reads as going down.
+# StyleBoxFlat rather than a 9-sliced texture: slicing one with a baked-in
+# shadow stretches the inner bands into visible seams. shift nudges the label
+# down while pressed.
 static func _slab(face: Color, shadow_offset: int, pad_x: int, pad_y: int, shift: int) -> StyleBoxFlat:
 	var sb := StyleBoxFlat.new()
 	sb.bg_color = face
@@ -103,8 +97,7 @@ static func _slab(face: Color, shadow_offset: int, pad_x: int, pad_y: int, shift
 
 # --- pixel checkbox ----------------------------------------------------------
 
-# Square pixel checkbox drawn in code: light field with a dark frame, and a
-# solid block inside when checked.
+# Pixel checkbox drawn in code: dark frame, solid block when checked.
 static func checkbox_texture(checked: bool, size: int = 26) -> ImageTexture:
 	var image := Image.create(size, size, false, Image.FORMAT_RGBA8)
 	image.fill(PANEL_FILL)

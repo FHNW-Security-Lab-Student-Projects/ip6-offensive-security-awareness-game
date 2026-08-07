@@ -1,15 +1,11 @@
-# Sub-state 3: the MailBuilder (the card game). VIEW/controller: it owns a
-# MailRun (engine) and MailCardPool (the hand) and renders the two bars, the mail
-# draft, the handler chat and the hand. It contains NO game logic, NO balancing
-# values and NO outcome evaluation — every such fact is read back from MailRun.
+# Phase 3: the card game. VIEW only — it owns a MailRun (engine) and a card pool
+# and renders bars, draft, chat and hand; every game fact is read back from the
+# run, none is decided here.
 #
-# Turn flow: the player DRAFTS 1-3 cards into the mail (slots) and judges the
-# resulting TEXT; there is no effect preview. "Mail senden" bundles the drafted
-# cards into one turn via MailRun.play_mail(). The bar effect is then revealed
-# card by card (last_mail_steps), never before sending. Recon cards are consumed;
-# generic cards are inexhaustible, so the player is never left without options.
-#
-# Layout sits under the persistent OSChrome bar (content starts at y >= 96).
+# One turn: the player drafts 1-3 cards into the mail and judges the resulting
+# TEXT — there is no effect preview. Sending bundles the draft into a single
+# play_mail(); only then is the effect revealed card by card. Recon cards are
+# consumed, generic ones are not, so the player is never left without options.
 extends Control
 
 signal advance_requested
@@ -24,7 +20,7 @@ const HandCard := preload("res://scenarios/spear_phishing/components/mail_hand_c
 const ScreenMusic := preload("res://scenarios/base/components/screen_music.gd")
 const PromptClock := preload("res://scenarios/base/prompt_clock.gd")
 
-# MailBuilder-phase music (plays while this screen is visible, stops on advance).
+# Tied to this screen's visibility.
 const MAIL_MUSIC := preload("res://assets/audio/cursor_glow_loop.wav")
 
 const MAX_SLOTS := 3
@@ -55,20 +51,18 @@ var _boss_fired: Dictionary = {}
 var _last_probe_done := false
 var _reply_rotation: Dictionary = {}  # Hannes state name -> times shown (rotation)
 var _history: Array = []        # one entry per SENT mail, for the post-run review
-# Unlock-blip bookkeeping: legendary ids already seen in hand, and whether the
-# payload gate was open last time we looked. Both start "unknown" so the very
-# first hand (built on entering the phase) stays silent — nothing unlocked yet,
-# it is just the starting hand.
+# Unlock-blip bookkeeping. Both start empty so the very first hand stays silent:
+# nothing was unlocked, it is just the starting hand.
 var _seen_legendaries: Dictionary = {}
 var _gate_was_open := false
 var _hand_built_once := false
 
-# Telemetry. The clock is re-marked whenever a fresh turn becomes playable, so
-# a turn's latency is the deliberation time and excludes the reveal animation.
+# Re-marked whenever a fresh turn becomes playable, so a turn's latency is the
+# deliberation time and excludes the reveal animation.
 var _clock := PromptClock.new()
 
-# The run's phase handoff, set by the scenario shell (RunState). Distinct from
-# _run above, which is this phase's own MailRun engine.
+# The run's phase handoff (RunState), set by the shell. Not _run above, which is
+# this phase's own engine.
 var _scenario_run
 
 
@@ -183,8 +177,8 @@ func _build_hand_bar() -> Control:
 	_send_button = Button.new()
 	_send_button.text = tr("MAIL_SEND")
 	_style_button(_send_button)
-	# Fixed width: without it the buttons only stretch to the widest sibling in
-	# this column, which differs per language and leaves the labels cramped.
+	# Without a fixed width the buttons only stretch to the widest sibling in this
+	# column, which differs per language and leaves the labels cramped.
 	_send_button.custom_minimum_size.x = CONTROL_WIDTH
 	_send_button.pressed.connect(_on_send)
 	controls.add_child(_send_button)
@@ -206,8 +200,8 @@ func _style_button(button: Button) -> void:
 		Color(DarkMailPalette.GREEN, 0.22), DarkMailPalette.GREEN_BRIGHT, DarkMailPalette.BORDER_WIDTH)
 	var disabled := DarkMailPalette.flat_box(
 		DarkMailPalette.BG_FIELD, DarkMailPalette.TEXT_DIM, DarkMailPalette.BORDER_WIDTH)
-	# The disabled box needs the SAME padding as the others, otherwise the button
-	# shrinks the moment it is greyed out (e.g. while no card is drafted).
+	# Same padding on all three, otherwise the button shrinks the moment it is
+	# greyed out.
 	for sb in [normal, hover, disabled]:
 		sb.content_margin_left = 16
 		sb.content_margin_right = 16
@@ -227,8 +221,8 @@ func _style_button(button: Button) -> void:
 
 # --- hand --------------------------------------------------------------------
 
-# Rebuilds the hand from the pool minus consumed cards. Generics always return
-# (never consumed); the probe flag swaps the probe card for the unlocked window.
+# The pool minus the consumed cards. Generics always return; the probe flag
+# swaps the probe card for the one it unlocks.
 func _rebuild_hand() -> void:
 	for widget in _cards:
 		widget.queue_free()
@@ -244,9 +238,8 @@ func _rebuild_hand() -> void:
 	_scroll_to_payload_if_ready()
 
 
-# Blips once when something NEW becomes playable: a legendary that just entered
-# the hand (e.g. unlocked by the probe) or the payload gate opening. The first
-# hand only records the baseline, so entering the phase is silent.
+# Blips once when something NEW becomes playable: a fresh legendary or the
+# payload gate opening. The first hand only records the baseline.
 func _check_unlocks() -> void:
 	var fresh_legendary := false
 	for widget in _cards:
@@ -268,9 +261,8 @@ func _check_unlocks() -> void:
 		SfxPlayer.play_unlock()
 
 
-# Once the gate is open the (pulsing) payload must not hide off-screen: after
-# the rebuilt hand has laid out, glide the scroll until the card is fully in
-# view. Cosmetic only; it never touches slots or the run.
+# Once the gate is open the pulsing payload must not sit off-screen. Cosmetic
+# only, it never touches slots or the run.
 func _scroll_to_payload_if_ready() -> void:
 	if _run == null or _run.is_over() or not _run.payload_gate_open():
 		return
@@ -336,9 +328,9 @@ func _toggle_slot(_card, widget) -> void:
 	_refresh_controls()
 
 
-# Drafting is reversible until the mail is sent, so composing is recorded
-# ungraded; only the sent mail carries a verdict. The trace still shows which
-# cards a player weighed and discarded, which is where the hesitation shows up.
+# Drafting is reversible, so composing is recorded ungraded — only the sent mail
+# carries a verdict. The trace still shows which cards a player weighed and
+# discarded, which is where the hesitation shows up.
 func _emit_draft_change(action: String, card) -> void:
 	EventBus.emit_action(
 		SCENARIO_ID,
@@ -365,24 +357,22 @@ func _on_send() -> void:
 	_start_reveal(cards)
 
 
-# Applies the mail to the engine and syncs the turn counter. Split from the
-# reveal (which is cosmetic) so the commit is synchronous and testable.
+# Split from the reveal, which is cosmetic, so the commit stays synchronous and
+# testable.
 func _commit_mail(cards: Array) -> void:
 	var turns_before: int = _run.turns_left
 	var suspicion_before: int = _run.suspicion
 	var pressure_before: int = _run.pressure
-	# The engine owns the mail_sent / mail_card_played telemetry; the view only
-	# contributes the one thing the engine cannot know, namely how long the
-	# player deliberated before committing the turn.
+	# The engine owns the telemetry; the view contributes only what the engine
+	# cannot know, the deliberation time.
 	_run.play_mail(cards, _clock.take())
 	if _run.turns_left < turns_before:
 		GameState.consume_mission_turn()
 		_record_mail(cards, suspicion_before, pressure_before)
 
 
-# Records a SENT mail (a turn was spent) for the optional post-run review:
-# which cards went out and how the bars moved. Presentation data only — read
-# straight off the engine state the UI already shows, no logic of its own.
+# Presentation data for the optional post-run review, read straight off the
+# engine state the UI already shows.
 func _record_mail(cards: Array, suspicion_before: int, pressure_before: int) -> void:
 	var ids: Array[StringName] = []
 	for card in cards:
@@ -403,8 +393,8 @@ func _on_pass() -> void:
 	_run.pass_turn(_clock.take())
 	if _run.turns_left < turns_before:
 		GameState.consume_mission_turn()
-	# Passing discards the unsent draft: the rebuilt widgets start unslotted, so
-	# stale _slots entries would ghost (identity check) and mis-pulse the payload.
+	# Passing discards the draft: the rebuilt widgets start unslotted, so stale
+	# _slots entries would ghost and mis-pulse the payload.
 	if not _slots.is_empty():
 		_slots.clear()
 		_preview.rebuild_draft(_slots)
@@ -416,9 +406,9 @@ func _on_pass() -> void:
 		_clock.mark()  # next turn is playable
 
 
-# Staggered reveal: step the bars through each card's post-effect snapshot and
-# flash the acting card. The engine has already resolved everything; this is a
-# cosmetic catch-up, so an interrupted animation never desyncs state.
+# Steps the bars through each card's snapshot and flashes the acting card. The
+# engine has already resolved everything, so an interrupted animation cannot
+# desync state.
 func _start_reveal(cards: Array) -> void:
 	_revealing = true
 	_refresh_controls()
@@ -452,8 +442,8 @@ func _finish_reveal(cards: Array) -> void:
 	_check_probe_flip()
 	_boss_react(cards)
 	if _run.is_over():
-		# No hand rebuild on this path: refresh the surviving widgets so the
-		# payload pulse/arrow stop and every card disables with the dead run.
+		# No rebuild here: refresh the surviving widgets so the pulse stops and
+		# every card disables with the dead run.
 		for widget in _cards:
 			widget.refresh(_run)
 		_refresh_committed()
@@ -465,8 +455,7 @@ func _finish_reveal(cards: Array) -> void:
 		_clock.mark()  # reveal is done, the next turn is playable
 
 
-# Picks Hannes' reply key for his current state, rotating through the variants so
-# a repeated state does not repeat the same line.
+# Rotates through the variants, so a repeated state does not repeat the line.
 func _hannes_reply_key() -> String:
 	var state_name: String = Pool.HannesState.keys()[_run.hannes_state()]
 	var seen: int = _reply_rotation.get(state_name, 0)
@@ -529,9 +518,8 @@ func _refresh_controls() -> void:
 
 # --- outcome: hand the run to Resolve ----------------------------------------
 
-# Records the finished run for Resolve, lets Hannes' final reply read for a
-# beat, then advances. Resolve now owns the whole outcome presentation, so
-# there is no result popup here anymore — this just hands off.
+# Hands the result to Resolve, which owns the whole outcome presentation, after
+# letting the final reply read for a beat.
 func _handle_outcome() -> void:
 	var name: String = MailRun.Outcome.keys()[_run.outcome]
 	if _scenario_run != null:

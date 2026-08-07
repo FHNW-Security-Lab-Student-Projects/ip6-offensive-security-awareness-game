@@ -1,14 +1,14 @@
-# The bad_usb conversation tree as data: the lines, which answer blows the cover,
-# and which pretext a step belongs to.
+# The conversation tree as data: the lines, which answer blows the cover, and
+# which pretext a step belongs to. Hands back translation KEYS, never resolved
+# text, so it stays testable without a scene or a locale.
 #
-# Hands back translation KEYS, never resolved text, so it stays testable without
-# a scene or a locale. The grading lives next to the content on purpose: the tree
-# encodes correctness positionally, and split across the two button handlers that
-# rule drifts out of sync as soon as anyone edits a line.
+# The grading lives next to the content on purpose: correctness is encoded
+# positionally, and split across the two button handlers that rule drifts out of
+# sync the moment anyone edits a line.
 extends RefCounted
 
-# step -> [npc line, first option, second option]. An empty second option marks
-# a closing step, which offers only the acknowledgement.
+# step -> [npc line, option, option]. An empty second option marks a closing
+# step, which offers only the acknowledgement.
 const LINES: Dictionary = {
 	# stressed path
 	10: ["BADUSB_DLG_10_NPC", "BADUSB_DLG_10_C1", "BADUSB_DLG_10_C2"],
@@ -24,8 +24,8 @@ const LINES: Dictionary = {
 	32: ["BADUSB_DLG_32_NPC", "BADUSB_DLG_32_C1", ""],
 }
 
-# Opening step of each path: the FIRST option blows the cover. Follow-up step:
-# the SECOND one does. Closing steps appear in neither and are always safe.
+# On an opening step the FIRST option blows the cover, on a follow-up the
+# SECOND. Closing steps appear in neither and are always safe.
 const FAIL_ON_CHOICE_1: Array[int] = [10, 20, 30]
 const FAIL_ON_CHOICE_2: Array[int] = [11, 21, 31]
 

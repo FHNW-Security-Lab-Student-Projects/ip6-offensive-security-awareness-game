@@ -1,10 +1,7 @@
-# A looping AudioStreamPlayer that follows its PARENT's visibility: it fades in
-# while the parent screen/sub-state (a CanvasItem) is shown and fades out when it
-# is hidden, so phase changes sound as smooth as the black SceneTransition fade
-# looks. Add it as a child of any screen and set `track`. The loop region is set
-# to the whole sample because setting loop_mode alone leaves loop_end at 0 (a
-# zero-length loop that instantly stops playback). Referenced by preload, not a
-# global class name.
+# A looping player that follows its PARENT's visibility, so the music changes
+# with the phase. Add it as a child of any screen and set `track`.
+# The loop region is set explicitly: loop_mode alone leaves loop_end at 0, which
+# is silence. Preload, no class_name.
 extends AudioStreamPlayer
 
 const FADE_TIME := 0.5

@@ -1,6 +1,5 @@
-# Loads all ScenarioConfig .tres files at startup and exposes a
-# read-only registry. Resources are duplicated on access so callers
-# cannot mutate the cached copy.
+# Scenario registry, filled by scanning res://resources/scenarios at startup.
+# Accessors return duplicates so callers cannot mutate the cache.
 extends Node
 
 const SCENARIOS_DIR: String = "res://resources/scenarios"
@@ -30,6 +29,8 @@ func _load_scenarios() -> void:
 	dir.list_dir_begin()
 	var name: String = dir.get_next()
 	while name != "":
+		# Top level only. Subfolders hold per-scenario resources like briefing.tres,
+		# which are not ScenarioConfigs; a .tres moved into one is silently lost.
 		if not dir.current_is_dir() and name.ends_with(".tres"):
 			var path: String = "%s/%s" % [SCENARIOS_DIR, name]
 			var res: Resource = load(path)

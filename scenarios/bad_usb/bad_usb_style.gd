@@ -1,22 +1,16 @@
-# Dresses the bad_usb level in the DarkMail terminal look that scenario 1 uses,
-# so the two levels read as one game.
+# Dresses the level in scenario 1's DarkMail look, so the two read as one game.
 #
-# The level was authored against Godot's default theme with per-node
-# LabelSettings and StyleBoxes in the .tscn. Restyling happens here in code
-# rather than by editing bad_usb.tscn: the scene file is owned by the level
-# work, and a code pass keeps the visual contract in one reviewable place.
-#
-# Referenced by preload path, not a class_name, so headless tests compile it
-# without the editor's global class cache.
+# The level was authored against Godot's default theme, with LabelSettings and
+# StyleBoxes per node in the .tscn. Restyling happens here in code rather than in
+# the scene file, which keeps the visual contract in one reviewable place.
 extends RefCounted
 
-# Speech panels sit over a bright pixel-art world, so they carry a touch more
-# opacity than the terminal screens of scenario 1, which sit on black.
+# A touch more opaque than scenario 1's screens: these sit over a bright world,
+# not over black.
 const PANEL_ALPHA: float = 0.92
 
-# Dialogue choices wrap inside this width instead of stretching their container.
 # Without a cap a Button derives its minimum width from the full line of text,
-# which pushed the choices wider than the dialogue box itself.
+# which pushes the choices wider than the dialogue box itself.
 const CHOICE_WIDTH: int = 980
 
 const BUTTON_PADDING_X: int = 16
@@ -36,15 +30,14 @@ static func _panel_box(alpha: float = PANEL_ALPHA) -> StyleBoxFlat:
 	return box
 
 
-# A speech/notice panel: dark fill, hard green frame.
 static func style_panel(panel: Control, alpha: float = PANEL_ALPHA) -> void:
 	if panel == null:
 		return
 	panel.add_theme_stylebox_override("panel", _panel_box(alpha))
 
 
-# Body text inside a panel. Clears the .tscn LabelSettings first, which would
-# otherwise win over the theme overrides and keep the old black default font.
+# Clears the .tscn LabelSettings first: they win over theme overrides and would
+# keep the old black default font.
 static func style_body(label: Label, size: int = DarkMailPalette.FONT_SIZE_MONO) -> void:
 	if label == null:
 		return
@@ -67,8 +60,8 @@ static func style_button(button: Button) -> void:
 	DarkMailPalette.style_button(button, BUTTON_PADDING_X, BUTTON_PADDING_Y)
 
 
-# A dialogue choice. Wrapping is what keeps the option inside the dialogue box:
-# the button may use the full width but must not demand more than CHOICE_WIDTH.
+# Wrapping is what keeps the option inside the dialogue box: the button may use
+# the full width but must not demand more than CHOICE_WIDTH.
 static func style_choice(button: Button) -> void:
 	if button == null:
 		return
@@ -78,10 +71,9 @@ static func style_choice(button: Button) -> void:
 	button.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 
 
-# The debrief's backdrop is a bare ColorRect, and Godot's default for one is
-# opaque white: terminal-green text is unreadable on it. Hide it and put the
-# same framed panel the speech boxes use in its place, so the debrief reads as
-# part of the same screen family.
+# The debrief's backdrop is a bare ColorRect, and Godot defaults those to opaque
+# white, on which terminal green is unreadable. Hide it and put the speech boxes'
+# framed panel in its place.
 static func replace_backdrop(host: Control, rect: ColorRect) -> Panel:
 	if host == null or rect == null:
 		return null
@@ -90,7 +82,7 @@ static func replace_backdrop(host: Control, rect: ColorRect) -> Panel:
 	rect.visible = false
 	var panel := Panel.new()
 	panel.name = "TerminalBackdrop"
-	# Must not eat the clicks meant for the Weiter/Beenden buttons above it.
+	# Must not eat the clicks meant for the buttons above it.
 	panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	panel.position = rect.position
 	panel.size = rect.size
@@ -100,9 +92,8 @@ static func replace_backdrop(host: Control, rect: ColorRect) -> Panel:
 	return panel
 
 
-# Bottom-right corner of `host`, using the same insets the intro's dialog box
-# gives its hint (32 to the side, 24 from the bottom), so the affordance sits in
-# the same place in both scenarios.
+# The same insets the intro's dialog box gives its hint, so the affordance sits
+# in the same place in both scenarios.
 const HINT_MARGIN_X: int = 32
 const HINT_MARGIN_Y: int = 24
 const HINT_WIDTH: int = 300
@@ -126,8 +117,7 @@ static func place_skip_hint(hint: Label, host: Control) -> void:
 	hint.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 
 
-# Centres a choice column of CHOICE_WIDTH on its parent and pins it to the
-# bottom, replacing the narrower fixed offsets the .tscn lays out.
+# Replaces the narrower fixed offsets the .tscn lays out.
 static func layout_choice_column(column: BoxContainer, bottom_margin: int = 24) -> void:
 	if column == null:
 		return

@@ -1,8 +1,7 @@
-# Draws a rounded, value-neutral background behind an inline highlight range of
-# a RichTextLabel. RichTextLabel has no rounded inline background and no
-# per-character rect in this build, so the marker measures the text with the
-# same font to place a rounded StyleBox per wrapped line, drawn behind the text
-# via show_behind_parent. Neutral by design: "in deck", not "correct".
+# A rounded background behind an inline range of a RichTextLabel. The build has
+# neither rounded inline backgrounds nor per-character rects, so this measures
+# the text with the same font and places one StyleBox per wrapped line, drawn
+# behind via show_behind_parent. Neutral by design: "in deck", not "correct".
 class_name HighlightMarker
 extends Control
 

@@ -1,6 +1,5 @@
 # The handler's chat column. Not a dialogue system: the controller decides which
-# state-dependent line to push (from the MailRun state) and calls say(key); this
-# node only renders the growing transcript. Each line's text is an i18n key.
+# line to push, this node only renders the growing transcript.
 extends PanelContainer
 
 var _lines: VBoxContainer
@@ -36,8 +35,7 @@ func _ready() -> void:
 	scroll.add_child(_lines)
 
 
-# Pushes one handler line. The controller guarantees each trigger fires once, so
-# this node stays a dumb append-only transcript.
+# The controller guarantees each trigger fires once, so this stays append-only.
 func say(line_key: String) -> void:
 	var bubble := PanelContainer.new()
 	var box := DarkMailPalette.flat_box(

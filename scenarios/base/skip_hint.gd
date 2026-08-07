@@ -1,9 +1,6 @@
-# The blinking "▼ klicken für weiter" hint from the intro's dialog box, telling
-# the player that running text can be hurried along with a click.
-#
-# Reuses DIALOG_HINT_CLICK so the wording and the arrow glyph stay in one place.
-# Preload path instead of class_name: a bare `godot -s` run has no global class
-# cache.
+# The blinking hint that running text can be clicked ahead. Reuses the intro's
+# DIALOG_HINT_CLICK, so wording and glyph stay in one place.
+# Preload, no class_name: a bare `godot -s` run has no global class cache.
 extends Label
 
 const BLINK_INTERVAL: float = 0.5

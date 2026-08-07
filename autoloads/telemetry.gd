@@ -1,16 +1,12 @@
-# Append-only JSONL writer. Subscribes to EventBus.generic_event and
-# persists every payload as one JSON object per line under
-# user://logs/session_{uuid}.jsonl. Stamps seq, timestamp_ms and session_uuid
-# on every event so the logs are self-describing.
+# Append-only JSONL writer: one JSON object per line under
+# user://logs/session_{uuid}.jsonl. Subscribes to EventBus, called by no one.
 extends Node
 
 const LOG_DIR: String = "user://logs"
 
 var _log_path: String = ""
 
-# Monotonic per-session event counter, starting at 1. timestamp_ms only has
-# millisecond resolution, so two events emitted in the same frame can share a
-# timestamp; seq gives the analysis a total order that never ties.
+# Two events in the same frame can share a timestamp_ms; seq breaks the tie.
 var _seq: int = 0
 
 func _ready() -> void:
@@ -19,8 +15,7 @@ func _ready() -> void:
 		push_error("Telemetry: could not create %s (err=%d)" % [LOG_DIR, err])
 		return
 	_log_path = "%s/session_%s.jsonl" % [LOG_DIR, GameState.session_uuid]
-	# Print resolved absolute path once per run so the researcher can
-	# locate logs on disk without guessing the user:// mount point.
+	# Absolute path once per run, so the logs are findable on the study machine.
 	print("Telemetry: writing to ", ProjectSettings.globalize_path(_log_path))
 	EventBus.generic_event.connect(_on_event)
 
@@ -32,8 +27,7 @@ func _on_event(payload: Dictionary) -> void:
 	enriched["seq"] = _seq
 	enriched["timestamp_ms"] = Time.get_unix_time_from_system() * 1000.0
 	enriched["session_uuid"] = GameState.session_uuid
-	# Stamped per event rather than once per file so a log stays self-describing
-	# even when lines from several sessions are concatenated for analysis.
+	# Per event, not per file: lines stay attributable when logs are concatenated.
 	enriched["participant_code"] = GameState.participant_code
 	var file: FileAccess = FileAccess.open(_log_path, FileAccess.READ_WRITE)
 	if file == null:

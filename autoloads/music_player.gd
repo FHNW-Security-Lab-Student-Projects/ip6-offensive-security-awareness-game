@@ -1,8 +1,6 @@
-# Autoload: persistent menu music. Because it is an autoload it survives scene
-# changes, so the track keeps playing seamlessly across the menu screens
-# (StartScreen -> LevelAuswahl). Scenarios stop it on start (ScenarioBase); the
-# menu screens resume it on _ready. Start/stop are faded so it blends with the
-# black SceneTransition fade instead of cutting abruptly.
+# Menu music. As an autoload it survives scene changes, so the track runs
+# seamlessly across the menu screens. ScenarioBase stops it, the menus resume it.
+# Faded, so it blends with the black SceneTransition fade.
 extends Node
 
 const MENU_MUSIC := preload("res://assets/audio/terminal_freeze.wav")
@@ -16,15 +14,13 @@ var _fading_out := false
 
 
 func _ready() -> void:
-	# Keep playing while the tree is paused (settings overlay), so opening the
-	# menu does not cut the music.
+	# Keeps playing while the tree is paused (settings overlay).
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	_player = AudioStreamPlayer.new()
 	_player.stream = MENU_MUSIC
 	_player.volume_db = MENU_VOLUME_DB
 	_player.bus = &"Music"  # so the music slider in the settings controls it
-	# Loop the whole sample. Setting loop_mode alone leaves loop_end at 0 (a
-	# zero-length loop that instantly stops), so set the region explicitly.
+	# loop_mode alone leaves loop_end at 0, a zero-length loop that stops at once.
 	if _player.stream is AudioStreamWAV:
 		var wav := _player.stream as AudioStreamWAV
 		wav.loop_begin = 0
@@ -34,8 +30,7 @@ func _ready() -> void:
 	play_menu_music()
 
 
-# Resume the menu music if it is not already playing (no-op while it plays, so
-# moving between menu screens never restarts the track). Fades in.
+# No-op while already playing, so moving between menu screens never restarts it.
 func play_menu_music() -> void:
 	if _player == null:
 		return

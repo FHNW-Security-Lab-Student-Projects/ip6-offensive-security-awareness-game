@@ -1,8 +1,6 @@
-# Scenario-independent CRT overlay: a CanvasLayer high above everything with
-# a full-rect ColorRect running crt_overlay.gdshader (scanlines + vignette).
-# Purely decorative — the rect ignores the mouse, so it never swallows input.
-# Instance it once per scenario scene; tune the exports per scenario if a
-# phase needs a stronger or weaker effect.
+# Scanlines and vignette from crt_overlay.gdshader, on a CanvasLayer above
+# everything. Decorative only: the rect ignores the mouse. One per scenario
+# scene, tuned through the exports below.
 class_name CRTOverlay
 extends CanvasLayer
 

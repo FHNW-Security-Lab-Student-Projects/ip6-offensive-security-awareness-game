@@ -1,10 +1,8 @@
-# One playable hand card. It shows ONLY the type (as colour + label, with the
-# schrott disguise) and the card name; the full text is the tooltip. There is
-# deliberately NO effect indicator — the player must judge the card's CONTENT,
-# not read arrows. The bar effect is revealed only after the mail is sent.
+# One playable hand card: type as colour and label, the name, and the full text
+# in the tooltip. Deliberately NO effect indicator — the player has to judge the
+# card's CONTENT, not read arrows off it. The bars move only after sending.
 #
-# Slot/enabled/consumed handling is driven by the controller; the card owns no
-# logic and no thresholds.
+# Slot and enabled state come from the controller; the card owns no thresholds.
 extends PanelContainer
 
 const MailCard := preload("res://scenarios/spear_phishing/data/mail_card.gd")
@@ -58,10 +56,8 @@ func setup(c: MailCard) -> void:
 	_restyle()
 
 
-# A small "[i]" hint in the top-right corner so players notice they can hover a
-# card for its full text. Purely an affordance; hovering anywhere on the card
-# shows the tooltip. On the armed payload it yields to the pulsing arrow (which
-# shares the corner) — see _update_pulse.
+# Affordance only — hovering anywhere on the card shows the tooltip. On the armed
+# payload it yields to the arrow, which shares the corner.
 func _build_info_badge() -> void:
 	_info_overlay = Control.new()
 	_info_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -77,8 +73,7 @@ func _build_info_badge() -> void:
 		badge.position = Vector2(_info_overlay.size.x - s.x - 4.0, 2.0))
 
 
-# Renders the hover tooltip in the DarkMail look (bordered dark panel + mono
-# text) instead of Godot's default grey box. Godot calls this with tooltip_text.
+# Replaces Godot's default grey tooltip box with the DarkMail look.
 func _make_custom_tooltip(for_text: String) -> Object:
 	var panel := PanelContainer.new()
 	var box := DarkMailPalette.flat_box(
@@ -101,9 +96,7 @@ func _make_custom_tooltip(for_text: String) -> Object:
 
 # --- live state --------------------------------------------------------------
 
-# Playability is a run fact (card_playable): the payload only once its gate is
-# open, every other card only while the gate is still closed. The widget reads
-# the fact and owns no thresholds.
+# Playability is a run fact: the widget asks the run and owns no thresholds.
 func refresh(run) -> void:
 	_enabled = run.card_playable(card)
 	_restyle()
@@ -116,7 +109,7 @@ func set_slotted(slotted: bool) -> void:
 	_update_pulse()
 
 
-# A brief brightening used by the staggered reveal to point out the acting card.
+# Points out the acting card during the staggered reveal.
 func flash() -> void:
 	if _is_pulsing():
 		return  # the pulse already owns modulate and draws more attention anyway
@@ -127,10 +120,9 @@ func flash() -> void:
 
 # --- payload pulse -------------------------------------------------------------
 
-# The armed payload blinks: a looping brightness pulse plus a bobbing amber
-# arrow while it is playable and not yet drafted, so the open gate cannot be
-# overlooked. Slotting the card or closing conditions (run over, no turns) stop
-# both and restore the static style.
+# The armed payload pulses and grows a bobbing arrow while it is playable and
+# not yet drafted, so an open gate cannot be overlooked. Slotting it, or the run
+# ending, stops both and restores the static style.
 func _is_pulsing() -> bool:
 	return _pulse_tween != null and _pulse_tween.is_valid()
 
@@ -169,10 +161,8 @@ func _update_pulse() -> void:
 
 # --- payload arrow: a bobbing pointer drawn over the armed payload -------------
 
-# Plain triangle in the card's top-right corner. The wrapper Control gets
-# fitted to the panel's content rect; the arrow inside it is free of any
-# container layout, so it can bob. Hidden by default; _update_pulse toggles it
-# together with the pulse.
+# The wrapper is fitted to the panel's content rect; the arrow inside it sits
+# outside any container layout, which is what lets it bob.
 class ArrowMarker extends Control:
 	func _draw() -> void:
 		draw_colored_polygon(PackedVector2Array([
@@ -241,9 +231,8 @@ func _type_tag_text() -> String:
 	return MailCard.Type.keys()[_display_type()]
 
 
-# Traps are NOT visually flagged: schrott wears the same label and accent as the
-# card it masquerades as (collected recon intel -> EPIC, a generic scam ->
-# STANDARD). Recognising junk from its name/text is the measured skill.
+# Traps are NOT flagged: schrott wears the label and accent of whatever it
+# masquerades as. Recognising junk from its text is the measured skill.
 func _display_type() -> int:
 	if card.type != MailCard.Type.SCHROTT:
 		return card.type

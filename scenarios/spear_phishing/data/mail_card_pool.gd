@@ -1,15 +1,13 @@
-# The MailBuilder card catalog, the central balancing constants (ONE place to
-# tune), the Recon-find -> card bridge, the legendary unlock rules and the hand
-# builder. Referenced by path (preload), no global class name.
+# The card catalog, the balancing constants, the recon-find bridge, the
+# legendary unlock rules and the hand builder. The one place to tune difficulty.
+# Preload, no class_name: a bare `godot -s` run has no global class cache.
 #
-# Card definition format (Array):
-#   [id: StringName, type, suspicion: int, pressure: int, principle: StringName,
-#    amplifies_pressure: bool]
+# Card format: [id, type, suspicion, pressure, principle, amplifies_pressure]
 extends RefCounted
 
 const MailCard := preload("res://scenarios/spear_phishing/data/mail_card.gd")
 
-# --- central tuning: the design's explicit difficulty knobs, one place -------
+# --- balancing ---------------------------------------------------------------
 const TURN_BUDGET := 5            # mails the player may send before the run ends
 const SUSPICION_START := 4        # one above target: lowering suspicion is real work
 const SUSPICION_TARGET := 3       # win requires suspicion <= this
@@ -22,15 +20,13 @@ const KOLLEGEN_MIN := 4           # suspicion in [MIN,MAX] at payload => KOLLEGE
 const KOLLEGEN_MAX := 7
 const AMPLIFIER_BONUS := 1        # "Keiner fragt nach" adds this to pressure cards
 
-# Display range for the two status bars (0..MAX). Presentation lives with the
-# other tuning knobs so the UI never hardcodes a scale.
+# Bar range, kept here so the UI never hardcodes a scale.
 const SUSPICION_BAR_MAX := 10
 const PRESSURE_BAR_MAX := 10
 
-# Hannes' reactive state, mirrored from the two bars (no new numbers, no effect
-# on the bars). ANGEBISSEN is exactly the win-ready state (payload_would_win);
-# gate-open-but-suspicious reads as MISSTRAUISCH — the "playable but risky"
-# moment. Derived from the existing thresholds only.
+# The target's reaction, derived from the two bars and the thresholds above -
+# no new numbers, no effect on the run. ANGEBISSEN is exactly the win-ready
+# state; gate open but still suspicious reads as MISSTRAUISCH.
 enum HannesState { NEUTRAL, MISSTRAUISCH, INTERESSIERT, ANGEBISSEN }
 
 const EPIC := MailCard.Type.EPIC
@@ -39,11 +35,10 @@ const PAYLOAD := MailCard.Type.PAYLOAD
 const SCHROTT := MailCard.Type.SCHROTT
 const LEGENDARY := MailCard.Type.LEGENDARY
 
-# Recon find id -> card definition. Every collectable find maps to a card; the
-# traps (Katzen-Smalltalk, Namensvetter, ...) become playable on purpose so the
-# player CAN make the mistake — that is the decision-awareness measurement.
-# Two weak -1 suspicion senkers (Systemwissen, Badge-Leck); the other new epics
-# are 0/0 legendary building blocks so the suspicion economy stays tight.
+# Every collectable find maps to a card. The traps are playable on purpose: the
+# player has to be able to make the mistake, that is what gets measured.
+# Most epics are 0/0 legendary building blocks, so the suspicion economy stays
+# tight.
 const RECON_CARDS := {
 	&"q2a_sonntags":     [&"sonntags_hannes",       EPIC,    -2, 0, &"konsistenz",     false],
 	&"q2b_neue_it":      [&"frische_it",            EPIC,    -2, 0, &"autoritaet",     false],
@@ -76,18 +71,16 @@ const GENERIC_CARDS := [
 
 const PAYLOAD_CARD := [&"zugang_bestaetigen", PAYLOAD, 0, 0, &"commitment", false]
 
-# The probe: a harmless mail whose only effect is to flip the run's probe flag
-# (grants_probe = 7th field). In hand until played; playing it costs a turn and
-# swaps in the Abwesenheits-Fenster card next refresh.
+# Harmless mail whose only effect is the probe flag (7th field). Costs a turn
+# and swaps in the card below on the next hand refresh.
 const PROBE_CARD := [&"probe_ooo", EPIC, 0, 0, &"aufklaerung", false, true]
 
 # Q8 card, enters the hand once the probe has run (replaces PROBE_CARD).
 const ABWESENHEITS_FENSTER := [&"abwesenheits_fenster", EPIC, 0, 3, &"knappheit", false]
 
-# Cross-reference legendaries. `needs`: all find ids required. `needs_any`
-# (optional): at least one satisfied, where &"__probe__" means the Q8 probe
-# flag. Identität gesichert has a second path (Archiv-Fund) so it is reachable
-# before the probe mechanic exists.
+# Cross-reference legendaries. needs: all of these find ids. needs_any: at least
+# one, where __probe__ means the probe flag. The last one has a second path so
+# it stays reachable without the probe.
 const LEGENDARIES := [
 	{"card": [&"perfekter_absender", LEGENDARY, -3, 0, &"kombination", false],
 		"needs": [&"q2b_neue_it", &"q3_stelle"]},
@@ -105,9 +98,9 @@ static func _make(def: Array) -> MailCard:
 	return MailCard.new(def[0], def[1], def[2], def[3], def[4], def[5], grants_probe)
 
 
-# The player's fixed hand (no draw, no randomness): collected recon cards (incl.
-# traps) + unlocked legendaries + the probe (or, once run, the Q8 card it
-# unlocks) + the fixed generic set + the payload (last).
+# The fixed hand, no draw and no randomness: collected recon cards including
+# traps, unlocked legendaries, the probe or its unlock, the generics, the
+# payload last.
 static func build_hand(collected_find_ids: Array, probe_done: bool) -> Array:
 	var hand: Array = []
 	for fid in collected_find_ids:
@@ -142,9 +135,8 @@ static func find_in_hand(hand: Array, card_id: StringName) -> MailCard:
 	return null
 
 
-# Pure by-id lookup across every catalog (recon, generic, payload, probe, the
-# Q8 unlock and the legendaries). Used by the post-run review to resolve a
-# played card id back to its type/principle/name. Returns null on an unknown id.
+# By-id lookup across every catalog, used by the post-run review to resolve a
+# played id back to its card. Null on an unknown id.
 static func card_for_id(card_id: StringName) -> MailCard:
 	for def in RECON_CARDS.values():
 		if def[0] == card_id:
@@ -161,8 +153,8 @@ static func card_for_id(card_id: StringName) -> MailCard:
 	return null
 
 
-# Generic cards are inexhaustible (always in hand, every turn); everything else
-# is consumed once played. The UI uses this to decide what to remove after send.
+# Generics are inexhaustible, everything else is consumed once played. The UI
+# uses this to decide what to remove after a send.
 static func is_generic(card_id: StringName) -> bool:
 	for def in GENERIC_CARDS:
 		if def[0] == card_id:
@@ -170,9 +162,8 @@ static func is_generic(card_id: StringName) -> bool:
 	return false
 
 
-# Derives Hannes' state from the current bars using the existing thresholds. The
-# order matters: a suspicious target stays suspicious regardless of pressure;
-# only with suspicion in the safe zone does pressure decide interest vs the bite.
+# Order matters: a suspicious target stays suspicious regardless of pressure.
+# Only inside the safe zone does pressure decide interest vs the bite.
 static func hannes_state(suspicion: int, pressure: int) -> HannesState:
 	if suspicion > SUSPICION_TARGET:
 		return HannesState.MISSTRAUISCH

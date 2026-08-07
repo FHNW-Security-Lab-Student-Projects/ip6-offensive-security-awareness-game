@@ -1,17 +1,8 @@
-# Reusable dialog box with typewriter text.
+# Reusable dialog box with typewriter text. A click either skips the running
+# line or advances to the next one; past the last line it emits lines_finished.
 #
-# API:
-#   play(lines, speaker)  - start showing a sequence of lines.
-#   signal lines_finished - all lines have been shown AND the user has
-#                           clicked past the last one.
-#
-# Click behaviour:
-#   - line is still typing  -> jump to end of current line.
-#   - line is fully shown   -> advance to next line, or emit
-#                              lines_finished if this was the last one.
-#
-# Mouse input is captured by the Panel child; clicks outside the panel
-# (e.g. on a Weiter button next to the dialog box) pass through.
+# Input is captured by the Panel child, so clicks beside the box (a Weiter
+# button, say) still reach whatever is under them.
 class_name DialogBox
 extends Control
 
@@ -37,8 +28,8 @@ func _ready() -> void:
 	_panel.gui_input.connect(_on_panel_input)
 	_clear()
 
-# True while a line is still being written out. The host screen uses it to keep
-# the typewriter bed in sync when it is hidden and shown again mid-line.
+# The host screen reads this to keep the typewriter bed in sync when it is
+# hidden and shown again mid-line.
 func is_typing() -> bool:
 	return _typing
 
